@@ -77,10 +77,33 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradien
     z-index: 2000;
 }
 
-/* Footer controls */
-.controls{position:absolute;bottom:14px;left:14px;right:14px;display:flex;gap:10px;justify-content:space-between;z-index:70}
-.controls .left, .controls .right{display:flex;gap:10px;align-items:center}
-.btn{background:var(--panel);border:1px solid rgba(255,255,255,0.04);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px)}
+/* Footer controls - New Scrollable Bar */
+.bottom-bar{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    padding: 12px 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.01), var(--bg) 90%);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 70;
+}
+.scroll-container{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 14px; /* padding for the sides */
+    /* Скрываем скроллбар */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.btn{background:var(--panel);border:1px solid rgba(255,255,255,0.04);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px); flex-shrink: 0;}
 .btn.primary{background:linear-gradient(90deg,var(--n1),var(--n2));color:#000;box-shadow:var(--glow) var(--n2);border:none}
 .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 .center-info{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:60}
@@ -185,19 +208,18 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradien
     </div>
   </div>
 
-  <div class="controls">
-    <div class="left">
+  <div class="bottom-bar">
+    <div class="scroll-container">
       <button class="btn ghost" onclick="openShop('fleet')">ФЛОТ</button>
       <button class="btn ghost" onclick="openShop('crew')">ЭКИПАЖ</button>
       <button class="btn ghost" onclick="openShop('impl')">ИМПЛАНТЫ</button>
-    </div>
-    <div class="right">
-      <button class="btn ghost" onclick="openQuests()">КВЕСТЫ</button>
       <button class="btn primary" onclick="openShop('raid')">RAID</button>
+      <button class="btn ghost" onclick="openQuests()">КВЕСТЫ</button>
       <button class="btn ghost" onclick="openShop('market')">ТЁМНЫЙ РЫНОК</button>
+      <button class="btn ghost" onclick="openProfile()">ПРОФИЛЬ</button>
     </div>
   </div>
-</div>
+  </div>
 
 <div id="pop" onclick="if(event.target.id==='pop')popClose()">
   <div class="pop-card" id="popcard"></div>
@@ -215,7 +237,8 @@ let s = {
   lastSave:Date.now(),
   // Quest state
   lastDailyReset: new Date().toDateString(),
-  dailyProgress:{}, progressDone:{}, specialDone:{}
+  dailyProgress:{}, progressDone:{}, specialDone:{},
+  botInterval: null // Добавлено для корректного хранения интервала
 };
 
 // GDD БАЛАНС - КОРАБЛИ
@@ -245,9 +268,8 @@ const CREW = {
 };
 
 const RANK_NAMES = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
-const RANK_REQ = [0,1e3,1e6,1e9,1e12]; // Для простоты оставим старые требования
+const RANK_REQ = [0,1e3,1e6,1e9,1e12];
 
-// СИСТЕМА КВЕСТОВ (Осталась от предыдущего шага)
 const QUESTS = {
   daily: [
     { id: 'daily_clicks', text: "Сделай 5000 кликов", target: 5000, reward: { energy: 20000 }, type: 'tapCount' },
@@ -311,10 +333,11 @@ function loadState(){
     s.lastDailyReset = today;
   }
 
+  // Оффлайн доход
   const secs = Math.min((now - (s.lastSave||now))/1000, 12*3600);
   if(secs>2){
     recalcPassive();
-    const gained = s.pph * secs; // Теперь оффлайн доход зависит от PPH
+    const gained = s.pph * secs; 
     s.energy += gained; s.totalEarned += gained;
     try{ tg.showAlert(`Оффлайн: +${Math.floor(gained).toLocaleString('ru-RU')} энергии`); }catch(e){}
   }
@@ -323,8 +346,7 @@ function loadState(){
 
 /* recalc passive with GDD logic */
 function recalcPassive(){
-  let shipIncomeSum = 0; // Базовый доход в секунду от кораблей
-  let autoTapCrew = 0; // Бонус автотапа
+  let shipIncomeSum = 0; 
   
   s.tapImplMult = 0;
   s.pphImplMult = 0;
@@ -332,26 +354,22 @@ function recalcPassive(){
   // 1. Расчет дохода от кораблей (PPH Base)
   for(let k in s.ships){
     const level = s.ships[k] || 0;
-    // GDD: income_per_sec = ship_level^1.2 * crew_bonus
-    // Примем Ship Level за количество купленных кораблей
     shipIncomeSum += SHIPS[k].income * Math.pow(level, 1.2); 
   }
   
   // 2. Расчет множителей от Имплантов (tapMult / pphMult)
   for(let id in s.impl){
     const impl = IMPLANTS[id];
-    const level = s.impl[id].level || 1;
-    // Формула: mult = base_effect + level_mult * (level-1)
+    const level = s.impl[id]?.level || 1;
     const currentMult = impl.effect + impl.levelMult * (level - 1);
 
     if (impl.type === 'tap') s.tapImplMult += currentMult;
     if (impl.type === 'pph') s.pphImplMult += currentMult;
-    // TODO: hack
   }
 
   // 3. Расчет множителей от Экипажа
   let crewMult = 1.0;
-  if(s.crew['captain']) crewMult += CREW.captain.mult; // +50% флот-доход
+  if(s.crew['captain']) crewMult += CREW.captain.mult; 
 
   if(s.crew['bot'] && !s.botInterval){
      s.botInterval = setInterval(()=>{ 
@@ -359,19 +377,18 @@ function recalcPassive(){
         updateQuestProgress('daily', s.tapBase * s.tapMult, {type:'tapCount'}); 
         ui();
       }, 1000); 
+  } else if (!s.crew['bot'] && s.botInterval) {
+     clearInterval(s.botInterval);
+     s.botInterval = null;
   }
 
-  // 4. Итоговая PPH (PUNK per Hour) - Упрощенная формула
-  // В GDD PPH - это доход в час. Наш passive - доход в секунду. 
-  // Passive (income_per_sec) = ShipIncome * (1 + PPH_Impl_Mult) * Crew_Mult * Global_Mult
+  // 4. Итоговая PPH (PUNK per Hour)
   s.pph = shipIncomeSum * (1 + s.pphImplMult) * crewMult; // Доход в секунду
   
   // 5. Итоговый Tap Multiplier
-  // Tap Mult = 1 + Tap Impl Mult
   s.tapMult = 1.0 + s.tapImplMult;
 
-  // Проверка прогресса по квесту на множитель
-  const currentTotalMult = s.tapMult + s.pph / (s.tapBase * s.tapMult || 1); // Оценка общего множителя
+  const currentTotalMult = s.tapMult + s.pph / (s.tapBase * s.tapMult || 1); 
   updateQuestProgress('progress', 1, {type:'multAchieved', value: currentTotalMult});
 }
 
@@ -381,8 +398,6 @@ function ui(){
   document.getElementById('punk').innerText = (s.punk).toFixed(4) + ' $PUNK • курс 1000:1';
   document.getElementById('inc').innerText = fmt(s.pph) + ' /сек (PPH: ' + fmt(s.pph * 3600) + ')';
   
-  // Ранги привязаны к PPH
-  // TODO: Написать новую логику рангов, привязанную к PPH*3600
   for(let i=RANK_REQ.length-1;i>=0;i--) if(s.totalEarned>=RANK_REQ[i]){ s.rank=i; break; }
   document.getElementById('rank').innerText = RANK_NAMES[s.rank];
 }
@@ -392,29 +407,23 @@ function tap(ev){
   const x = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : (ev.clientX || window.innerWidth/2);
   const y = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : (ev.clientY || window.innerHeight/2);
   
-  // ---- КРИТЫ ----
   let crit = 1;
   const roll = Math.random();
 
-  if (roll < 0.005) crit = 10;   // x10 (0.5%)
-  else if (roll < 0.035) crit = 5;   // x5 (3%)
-  else if (roll < 0.155) crit = 2;   // x2 (12%)
+  if (roll < 0.005) crit = 10;
+  else if (roll < 0.035) crit = 5;
+  else if (roll < 0.155) crit = 2;
 
-  // Формула: energy = base_tap * (1 + sum_multipliers) * crit
   const gain = Math.floor(s.tapBase * s.tapMult * crit); 
   s.energy += gain; 
   s.totalEarned += gain;
 
-  // Обновление квестов
   updateQuestProgress('daily', 1, {type:'tapCount'});
   if (crit === 10) updateQuestProgress('daily', 1, {type:'crit10'});
   if (crit > 1) updateQuestProgress('special', 1, {type:'critTotal'});
-  // -------------------------
 
-  // ---------- красивый разброс траекторий ----------
   const el = document.createElement('div');
   el.className = 'floating';
-
   const angle = (Math.random() * 40 - 20);
   const offsetX = (Math.random() * 60 - 30);
   const offsetY = Math.random() * 140 + 80;
@@ -434,7 +443,6 @@ function tap(ev){
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1600);
 
-  // 💥 Крит-эффект
   if (crit > 1) {
       const boom = document.createElement('div');
       boom.className = 'critBoom';
@@ -454,9 +462,7 @@ function tap(ev){
       setTimeout(()=> boom.remove(), 500);
       try{ tg.HapticFeedback?.notificationOccurred('success'); }catch(e){}
   }
-  // -------------------------
 
-  // glitch эффект
   const r = document.getElementById('reactor');
   r.classList.add('glitch');
   setTimeout(()=>r.classList.remove('glitch'),180);
@@ -468,14 +474,13 @@ function tap(ev){
 /* Passive loop (smooth) */
 setInterval(()=>{
   recalcPassive();
-  s.energy += s.pph/10; // PPH - доход в секунду. Делим на 10 для 100мс цикла.
+  s.energy += s.pph/10; 
   
   if(s.energy >= 1000){
     const whole = Math.floor(s.energy/1000);
-    const toAdd = whole * 0.95; // 5% налог
+    const toAdd = whole * 0.95; 
     s.punk += toAdd; s.energy -= whole*1000;
   }
-  // Проверка прогресса по квесту на энергию
   updateQuestProgress('progress', s.energy, {type:'energyTotal', value: s.energy});
   ui();
 },100);
@@ -488,7 +493,7 @@ window.addEventListener('beforeunload', saveState);
 function pop(html){ document.getElementById('popcard').innerHTML = html; document.getElementById('pop').style.display = 'flex'; }
 function popClose(){ document.getElementById('pop').style.display = 'none'; }
 
-/* Shops */
+/* Shops and special screens */
 function openShop(type){
   if(type==='fleet') return openFleet();
   if(type==='crew') return openCrew();
@@ -497,7 +502,6 @@ function openShop(type){
   if(type==='market') return openMarket();
 }
 
-/* Fleet */
 function openFleet(){
   let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2>`;
   for(const k in SHIPS){
@@ -513,14 +517,11 @@ function buyShip(k, price){
   if(s.energy >= price){
     s.energy -= price; 
     s.ships[k] = (s.ships[k]||0)+1; 
-    
     if(k==='f') updateQuestProgress('progress', 1, {type:'buyShipC'});
-    
     recalcPassive(); ui(); saveState(); popClose(); try{ tg.showAlert('Корабль приобретён'); }catch(e){} 
   } else { try{ tg.showAlert('Недостаточно энергии'); }catch(e){ alert('Недостаточно энергии'); } }
 }
 
-/* Crew */
 function openCrew(){
   let html = `<h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2>`;
   for(const k in CREW){
@@ -537,7 +538,6 @@ function openCrew(){
 function toggleCrew(id, price){
   if(s.crew[id]){ 
     delete s.crew[id]; 
-    if(id==='bot' && s.botInterval) { clearInterval(s.botInterval); delete s.botInterval; }
     recalcPassive(); ui(); saveState(); openCrew(); return; 
   }
   if(s.energy >= price){ 
@@ -547,7 +547,6 @@ function toggleCrew(id, price){
   else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
 }
 
-/* Implants */
 function openImplants(){
   let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2>`;
   for(const k in IMPLANTS){
@@ -572,7 +571,6 @@ function buyImpl(id, price){
     if(!s.impl[id]) s.impl[id] = {level: 0};
     s.impl[id].level++;
     
-    // Обновление квестов (если это первая покупка/уровень)
     if(s.impl[id].level === 1) updateQuestProgress('daily', 1, {type:'buyImpl'});
     
     recalcPassive(); ui(); saveState(); openImplants(); 
@@ -580,11 +578,11 @@ function buyImpl(id, price){
   else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
 }
 
-/* Raid & Market stubs (Обновлено под GDD) */
 function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">КРИПТО-РЕЙД: NeonCorp</h2><div class="pop-item">Событие Community Raid. Тапайте по барьеру корпорации вместе с другими игроками, чтобы получить общий $PUNK приз. Cooldown 4 часа.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
 function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК (NFT)</h2><div class="pop-item">NFT-Флот (Ghost Ship), Временные Бустеры (x2 PPH) и другие редкие предметы за $PUNK. Появятся в следующем обновлении.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
+function openProfile(){ pop(`<h2 style="color:var(--n1);text-align:center">ПРОФИЛЬ</h2><div class="pop-item">Ранг: ${RANK_NAMES[s.rank]}<br>Всего заработано: ${fmt(s.totalEarned)}<br>PPH Множитель: x${s.pphMult.toFixed(2)}<br>Следующий ранг: ${RANK_NAMES[s.rank + 1]||'МАКС.'} (Требуется: ${fmt(RANK_REQ[s.rank + 1]||0)})</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
 
-/* ======== QUEST SYSTEM LOGIC (Осталась от предыдущего шага) ======== */
+/* ======== QUEST SYSTEM LOGIC (без изменений) ======== */
 
 function updateQuestProgress(category, amount, data = {}) {
   const questList = QUESTS[category];
@@ -619,7 +617,7 @@ function updateQuestProgress(category, amount, data = {}) {
 
 function giveReward(reward){
   if(reward.energy) s.energy += reward.energy;
-  if(reward.permMult) s.pphMult *= reward.permMult; // permMult теперь влияет на PPH
+  if(reward.permMult) s.pphMult *= reward.permMult; 
   recalcPassive();
 }
 
@@ -631,7 +629,7 @@ function collectQuestReward(category, id) {
   if (q && progressState[id] && progressState[id].done && !progressState[id].collected) {
     giveReward(q.reward);
     progressState[id].collected = true;
-    showQuestPopup("Награда получена!", `+${q.reward.energy ? q.reward.energy : q.reward.permMult} бонус`);
+    showQuestPopup("Награда получена!", `+${q.reward.energy ? fmt(q.reward.energy) : `x${q.reward.permMult}`} бонус`);
     ui();
     openQuests(); 
   }
@@ -698,6 +696,7 @@ function buildQuestList(category) {
 
 /* init */
 loadState();
+recalcPassive(); // Ensure initial passive calculation is correct, especially for autotap
 ui();
 
 </script>
