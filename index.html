@@ -2,13 +2,12 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<title>CosmoPunk Tap Game — Final Beautiful + Working</title>
+<title>CosmoPunk Tap Game — Theme Preview</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
 <style>
-/* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН — 100% сохранён */
+/* ====== Base / Reset ====== */
 :root{
   --bg:#0a001a; --n1:#ff00ff; --n2:#00ffff; --text:#fff; --panel:rgba(255,255,255,0.04);
   --glass: rgba(255,255,255,0.04);
@@ -17,51 +16,146 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#app{height:100%}
 body{
-  font-family: 'Orbitron', 'Rajdhani', system-ui, -apple-system;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   background: radial-gradient(circle at 30% 20%, #1a0033 0%, var(--bg) 45%, #000 100%);
   color:var(--text);
   overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-/* Темы */
-body.theme-neon{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--panel:linear-gradient(180deg,rgba(255,0,255,0.06),rgba(0,255,255,0.03))}
-body.theme-holo{--bg:#001022;--n1:#7fe3ff;--n2:#a7ffa8;background:radial-gradient(circle at 50% 30%,#003344 0%,#001022 45%,#000 100%)}
-body.theme-cartoon{--bg:#0a1022;--n1:#ffd166;--n2:#7ee7a6;background:linear-gradient(180deg,#071029,#0a1022)}
-body.theme-dark{--bg:#03040a;--n1:#ff3333;--n2:#33ff99;background:radial-gradient(circle at 70% 20%,#06060a 0%,#03040a 60%,#000 100%)}
-body.theme-3d{--bg:#08111a;--n1:#ff66cc;--n2:#66ddff;background:linear-gradient(180deg,#041021,#08111a)}
+/* ====== Themes (set class on body) ====== */
+/* theme: neon (default) */
+body.theme-neon { --bg:#0a001a; --n1:#ff00ff; --n2:#00ffff; --panel:linear-gradient(180deg, rgba(255,0,255,0.06), rgba(0,255,255,0.03)); --glow:0 0 40px }
+body.theme-holo { --bg:#001022; --n1:#7fe3ff; --n2:#a7ffa8; --panel:linear-gradient(180deg, rgba(127,227,255,0.04), rgba(167,255,168,0.02)); --glow:0 0 24px; background:radial-gradient(circle at 50% 30%, #003344 0%, #001022 45%, #000 100%) }
+body.theme-cartoon { --bg:#0a1022; --n1:#ffd166; --n2:#7ee7a6; --panel:linear-gradient(180deg, rgba(255,209,102,0.06), rgba(126,231,166,0.03)); --glow:0 0 18px; background: linear-gradient(180deg,#071029,#0a1022) }
+body.theme-dark { --bg:#03040a; --n1:#ff3333; --n2:#33ff99; --panel:linear-gradient(180deg, rgba(255,51,51,0.03), rgba(51,255,153,0.02)); --glow:0 0 28px; background:radial-gradient(circle at 70% 20%, #06060a 0%, #03040a 60%, #000 100%) }
+body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradient(180deg, rgba(255,102,204,0.04), rgba(102,221,255,0.02)); --glow:0 0 36px; background: linear-gradient(180deg,#041021,#08111a) }
 
+/* ====== Layout ====== */
 #app{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .hud{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;z-index:80}
 .hud-left{display:flex;flex-direction:column;gap:6px}
-.badge{padding:6px 10px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,0.03);font-weight:700;backdrop-filter:blur(6px)}
+.badge{padding:6px 10px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,0.03);font-weight:700;backdrop-filter: blur(6px)}
 .title{font-size:14px;color:var(--n2);letter-spacing:0.6px}
 .balance{font-size:18px;font-weight:800;text-shadow:var(--glow) var(--n1)}
 .sub{font-size:12px;color:rgba(255,255,255,0.7)}
 
+/* Theme selector */
 .theme-switch{display:flex;gap:8px;align-items:center}
 .theme-button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;cursor:pointer;color:var(--text);font-weight:700;min-width:36px;text-align:center}
 .theme-button.active{box-shadow:var(--glow) var(--n1);transform:scale(1.04)}
 
-.stage{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+/* Reactor */
+.stage{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
 .reactor-wrap{width:min(76vmin,520px);height:min(76vmin,520px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50}
-.reactor{width:100%;height:100%;border-radius:28px;background:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,0.03) 0%,transparent 35%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.15));display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:2px solid rgba(255,255,255,0.04);box-shadow:var(--glow) var(--n1);transition:transform .12s ease}
+.reactor{
+  width:100%;height:100%;border-radius:28px;background:
+  radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.03) 0%, transparent 35%),
+  linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
+  display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;
+  border:2px solid rgba(255,255,255,0.04);box-shadow: var(--glow) var(--n1);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
 .reactor img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(var(--glow) var(--n1))}
 .reactor:active{transform:scale(.98)}
-.reactor.glitch{animation:glitch .18s steps(2)}
-@keyframes glitch{20%{transform:translate(-6px,6px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-6px,-6px)}80%{transform:translate(3px,3px)}
+.reactor.glitch{animation:glitch .18s steps(2);transform:translate3d(0,0,0)}
+@keyframes glitch{20%{transform:translate(-6px,6px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-6px,-6px)}80%{transform:translate(3px,3px)}}
 
-.floating{position:absolute;pointer-events:none;font-size:28px;color:var(--n2);text-shadow:var(--glow) var(--n1);animation:floatUp 1.2s forwards}
-@keyframes floatUp{to{transform:translateY(-380px) rotate(720deg);opacity:0}}
+/* pop numbers */
+/* Устаревший CSS для floatUp удален и заменен на анимацию в JS */
+.floating{
+  position:absolute;pointer-events:none;font-size:28px;color:var(--n2);text-shadow:var(--glow) var(--n1);
+}
+/* Новый CSS для CRIT-эффекта */
+.critBoom {
+    position: fixed;
+    color: #ff0077;
+    font-size: 34px;
+    font-weight: 900;
+    text-shadow: 0 0 8px #ff00ff;
+    pointer-events: none;
+    z-index: 2000;
+}
 
+/* Footer controls */
 .controls{position:absolute;bottom:14px;left:14px;right:14px;display:flex;gap:10px;justify-content:space-between;z-index:70}
-.controls .left,.controls .right{display:flex;gap:8px;align-items:center}
+.controls .left, .controls .right{display:flex;gap:8px;align-items:center}
 .btn{background:var(--panel);border:1px solid rgba(255,255,255,0.04);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px)}
 .btn.primary{background:linear-gradient(90deg,var(--n1),var(--n2));color:#000;box-shadow:var(--glow) var(--n2);border:none}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 .center-info{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:60}
 
+/* popup */
 #pop{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8));z-index:999}
-.pop-card{width:min(760px,96%);max-height:86%;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.2));padding:20px;border-radius:14px;border:1px solid rgba(255,255,255,0.04)}
+.pop-card{width:min(760px,96%);max-height:86%;overflow:auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.04)}
 .pop-item{padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.02)}
+
+/* small responsive */
+@media (max-width:600px){
+  .reactor-wrap{width:92vw;height:92vw;border-radius:18px}
+  .title{font-size:12px}
+  .balance{font-size:16px}
+  .btn{padding:8px 10px;font-size:13px}
+}
+
+/* little polish */
+.small-muted{font-size:12px;color:rgba(255,255,255,0.6)}
+
+/* ====== Quest System CSS ====== */
+.questWindow {
+    position: fixed;
+    bottom: 64px; /* Сдвинуто выше, чтобы не перекрывать controls */
+    right: 14px;
+    width: min(260px, 90%);
+    background: linear-gradient(180deg, rgba(0,255,255,0.1), rgba(15, 15, 25, 0.8));
+    border: 2px solid var(--n2);
+    border-radius: 12px;
+    color: var(--n2);
+    padding: 10px;
+    backdrop-filter: blur(5px);
+    z-index: 90;
+    font-size: 14px;
+}
+.questWindow h3 {
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: var(--n1);
+}
+.questItem {
+    padding: 6px;
+    margin-bottom: 6px;
+    background: rgba(0, 200, 255, 0.08);
+    border-radius: 6px;
+    font-size: 13px;
+    border: 1px solid rgba(0, 200, 255, 0.15);
+}
+.questComplete {
+    background: rgba(0, 255, 120, 0.3);
+    border: 1px solid #00ff88;
+    color: #00ff9d;
+    font-weight: bold;
+}
+.questItem button {
+    margin-top: 5px;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+.questPopup {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    background: #00ffee;
+    color: #001111;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 0 10px #00fff2;
+    z-index: 3000;
+    pointer-events: none;
+}
 </style>
 </head>
 <body class="theme-neon">
@@ -70,23 +164,21 @@ body.theme-3d{--bg:#08111a;--n1:#ff66cc;--n2:#66ddff;background:linear-gradient(
     <div class="hud-left">
       <div class="badge title">CosmoPunk Tap Game</div>
       <div class="badge balance" id="energy">0 PUNK</div>
-      <div class="sub" id="punk">0.0000 $PUNK</div>
+      <div class="small-muted" id="punk">$0.0000 $PUNK • курс 1000:1</div>
     </div>
     <div class="theme-switch">
       <div class="small-muted" style="margin-right:6px">Theme</div>
-      <button class="theme-button active" data-theme="neon">N</button>
-      <button class="theme-button" data-theme="holo">H</button>
-      <button class="theme-button" data-theme="cartoon">C</button>
-      <button class="theme-button" data-theme="dark">D</button>
-      <button class="theme-button" data-theme="3d">3D</button>
+      <button class="theme-button active" data-theme="neon" title="Cyberpunk Neon">N</button>
+      <button class="theme-button" data-theme="holo" title="Hologram">H</button>
+      <button class="theme-button" data-theme="cartoon" title="Cartoon">C</button>
+      <button class="theme-button" data-theme="dark" title="Dark">D</button>
+      <button class="theme-button" data-theme="3d" title="3D">3D</button>
     </div>
   </div>
 
   <div class="stage">
     <div class="reactor-wrap">
-      <div id="reactor" class="reactor">
-        <img src="https://i.ibb.co/0jKX7Wv/reactor.gif" alt="reactor">
-      </div>
+      <div id="reactor" class="reactor" onclick="tap(event)"><img alt="reactor" src="https://i.ibb.co/0jKX7Wv/reactor.gif"/></div>
       <div class="center-info" style="margin-top:12px">
         <div id="inc" class="small-muted">0 /сек</div>
         <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
@@ -96,13 +188,13 @@ body.theme-3d{--bg:#08111a;--n1:#ff66cc;--n2:#66ddff;background:linear-gradient(
 
   <div class="controls">
     <div class="left">
-      <button class="btn ghost" id="fleetBtn">ФЛОТ</button>
-      <button class="btn ghost" id="crewBtn">ЭКИПАЖ</button>
-      <button class="btn ghost" id="implBtn">ИМПЛАНТЫ</button>
+      <button class="btn ghost" onclick="openShop('fleet')">ФЛОТ</button>
+      <button class="btn ghost" onclick="openShop('crew')">ЭКИПАЖ</button>
+      <button class="btn ghost" onclick="openShop('impl')">ИМПЛАНТЫ</button>
     </div>
     <div class="right">
-      <button class="btn primary" id="raidBtn">RAID</button>
-      <button class="btn ghost" id="marketBtn">ТЁМНЫЙ РЫНОК</button>
+      <button class="btn ghost" onclick="openQuests()">КВЕСТЫ</button> <button class="btn primary" onclick="openShop('raid')">RAID</button>
+      <button class="btn ghost" onclick="openShop('market')">ТЁМНЫЙ РЫНОК</button>
     </div>
   </div>
 </div>
@@ -112,104 +204,450 @@ body.theme-3d{--bg:#08111a;--n1:#ff66cc;--n2:#66ddff;background:linear-gradient(
 </div>
 
 <script>
-/* ВСЁ РАБОТАЕТ — 100% */
-const tg = Telegram.WebApp; tg.ready(); tg.expand();
-const SAVE_KEY = 'cosmopunk_final';
-let s = {energy:0,punk:0,total:0,tapBase:3,tapMult:1,passive:0,ships:{r:0,c:0,h:0,f:0,d:0},last:Date.now()};
-
-const SHIPS = {
-  r:{name:'Void Reaper (S)',price:200000,income:10},
-  c:{name:'Neon Corsair (A)',price:100000,income:5},
-  h:{name:'Punk Hauler (B)',price:50000,income:2},
-  f:{name:'Scrap Fighter (C)',price:20000,income:1},
-  d:{name:'Rusty Drone (D)',price:10000,income:0.3}
+/* ========== Game core (kept lightweight, based on v5) ========== */
+const SAVE_KEY = 'cp_tap_v5_full';
+let s = {
+  energy:0, punk:0, totalEarned:0, tapBase:3, tapMult:1.0, passive:0, permMult:1.0, // tapBase: 3, permMult: 1.0 - НОВЫЙ БАЛАНС
+  ships:{r:0,c:0,h:0,f:0,d:0}, crew:{}, impl:{}, rank:0, lastSave:Date.now(),
+  // Quest state
+  dailyProgress:{}, progressDone:{}, specialDone:{}
 };
 
-// Сохранение + оффлайн
-function save(){ s.last=Date.now(); localStorage.setItem(SAVE_KEY,JSON.stringify(s)); }
-function load(){ const d=localStorage.getItem(SAVE_KEY); if(d) Object.assign(s,JSON.parse(d)); offline(); }
-function offline(){ const diff=Math.min((Date.now()-s.last)/1000,43200); s.energy+=s.passive*diff; }
+// НОВЫЙ БАЛАНС - ЦЕНЫ И МНОЖИТЕЛИ
+const SHIPS = {
+  r:{name:'Void Reaper (S)', basePrice:3500000, passiveMult:12.0}, // 20M -> 3.5M; +12x
+  c:{name:'Neon Corsair (A)', basePrice:1500000, passiveMult:4.5}, // 10M -> 1.5M; +4.5x
+  h:{name:'Punk Hauler (B)', basePrice:500000, passiveMult:1.8},   // 5M -> 500k; +1.8x
+  f:{name:'Scrap Fighter (C)', basePrice:250000, passiveMult:0.8},  // 2M -> 250k; +0.8x
+  d:{name:'Rusty Drone (D)', basePrice:100000, passiveMult:0.3}   // 1M -> 100k; +0.3x
+};
 
-// Пассив + обмен
-setInterval(()=>{ s.energy+=s.passive/10; if(s.energy>=1000){ let c=Math.floor(s.energy/1000); s.punk+=c*0.95; s.energy-=c*1000; } ui(); },100);
-setInterval(save,5000);
+// НОВЫЙ БАЛАНС - ИМПЛАНТЫ И ЦЕНЫ
+const IMPLANTS = {
+  neuro:{name:'Нео-Нейрон (S)', price:200000, tapMult:2.0, desc:'+200% тап-мульт'}, // 1M -> 200k; +2.0
+  glitch:{name:'Глитч-Протез (A)', price:100000, passiveMult:1.5, desc:'+150% пассив-мульт'}, // 500k -> 100k; +1.5
+  artery:{id:'artery', name:'Кибер-Артерия (B)', price:400000, passiveMult:3.0, desc:'+300% пассив-мульт'},
+  chrome:{id:'chrome', name:'Хром-Усилитель (S)', price:1200000, tapMult:7.0, desc:'+700% тап-мульт'}
+};
 
-// UI
-function ui(){
-  document.getElementById('energy').innerText = Math.floor(s.energy).toLocaleString() + ' PUNK';
-  document.getElementById('punk').innerText = s.punk.toFixed(4) + ' $PUNK';
-  document.getElementById('inc').innerText = s.passive.toFixed(1) + ' /сек';
+const CREW = {
+  captain:{name:'Капитан Космо (S)', price:10000000, passiveMult:0.5, desc:'+50% к флот-доходу'},
+  hacker:{name:'Лиса-Хакер (A)', price:5000000, desc:'+30% шанс хак'},
+  bot:{name:'ГигаПанк-Бот (B)', price:2000000, desc:'+1 авто-тап/сек'}
 }
 
-// ТАП + КРИТЫ
-document.getElementById('reactor').onclick = function(e){
-  let crit=1; const r=Math.random();
-  if(r<0.005) crit=10; else if(r<0.035) crit=5; else if(r<0.155) crit=2;
-  const gain = Math.floor(s.tapBase * s.tapMult * crit);
-  s.energy += gain; s.total += gain;
+const RANK_NAMES = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
+const RANK_REQ = [0,1e3,1e6,1e9,1e12];
 
-  const x = e.touches?.[0]?.clientX || e.clientX || innerWidth/2;
-  const y = e.touches?.[0]?.clientY || e.clientY || innerHeight/2;
+// СИСТЕМА КВЕСТОВ - КОНФИГУРАЦИЯ
+const QUESTS = {
+  daily: [
+    { id: 'daily_clicks', text: "Сделай 5000 кликов", target: 5000, reward: { energy: 20000 }, type: 'tapCount' },
+    { id: 'daily_crit3', text: "Соверши 3 крита x10", target: 3, reward: { energy: 30000 }, type: 'crit10' },
+    { id: 'daily_buy_impl', text: "Купи 1 имплант", target: 1, reward: { energy: 15000 }, type: 'buyImpl' }
+  ],
+  progress: [
+    { id: 'prog_mult20', text: "Добейся множителя x20", target: 20, reward: { permMult: 1.1 }, type: 'multAchieved' },
+    { id: 'prog_buy_shipC', text: "Купи корабль класса C", target: 1, reward: { energy: 50000 }, type: 'buyShipC' },
+    { id: 'prog_energy1M', text: "Накопи 1 000 000 энергии", target: 1000000, reward: { permMult: 1.2 }, type: 'energyTotal' }
+  ],
+  special: [
+    { id: 'spec_crit10', text: "Поймай 10 неоновых критов", target: 10, reward: { energy: 50000 }, type: 'critTotal' },
+    { id: 'spec_daily5', text: "Выполни 5 ежедневных подряд (TODO)", target: 5, reward: { energy: 75000 }, type: 'dailyStreak' }
+  ]
+};
 
-  const el=document.createElement('div'); el.className='floating'; el.innerText='+'+gain.toLocaleString();
-  el.style.left=(x-30)+'px'; el.style.top=(y-30)+'px';
-  document.body.appendChild(el); setTimeout(()=>el.remove(),1500);
+/* Telegram WebApp */
+const tg = Telegram.WebApp;
+tg.ready(); try{ tg.expand(); }catch(e){}
 
-  if(crit>1){
-    const b=document.createElement('div'); b.className='floating'; b.style.fontSize='64px'; b.innerText='×'+crit; b.style.color='#ff0088';
-    b.style.left=(x-60)+'px'; b.style.top=(y-120)+'px';
-    document.body.appendChild(b); setTimeout(()=>b.remove(),1200);
-  }
-
-  this.classList.add('glitch'); setTimeout(()=>this.classList.remove('glitch'),200);
-  tg.HapticFeedback.impactOccurred('light');
-  ui();
-}
-
-// КНОПКИ — РАБОТАЮТ ЧЕРЕЗ addEventListener (100% надёжно)
-document.getElementById('fleetBtn').addEventListener('click',()=>{ openShop('fleet'); });
-document.getElementById('crewBtn').addEventListener('click',()=>{ openShop('crew'); });
-document.getElementById('implBtn').addEventListener('click',()=>{ openShop('impl'); });
-document.getElementById('raidBtn').addEventListener('click',()=>{ openShop('raid'); });
-document.getElementById('marketBtn').addEventListener('click',()=>{ openShop('market'); });
-
-// Магазин флота (работает!)
-function openShop(type){
-  let html = `<h2 style="color:var(--n1);text-align:center;margin-bottom:20px">${type.toUpperCase()}</h2>`;
-  if(type==='fleet'){
-    for(let k in SHIPS){
-      let sh=SHIPS[k], o=s.ships[k]||0, p=sh.price*Math.pow(1.15,o);
-      html+=`<div class="pop-item"><strong>\( {sh.name}</strong><br>Доход: \){sh.income}/сек<br>Цена: \( {p.toLocaleString()}<br>У тебя: \){o}<br><button class="btn primary" style="margin-top:10px;width:100%" onclick="buyShip('\( {k}', \){p})">КУПИТЬ</button></div>`;
-    }
-  } else {
-    html+=`<div class="pop-item">Скоро будет доступно!</div>`;
-  }
-  document.getElementById('popcard').innerHTML=html;
-  document.getElementById('pop').style.display='flex';
-}
-
-function buyShip(k,p){
-  if(s.energy>=p){
-    s.energy-=p; s.ships[k]=(s.ships[k]||0)+1; s.passive+=SHIPS[k].income;
-    tg.showAlert('Корабль куплен!');
-    document.getElementById('pop').style.display='none';
-    ui();
-  } else tg.showAlert('Недостаточно энергии');
-}
-
-function popClose(){ document.getElementById('pop').style.display='none'; }
-
-// Темы
-document.querySelectorAll('.theme-button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('.theme-button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.body.className='theme-'+b.dataset.theme;
+/* Theme switching */
+document.querySelectorAll('.theme-button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.theme-button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = btn.getAttribute('data-theme');
+    document.body.className = 'theme-' + t;
   });
 });
 
-// Запуск
-load(); s.passive=0; ui();
+/* Utils */
+function fmt(n){ return n>=1000?Math.floor(n).toLocaleString('ru-RU'):n.toFixed(2) }
+function priceFor(key){
+  const owned = s.ships[key]||0;
+  const base = SHIPS[key].basePrice;
+  return Math.floor(base * Math.pow(1.15, owned));
+}
+
+/* Load/save */
+function saveState(){ s.lastSave = Date.now(); localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
+function loadState(){
+  const raw = localStorage.getItem(SAVE_KEY);
+  if(raw) try{ Object.assign(s, JSON.parse(raw)); }catch(e){}
+  
+  // Daily quest reset logic
+  const now = Date.now();
+  const today = new Date().toDateString();
+  if(s.lastDailyReset !== today){
+    s.dailyProgress = {};
+    s.lastDailyReset = today;
+  }
+
+  const secs = Math.min((now - (s.lastSave||now))/1000, 12*3600);
+  if(secs>2){
+    recalcPassive();
+    const gained = s.passive * secs;
+    s.energy += gained; s.totalEarned += gained;
+    try{ tg.showAlert(`Оффлайн: +${Math.floor(gained).toLocaleString('ru-RU')} энергии`); }catch(e){}
+  }
+  recalcPassive(); ui();
+}
+
+/* recalc passive with new balance */
+function recalcPassive(){
+  let sum=0;
+  for(let k in s.ships){
+    sum += (s.ships[k]||0) * SHIPS[k].passiveMult; // Теперь passiveMult вместо income
+  }
+  
+  let baseIncome = sum * (s.tapBase * s.tapMult); // Базовый доход от флота
+  
+  let passiveMult = 1.0;
+  if(s.impl['glitch']) passiveMult += IMPLANTS.glitch.passiveMult; // +1.5x
+  if(s.impl['artery']) passiveMult += IMPLANTS.artery.passiveMult; // +3.0x
+  if(s.crew['captain']) passiveMult += CREW.captain.passiveMult; // +0.5x
+  
+  s.passive = baseIncome * passiveMult * s.permMult; // Учет permMult
+  s.tapMult = 1.0; // Сброс, затем пересчет
+  if(s.impl['neuro']) s.tapMult += IMPLANTS.neuro.tapMult; // +2.0x
+  if(s.impl['chrome']) s.tapMult += IMPLANTS.chrome.tapMult; // +7.0x
+
+  // Проверка прогресса по квесту на множитель
+  const currentMult = s.tapMult + (s.passive > 0 ? (s.passive/s.tapBase)/s.tapMult : 0); // Простая оценка множителя
+  updateQuestProgress('progress', 1, {type:'multAchieved', value: currentMult});
+}
+
+/* UI update */
+function ui(){
+  document.getElementById('energy').innerText = fmt(s.energy) + ' PUNK';
+  document.getElementById('punk').innerText = (s.punk).toFixed(4) + ' $PUNK • курс 1000:1';
+  document.getElementById('inc').innerText = fmt(s.passive) + ' /сек';
+  for(let i=RANK_REQ.length-1;i>=0;i--) if(s.totalEarned>=RANK_REQ[i]){ s.rank=i; break; }
+  document.getElementById('rank').innerText = RANK_NAMES[s.rank];
+}
+
+/* Tap handler - НОВЫЙ КОД с критами и красивыми поп-апами */
+function tap(ev){
+  const x = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : (ev.clientX || window.innerWidth/2);
+  const y = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : (ev.clientY || window.innerHeight/2);
+  
+  // ---- КРИТЫ ----
+  let crit = 1;
+  const roll = Math.random();
+
+  if (roll < 0.005) crit = 10;   // x10 (0.5%)
+  else if (roll < 0.035) crit = 5;   // x5 (3%)
+  else if (roll < 0.155) crit = 2;   // x2 (12%)
+
+  const gain = Math.floor(s.tapBase * s.tapMult * s.permMult * crit); // Учет permMult и crit
+  s.energy += gain; 
+  s.totalEarned += gain;
+
+  // Обновление квестов
+  updateQuestProgress('daily', 1, {type:'tapCount'});
+  if (crit === 10) updateQuestProgress('daily', 1, {type:'crit10'});
+  if (crit > 1) updateQuestProgress('special', 1, {type:'critTotal'});
+  // -------------------------
+
+  // ---------- красивый разброс траекторий ----------
+  const el = document.createElement('div');
+  el.className = 'floating';
+
+  const angle = (Math.random() * 40 - 20);        // от -20 до +20 градусов
+  const offsetX = (Math.random() * 60 - 30);      // от -30 до +30 px
+  const offsetY = Math.random() * 140 + 80;        // вверх на 80–220 px (сделал чуть выше)
+
+  el.innerText = `+${gain}`;
+  el.style.left = (x + offsetX) + 'px';
+  el.style.top = (y + 10) + 'px';
+
+  // мягкая, медленная анимация (1.1–1.5 сек)
+  el.animate([
+    { transform:`translate(0,0) rotate(${angle}deg)`, opacity:1 },
+    { transform:`translate(0,-${offsetY}px) rotate(${angle}deg)`, opacity:0 }
+  ], {
+    duration: 1100 + Math.random()*400,
+    easing: 'ease-out'
+  });
+
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+
+  // 💥 Крит-эффект
+  if (crit > 1) {
+      const boom = document.createElement('div');
+      boom.className = 'critBoom';
+      boom.innerText = `x${crit}`;
+      boom.style.left = (x - 20) + 'px';
+      boom.style.top = (y - 20) + 'px';
+
+      boom.animate([
+        { transform: 'scale(1)', opacity: 1 },
+        { transform: 'scale(2.2)', opacity: 0 }
+      ], {
+        duration: 420,
+        easing: 'ease-out'
+      });
+
+      document.body.appendChild(boom);
+      setTimeout(()=> boom.remove(), 500);
+      try{ tg.HapticFeedback?.notificationOccurred('success'); }catch(e){} // Более сильный вибро
+  }
+  // -------------------------
+
+  // glitch эффект
+  const r = document.getElementById('reactor');
+  r.classList.add('glitch');
+  setTimeout(()=>r.classList.remove('glitch'),180);
+
+  try { tg.HapticFeedback?.impactOccurred('light'); } catch(e){}
+  ui(); saveState();
+}
+
+/* Passive loop (smooth) */
+setInterval(()=>{
+  recalcPassive();
+  s.energy += s.passive/10;
+  if(s.energy >= 1000){
+    const whole = Math.floor(s.energy/1000);
+    const toAdd = whole * 0.95;
+    s.punk += toAdd; s.energy -= whole*1000;
+  }
+  // Проверка прогресса по квесту на энергию
+  updateQuestProgress('progress', s.energy, {type:'energyTotal', value: s.energy});
+  ui();
+},100);
+
+/* Autosave */
+setInterval(()=>saveState(),4000);
+window.addEventListener('beforeunload', saveState);
+
+/* Popup helpers */
+function pop(html){ document.getElementById('popcard').innerHTML = html; document.getElementById('pop').style.display = 'flex'; }
+function popClose(){ document.getElementById('pop').style.display = 'none'; }
+
+/* Shops */
+function openShop(type){
+  if(type==='fleet') return openFleet();
+  if(type==='crew') return openCrew();
+  if(type==='impl') return openImplants();
+  if(type==='raid') return openRaid();
+  if(type==='market') return openMarket();
+}
+
+/* Fleet */
+function openFleet(){
+  let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2>`;
+  for(const k in SHIPS){
+    const sh = SHIPS[k];
+    const owned = s.ships[k]||0;
+    const price = priceFor(k);
+    html += `<div class="pop-item"><strong>${sh.name}</strong><div class="small-muted">Пассивный множитель: +${sh.passiveMult.toFixed(1)}x</div>Цена: ${price.toLocaleString('ru-RU')} энергии • У тебя: ${owned}<div style="margin-top:8px"><button class="btn primary" onclick="buyShip('${k}',${price})">Купить</button></div></div>`;
+  }
+  html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
+  pop(html);
+}
+function buyShip(k, price){
+  if(s.energy >= price){
+    s.energy -= price; 
+    s.ships[k] = (s.ships[k]||0)+1; 
+    
+    // Обновление квестов
+    if(k==='f') updateQuestProgress('progress', 1, {type:'buyShipC'});
+    
+    recalcPassive(); ui(); saveState(); popClose(); try{ tg.showAlert('Корабль приобретён'); }catch(e){} 
+  } else { try{ tg.showAlert('Недостаточно энергии'); }catch(e){ alert('Недостаточно энергии'); } }
+}
+
+/* Crew (обновлено для нового баланса) */
+function openCrew(){
+  let items = [CREW.captain, CREW.hacker, CREW.bot];
+  let html = `<h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2>`;
+  for(const it of items){
+    const owned = s.crew[it.id] ? ' (нанят)' : '';
+    const desc = it.id === 'captain' ? `+${it.passiveMult*100}% к флот-доходу` : it.desc;
+    html += `<div class="pop-item"><strong>${it.name}</strong><div class="small-muted">${desc}</div>Цена: ${it.price.toLocaleString('ru-RU')} энергии${owned}<div style="margin-top:8px"><button class="btn" onclick="toggleCrew('${it.id}',${it.price})">${s.crew[it.id]?'Уволить':'Нанять'}</button></div></div>`;
+  }
+  html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
+  pop(html);
+}
+function toggleCrew(id, price){
+  if(s.crew[id]){ delete s.crew[id]; recalcPassive(); ui(); saveState(); openCrew(); return; }
+  if(s.energy >= price){ 
+    s.energy -= price; s.crew[id]=true; 
+    if(id==='bot'){ 
+      // Простая имитация автотапа
+      s.botInterval = setInterval(()=>{ 
+        s.energy+=s.tapBase; s.totalEarned+=s.tapBase; 
+        updateQuestProgress('daily', s.tapBase, {type:'tapCount'}); // Учет автотапа в квестах
+        ui();
+      }, 1000); 
+    } 
+    recalcPassive(); ui(); saveState(); openCrew(); 
+  }
+  else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
+}
+
+/* Implants (обновлено для нового баланса) */
+function openImplants(){
+  let items = [IMPLANTS.neuro, IMPLANTS.glitch, IMPLANTS.artery, IMPLANTS.chrome];
+  let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2>`;
+  for(const it of items){
+    const own = s.impl[it.id]?' (установлен)':'';
+    html += `<div class="pop-item"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div>Цена: ${it.price.toLocaleString('ru-RU')} энергии${own}<div style="margin-top:8px"><button class="btn" onclick="buyImpl('${it.id}',${it.price})">${s.impl[it.id]?'Удалить':'Купить'}</button></div></div>`;
+  }
+  html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
+  pop(html);
+}
+function buyImpl(id, price){
+  if(s.impl[id]){ 
+    delete s.impl[id]; 
+    recalcPassive(); ui(); saveState(); openImplants(); return; 
+  }
+  if(s.energy >= price){ 
+    s.energy -= price; 
+    s.impl[id]=true; 
+    
+    // Обновление квестов
+    updateQuestProgress('daily', 1, {type:'buyImpl'});
+    
+    recalcPassive(); ui(); saveState(); openImplants(); 
+  }
+  else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
+}
+
+/* Raid & Market stubs */
+function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">RAID</h2><div class="pop-item">Crypto-Raid — PvE-режим, мини-игры и боссы. В следующем обновлении.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
+function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК</h2><div class="pop-item">NFT, редкие предметы и временные бустеры — появятся позже.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
+
+/* ======== QUEST SYSTEM LOGIC ======== */
+
+function updateQuestProgress(category, amount, data = {}) {
+  const questList = QUESTS[category];
+  const progressState = category === 'daily' ? s.dailyProgress : (category === 'progress' ? s.progressDone : s.specialDone);
+
+  for (const q of questList) {
+    if (progressState[q.id] && progressState[q.id].done) continue;
+
+    if (q.type === data.type) {
+      let currentProgress = progressState[q.id]?.progress || 0;
+      let isCompleted = false;
+
+      if (q.type === 'tapCount' || q.type === 'crit10' || q.type === 'buyImpl' || q.type === 'buyShipC' || q.type === 'critTotal') {
+        currentProgress += amount;
+        if (q.target && currentProgress >= q.target) isCompleted = true;
+      } else if (q.type === 'energyTotal') {
+        if (data.value >= q.target) isCompleted = true;
+        currentProgress = data.value;
+      } else if (q.type === 'multAchieved') {
+        if (data.value >= q.target) isCompleted = true;
+        currentProgress = Math.min(data.value, q.target);
+      }
+      // TODO: dailyStreak требует более сложной логики
+
+      if (isCompleted) {
+        progressState[q.id] = { progress: q.target || currentProgress, done: true, collected: false };
+        // showQuestPopup("Квест выполнен!", q.text);
+      } else {
+        progressState[q.id] = { progress: currentProgress, done: false, collected: false };
+      }
+    }
+  }
+}
+
+function giveReward(reward){
+  if(reward.energy) s.energy += reward.energy;
+  if(reward.permMult) s.permMult *= reward.permMult;
+  recalcPassive();
+}
+
+function collectQuestReward(category, id) {
+  const questList = QUESTS[category];
+  const progressState = category === 'daily' ? s.dailyProgress : (category === 'progress' ? s.progressDone : s.specialDone);
+  const q = questList.find(item => item.id === id);
+
+  if (q && progressState[id] && progressState[id].done && !progressState[id].collected) {
+    giveReward(q.reward);
+    progressState[id].collected = true;
+    showQuestPopup("Награда получена!", `+${q.reward.energy ? q.reward.energy : q.reward.permMult} бонус`);
+    ui();
+    openQuests(); // Переоткрыть окно квестов для обновления
+  }
+}
+
+function showQuestPopup(title, text) {
+    const el = document.createElement("div");
+    el.className = "questPopup";
+    el.innerHTML = `<strong>${title}</strong><br>${text}`;
+    document.body.appendChild(el);
+
+    el.animate([
+        { transform: "translateY(0)", opacity: 1 },
+        { transform: "translateY(-30px)", opacity: 0 }
+    ], { duration: 1500 });
+
+    setTimeout(() => el.remove(), 1500);
+}
+
+function openQuests(){
+  let html = `<h2 style="color:var(--n1);text-align:center">СИСТЕМА КВЕСТОВ</h2>`;
+  
+  html += `<h3>Ежедневные Квесты</h3>`;
+  html += buildQuestList('daily');
+  
+  html += `<h3>Квесты Прогрессии</h3>`;
+  html += buildQuestList('progress');
+  
+  html += `<h3>Специальные Квесты</h3>`;
+  html += buildQuestList('special');
+  
+  html += `<div style="margin-top:12px; text-align:center"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
+  pop(html);
+}
+
+function buildQuestList(category) {
+  let listHtml = '';
+  const questList = QUESTS[category];
+  const progressState = category === 'daily' ? s.dailyProgress : (category === 'progress' ? s.progressDone : s.specialDone);
+
+  for (const q of questList) {
+    const state = progressState[q.id] || { progress: 0, done: false, collected: false };
+    const progressText = q.target ? `(${fmt(Math.min(state.progress, q.target))} / ${fmt(q.target)})` : '';
+    const isDone = state.done;
+    const isCollected = state.collected;
+    const itemClass = isDone ? (isCollected ? 'questComplete' : 'questComplete') : '';
+    const buttonText = isCollected ? 'Получено' : 'Получить';
+
+    listHtml += `<div class="pop-item ${itemClass}">
+      <strong>${q.text}</strong> ${progressText}
+      <div class="small-muted">Награда: ${q.reward.energy ? `${fmt(q.reward.energy)} энергии` : (q.reward.permMult ? `x${q.reward.permMult} мульт` : 'Бонус')}</div>
+      <div style="margin-top:8px">
+        <button class="btn ${isDone && !isCollected ? 'primary' : 'ghost'}" 
+          onclick="collectQuestReward('${category}', '${q.id}')" 
+          ${!isDone || isCollected ? 'disabled' : ''}>
+          ${buttonText}
+        </button>
+      </div>
+    </div>`;
+  }
+  return listHtml;
+}
+
+
+/* init */
+loadState();
+ui();
+
 </script>
 </body>
 </html>
