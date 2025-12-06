@@ -2,158 +2,250 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>CosmoPunk Tap Game</title>
+<title>CosmoPunk Tap Game v2.0</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <style>
-    :root{--bg:#0a001a;--neon1:#ff00ff;--neon2:#00ffff;--dark:#0f0022}
-    body{margin:0;background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflow:hidden;background:radial-gradient(circle at center,#1a0033,#0a001a);}
-    #game{position:relative;width:100vw;height:100vh}
-    #reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;cursor:pointer;filter:drop-shadow(0 0 30px #ff00ff);}
-    #energy,#punk,#income{position:absolute;left:0;right:0;text-align:center;text-shadow:0 0 20px var(--neon1);font-weight:bold}
-    #energy{top:15px;font-size:36px}
-    #punk{top:70px;font-size:28px;color:var(--neon2)}
-    #income{top:110px;font-size:20px}
-    .btn{position:absolute;background:rgba(0,255,255,0.15);border:2px solid var(--neon2);color:#fff;padding:16px;border-radius:20px;text-align:center;box-shadow:0 0 25px var(--neon2);backdrop-filter:blur(10px);font-weight:bold}
-    #shopBtn{bottom:160px;left:20px;right:20px}
-    #crewBtn{bottom:100px;left:20px;right:20px}
-    #overclockBtn{bottom:30px;left:15px;width:calc(50% - 25px)}
-    #glitchBtn{bottom:30px;right:15px;width:calc(50% - 25px)}
-    .glitch{animation:glitch 0.3s infinite}
-    @keyframes glitch{0%,100%{transform:translate(0)}25%{transform:translate(-8px,8px)}50%{transform:translate(8px,-8px)}}
-    .pulse{animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-    .particle{position:absolute;color:#00ffff;font-size:40px;pointer-events:none;animation:float 1.2s forwards}
-    @keyframes float{to{transform:translateY(-300px);opacity:0}}
+:root{--bg:#0a001a;--neon1:#ff00ff;--neon2:#00ffff;--dark:#0f0022;--glow:0 0 30px var(--neon1)}
+body{margin:0;background:radial-gradient(circle,#1a0033 0%,var(--bg) 70%);color:#fff;font-family:'Courier New',monospace;overflow:hidden}
+#game{position:relative;width:100vw;height:100vh}
+#header{position:absolute;top:10px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
+#rank-progress{width:100%;height:8px;background:rgba(255,255,255,0.1);border:1px solid var(--neon2);border-radius:4px;margin-top:5px}
+#rank-bar{width:0%;height:100%;background:linear-gradient(90deg,var(--neon1),var(--neon2));transition:width 0.5s;border-radius:3px}
+#reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;height:320px;cursor:pointer;filter:var(--glow)}
+#energy,#punk,#income{position:absolute;left:0;right:0;text-align:center;text-shadow:var(--glow);font-weight:bold}
+#energy{top:160px;font-size:38px}
+#punk{top:210px;font-size:26px;color:var(--neon2)}
+#income{top:245px;font-size:20px}
+.btn{position:absolute;background:linear-gradient(45deg,rgba(0,255,255,0.2),rgba(255,0,255,0.2));border:2px solid var(--neon2);color:#fff;padding:14px 20px;border-radius:20px;text-align:center;box-shadow:var(--glow);backdrop-filter:blur(15px);font-weight:bold;font-size:14px;transition:all 0.3s}
+.btn:active{transform:scale(0.95);box-shadow:0 0 50px var(--neon1)}
+#shopBtn{bottom:200px;left:20px;right:20px}
+#crewBtn{bottom:140px;left:20px;right:20px}
+#implantsBtn{bottom:80px;left:20px;right:20px}
+#raidBtn{bottom:30px;left:15px;width:calc(50% - 25px)}
+#tonBtn{bottom:30px;right:15px;width:calc(50% - 25px);border-color:#ffd700;color:#ffd700}
+.glitch{animation:glitch 0.2s infinite}@keyframes glitch{0%,100%{transform:translate(0)}20%{transform:translate(-5px,5px)}40%{transform:translate(5px,-5px)}60%{transform:translate(-5px,-5px)}}
+.pulse{animation:pulse 1.8s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.particle{position:absolute;color:var(--neon2);font-size:36px;pointer-events:none;font-weight:bold;animation:float 1.5s forwards;text-shadow:var(--glow)}@keyframes float{to{transform:translateY(-350px) rotate(720deg);opacity:0}}
+#popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;overflow-y:auto;padding:20px}
+.shop-item{margin:15px 0;padding:20px;border:2px solid var(--neon1);border-radius:15px;background:rgba(255,0,255,0.05);transition:all 0.3s}
+.shop-item:hover{box-shadow:0 0 40px var(--neon1);transform:scale(1.02)}
 </style>
 </head>
 <body>
 <div id="game">
+    <div id="header">
+        <div>Ранг: <span id="rankName">Street Rat</span> <div id="rank-progress"><div id="rank-bar"></div></div></div>
+        <div id="referral">Реф: <span id="refCount">0</span></div>
+    </div>
     <div id="energy">0 PUNK Energy</div>
-    <div id="punk">0.00 $PUNK</div>
+    <div id="punk">0.000 $PUNK</div>
     <div id="income">0 /сек</div>
-    <img id="reactor" src="https://i.ibb.co/0jKX7Wv/reactor.gif" class="pulse">
-    <div id="shopBtn" class="btn" onclick="openShop()">ТЁМНЫЙ РЫНОК</div>
-    <div id="crewBtn" class="btn" onclick="openCrew()">ЭКИПАЖ</div>
-    <div id="overclockBtn" class="btn">OVERCLOCK x10</div>
-    <div id="glitchBtn" class="btn">GLITCH HACK</div>
+    <img id="reactor" src="https://i.ibb.co/0jKX7Wv/reactor.gif" class="pulse" onclick="tapReactor()">
+    <div id="shopBtn" class="btn glitch" onclick="openShop()">🚀 ФЛОТ</div>
+    <div id="crewBtn" class="btn" onclick="openCrew()">👥 ЭКИПАЖ</div>
+    <div id="implantsBtn" class="btn" onclick="openImplants()">🔧 ИМПЛАНТЫ</div>
+    <div id="raidBtn" class="btn" onclick="startRaid()">⚔️ RAID</div>
+    <div id="tonBtn" class="btn" id="tonStatus">TON CONNECT</div>
 </div>
+<div id="popup"></div>
 
 <script>
 // === ДАННЫЕ ИГРОКА ===
 let player = {
-    energy: 0, totalEnergy: 0, punk: 0, tapPower: 1, passiveIncome: 0, multipliers: 1,
-    ships: {reaper:0,corsair:0,hauler:0,fighter:0,drone:0},
-    lastTime: Date.now()
+    energy:0,totalEnergy:0,punk:0,tapPower:1,passiveIncome:0,multipliers:1,ships:{},implants:{},crew:{},rank:0,rankProgress:0,
+    referrals:[],refIncome:0,magnet:0,lastTime:Date.now(),tonConnected:false,tonAddress:''
+};
+let gameData = {
+    ships:{reaper:{price:2e7,income:1000,name:'Void Reaper S'},corsair:{price:1e7,income:500,name:'Neon Corsair A'},hauler:{price:5e6,income:200,name:'Punk Hauler B'},fighter:{price:2e6,income:100,name:'Scrap Fighter C'},drone:{price:1e6,income:50,name:'Rusty Drone D'}},
+    implants:{neo:{price:1e6,effect:'tap',mult:2,name:'Нео-Нейрон S',max:50},glitch:{price:5e5,effect:'passive',mult:1,name:'Глитч-Протез A',max:40},eye:{price:2e5,effect:'hack',mult:0.5,name:'Кибер-Глаз B',max:30},rust:{price:1e5,effect:'income',mult:0.2,name:'Ржавый Чип C',max:25},basic:{price:5e4,effect:'tap',mult:0.1,name:'Базовый D',max:20}},
+    crew:[
+        {id:'kosmo',name:'Капитан Космо S',price:1e6,effect:'fleet*1.5',desc:'+50% флот-доход'},
+        {id:'lisa',name:'Лиса-Хакер A',price:8e5,effect:'hack*1.3',desc:'+30% шанс хаков'},
+        {id:'neuro',name:'Доктор Нейро A',price:7e5,effect:'regen*1.2',desc:'+20% реген/мин'},
+        {id:'gigabot',name:'ГигаПанк-Бот B',price:5e5,effect:'auto*1',desc:'1 авто-тап/сек'},
+        {id:'shady',name:'Неон-Шейди B',price:4e5,effect:'market*1.15',desc:'+15% тёмный рынок'},
+        {id:'mechanic',name:'Void Mechanic C',price:3e5,effect:'price*-0.2',desc:'-20% цены апгрейдов'},
+        {id:'witch',name:'Plasma Witch A',price:9e5,effect:'boss*1.4',desc:'+40% босс-дамаг'},
+        {id:'dealer',name:'Scrap Dealer C',price:2e5,effect:'sell*1.25',desc:'+25% цены продаж'},
+        {id:'ghost',name:'Cyber Ghost S',price:1.5e6,effect:'pvp*inf',desc:'невидимость PvP'},
+        {id:'ai',name:'Rogue AI S',price:2e6,effect:'all*1.1',desc:'+10% все статы'}
+    ],
+    ranks:[{name:'Street Rat',req:0,bonus:'start'},{name:'Neon Scavenger',req:1e3,bonus:'+1 магазин'},{name:'Void Pirate',req:1e6,bonus:'PvE боссы'},{name:'Cyber Overlord',req:1e9,bonus:'NFT слоты'},{name:'Galaxy Baron',req:1e12,bonus:'полный флот'}]
+};
+let raidActive=false,raidTaps=0,ocActive=false;
+
+// === TON CONNECT ===
+const tcui = new TON_CONNECT.UI.TonConnectUI({manifestUrl:'https://holyworld-bot.vercel.app/tonconnect-manifest.json'});
+document.getElementById('tonBtn').onclick = async()=>{
+    if(!player.tonConnected){
+        await tcui.connectWallet();
+        const addr = (await tcui.account).address;
+        player.tonAddress = addr; player.tonConnected=true;
+        document.getElementById('tonBtn').innerText='WITHDRAW $PUNK';
+        Telegram.WebApp.showAlert('TON: '+addr.slice(0,8)+'...');
+    } else {
+        // withdraw tx (замени на свой $PUNK контракт)
+        const tx = {validUntil:Math.floor(Date.now()/1000)+360, messages:[{address:'EQ...твой_контракт',amount:(player.punk*1e9),payload:'te6cckEBAQEAAgAA...'}]};
+        await tcui.sendTransaction(tx);
+        player.punk=0; Telegram.WebApp.showAlert('Вывод $PUNK отправлен!');
+    }
+    save();
 };
 
-const ships = {
-    reaper:  {price:20000000, income:1000, name:"Void Reaper S"},
-    corsair: {price:10000000, income:500,  name:"Neon Corsair A"},
-    hauler:  {price:5000000,  income:200,  name:"Punk Hauler B"},
-    fighter: {price:2000000,  income:100,  name:"Scrap Fighter C"},
-    drone:   {price:1000000,  income:50,   name:"Rusty Drone D"}
-};
+// === СОХРАНЕНИЕ/ЗАГРУЗКА ===
+function save(){localStorage.setItem('cosmopunk_v2',JSON.stringify(player));}
+function load(){
+    let s=localStorage.getItem('cosmopunk_v2');
+    if(s){player=JSON.parse(s); initReferrals();}
+    calculateAll();
+}
+function initReferrals(){
+    const initData = Telegram.WebApp.initDataUnsafe;
+    if(initData?.start_param && !player.referrals.includes(initData.start_param)){
+        player.referrals.push(initData.start_param);
+        player.energy +=1000; player.refIncome += player.passiveIncome*0.1;
+        Telegram.WebApp.showAlert('Реферальный бонус: +1000 energy +10% пассивки!');
+    }
+}
+setInterval(save,3000);
 
-// === СОХРАНЕНИЕ ===
-function save(){localStorage.setItem('cosmopunk_v1',JSON.stringify(player)); player.lastTime=Date.now();}
-function load(){let s=localStorage.getItem('cosmopunk_v1'); if(s) player=JSON.parse(s);}
-setInterval(save,5000);
-window.onload=()=>{Telegram.WebApp.ready();Telegram.WebApp.expand();load();offlineCalc();setInterval(passive,1000);setInterval(ui,100);}
+// === ИНИТ ===
+window.onload=()=>{
+    Telegram.WebApp.ready(); Telegram.WebApp.expand(); Telegram.WebApp.MainButton.setText('SHARE').show().onClick(()=>Telegram.WebApp.shareUrl(Telegram.WebApp.initDataUnsafe.start_app_url||location.href,'Присоединяйся в CosmoPunk!'));
+    load(); offlineCalc(); setInterval(updatePassive,1000); setInterval(updateUI,100);
+};
 
 // === ОФФЛАЙН ===
 function offlineCalc(){
-    let diff = Math.min((Date.now()-player.lastTime)/1000, 12*3600);
-    let earned = player.passiveIncome * diff;
-    player.energy += earned; player.totalEnergy += earned;
-    if(earned>1000) Telegram.WebApp.showAlert(`Оффлайн доход: +${earned.toFixed(0)} энергии`);
+    let diff=Math.min((Date.now()-player.lastTime)/1000,12*3600);
+    let earned=player.passiveIncome*diff*(1+0.5*player.magnet);
+    player.energy+=earned; player.totalEnergy+=earned;
+    if(earned>1000) Telegram.WebApp.showAlert(`Оффлайн: +${earned.toLocaleString()} energy`);
 }
 
 // === ТАПЫ ===
-document.getElementById('reactor').onclick=()=>{
-    let gain = player.tapPower * player.multipliers;
-    player.energy += gain; player.totalEnergy += gain;
+function tapReactor(){
+    let gain=player.tapPower*player.multipliers;
+    player.energy+=gain; player.totalEnergy+=gain; raidTaps++; // для рейда
     createParticle('+'+gain.toFixed(0));
-};
+    document.getElementById('reactor').classList.add('glitch'); setTimeout(()=>document.getElementById('reactor').classList.remove('glitch'),200);
+}
 function createParticle(text){
     let p=document.createElement('div'); p.className='particle'; p.innerText=text;
-    p.style.left=(event.touches?event.touches[0].clientX:event.clientX)+'px';
-    p.style.top=(event.touches?event.touches[0].clientY:event.clientY)+'px';
-    document.body.appendChild(p);
-    setTimeout(()=>p.remove(),1200);
+    p.style.left=Math.random()*window.innerWidth+'px'; p.style.top='60%';
+    document.body.appendChild(p); setTimeout(()=>p.remove(),1500);
 }
 
-// === ПАССИВ И UI ===
-function passive(){player.energy += player.passiveIncome/60; player.totalEnergy += player.passiveIncome/60;}
-function ui(){
-    document.getElementById('energy').innerText = Number(player.energy.toFixed(0)).toLocaleString() + ' PUNK';
-    document.getElementById('punk').innerText = player.punk.toFixed(4) + ' $PUNK';
-    document.getElementById('income').innerText = player.passiveIncome.toFixed(1) + ' /сек';
-    if(player.energy>=1000){
-        let c=Math.floor(player.energy/1000);
-        player.punk += c*0.95; player.energy -= c*1000;
+// === РАСчёТЫ ===
+function calculateAll(){
+    // пассивка
+    let inc=0; for(let k in player.ships) inc += (player.ships[k]||0) * gameData.ships[k].income;
+    inc *= player.crew.kosmo?1.5:1; // капитан
+    player.passiveIncome=inc * player.multipliers;
+    // тап
+    player.tapPower=1; for(let k in player.implants){
+        let i=gameData.implants[k]; let lvl=player.implants[k]||0;
+        if(i.effect==='tap') player.tapPower += i.mult + (i.mult*0.04*lvl); // формула
     }
+    // магнит
+    player.magnet=player.implants.glitch||0 * 0.025;
+    // ранги
+    updateRank();
+    save();
+}
+function updatePassive(){
+    player.energy += player.passiveIncome/60 + player.refIncome/60;
+    player.totalEnergy += player.passiveIncome/60 + player.refIncome/60;
+}
+function updateUI(){
+    document.getElementById('energy').innerText=player.energy.toLocaleString()+' PUNK';
+    document.getElementById('punk').innerText=player.punk.toFixed(4)+' $PUNK';
+    document.getElementById('income').innerText=player.passiveIncome.toFixed(1)+' /сек';
+    document.getElementById('refCount').innerText=player.referrals.length;
+    // автообмен
+    if(player.energy>=1000){
+        let c=Math.floor(player.energy/1000); player.punk += c*0.95; player.energy -= c*1000;
+    }
+    // ранг прогресс
+    let nextReq=gameData.ranks[player.rank+1]?.req || 1e15;
+    let prog=(player.totalEnergy/gameData.ranks[player.rank+1].req)*100;
+    document.getElementById('rank-bar').style.width=prog+'%';
 }
 
-// === OVERCLOCK ===
-let oc=false;
-document.getElementById('overclockBtn').onclick=()=>{
-    if(oc) return;
-    oc=true; player.multipliers*=10;
-    document.getElementById('overclockBtn').innerText='30s';
-    let t=30;
-    let int=setInterval(()=>{
-        t--; document.getElementById('overclockBtn').innerText=t+'s';
-        if(t<=0){
-            clearInterval(int); oc=false;
-            player.multipliers/=10;
-            document.getElementById('overclockBtn').innerText='OVERCLOCK x10';
-            if(Math.random()<0.33){player.energy*=0.95; Telegram.WebApp.showAlert('ПЕРЕГРЕВ! -5% энергии');}
-        }
-    },1000);
-};
+// === РАНГИ ===
+function updateRank(){
+    for(let i=0;i<gameData.ranks.length;i++){
+        if(player.totalEnergy >= gameData.ranks[i].req){ player.rank=i; }
+    }
+    document.getElementById('rankName').innerText=gameData.ranks[player.rank].name;
+}
 
-// === GLITCH HACK ===
-document.getElementById('glitchBtn').onclick=()=>{
-    Telegram.WebApp.showAlert('Быстро свайпай по экрану 15 раз!');
-    let c=0;
-    let listener=()=>{c++; if(c>=15){
-        let bonus=20+Math.random()*60;
-        player.energy *= 1 + bonus/100;
-        Telegram.WebApp.showAlert('GLITCH УСПЕХ +'+bonus.toFixed(1)+'% энергии!');
-        document.removeEventListener('touchmove',listener);
-    }};
-    document.addEventListener('touchmove',listener);
-};
-
-// === МАГАЗИН ===
-function openShop(){
-    let html='<h2 style="color:#ff00ff">ФЛОТ</h2>';
-    for(let k in ships){
-        let s=ships[k];
-        let owned=player.ships[k]||0;
-        html+=`<div style="margin:15px;padding:15px;border:2px solid #00ffff;border-radius:15px;background:rgba(0,255,255,0.1)">
-            \( {s.name}<br>Доход: \){s.income}/сек<br>Цена: \( {s.price.toExponential()} energy<br>У тебя: \){owned}
-            <button style="margin-top:10px;padding:10px;background:#ff00ff;border:none;color:#000" onclick="buy('${k}')">КУПИТЬ</button>
+// === МАГАЗИНЫ ===
+function openShop(){ showPopup('ФЛОТ',buildShop('ships'));}
+function openCrew(){ showPopup('ЭКИПАЖ',buildCrew());}
+function openImplants(){ showPopup('ИМПЛАНТЫ',buildShop('implants'));}
+function buildShop(type){
+    let html=''; let data=type==='ships'?gameData.ships:gameData.implants;
+    for(let k in data){
+        let item=data[k]; let owned=player[type][k]||0; let canBuy=owned<item.max||0;
+        let price=item.price * Math.pow(1.1,player.rank); // инфляция
+        html+=`<div class="shop-item">
+            <h3>${item.name}</h3>
+            <p>${item.desc||item.income+'/сек'}</p>
+            <p>Уровень: \( {owned}/ \){item.max||'∞'}</p>
+            <p>Цена: ${price.toLocaleString()}</p>
+            \( {canBuy?`<button class="btn" style="width:100%;margin-top:10px" onclick="buyItem(' \){type}','\( {k}', \){price})">КУПИТЬ</button>`:'МАКС'}
         </div>`;
     }
-    Telegram.WebApp.showPopup({title:'ТЁМНЫЙ РЫНОК',message:html});
+    return html;
 }
-function buy(id){
-    let s=ships[id];
-    if(player.energy >= s.price){
-        player.energy -= s.price;
-        player.ships[id]=(player.ships[id]||0)+1;
-        s.price = Math.floor(s.price * 1.15);
-        player.passiveIncome = Object.keys(player.ships).reduce((a,k)=>a + player.ships[k]*ships[k].income,0) * player.multipliers;
-        Telegram.WebApp.showAlert('Куплен '+ships[id].name);
-    } else Telegram.WebApp.showAlert('Недостаточно энергии');
+function buildCrew(){
+    let html=''; for(let c of gameData.crew){
+        let owned=player.crew[c.id]?1:0; let price=c.price * Math.pow(0.8,player.crew.mechanic||0); // скидка mechanic
+        html+=`<div class="shop-item">
+            <h3>\( {c.name}</h3><p> \){c.desc}</p>
+            ${owned?'✅ НАНЯТ':'<button class="btn" style="width:100%" onclick="hireCrew(\''+c.id+'\','+price+')">НАНЯТЬ '+price.toLocaleString()+'</button>'}
+        </div>`;
+    } return html;
 }
-window.buy=buy;
+function buyItem(type,id,price){
+    if(player.energy>=price){
+        player.energy-=price; player[type][id]=(player[type][id]||0)+1;
+        gameData[type][id].price=Math.floor(price*1.15);
+        calculateAll(); closePopup();
+    } else Telegram.WebApp.showAlert('Недостаточно!');
+}
+function hireCrew(id,price){
+    if(player.energy>=price){
+        player.energy-=price; player.crew[id]=1; calculateAll(); closePopup(); Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+function showPopup(title,content){
+    document.getElementById('popup').innerHTML=`<div style="text-align:center"><h2 style="color:var(--neon1)">\( {title}</h2> \){content}<button class="btn" style="width:200px;margin-top:30px" onclick="closePopup()">ЗАКРЫТЬ</button></div>`;
+    document.getElementById('popup').style.display='block';
+}
+function closePopup(){document.getElementById('popup').style.display='none';}
 
-function openCrew(){
-    Telegram.WebApp.showAlert('Экипаж и импланты — в следующем обновлении за 5 минут ;)');
+// === CRYPTO-RAIDS ===
+function startRaid(){
+    if(raidActive) return;
+    raidActive=true; raidTaps=0;
+    document.getElementById('raidBtn').innerText='ТАПАЙ БОССА!';
+    let bossHp=100 * (1+player.rank*0.5);
+    let int=setInterval(()=>{
+        let prog=raidTaps/bossHp*100;
+        if(raidTaps>=bossHp){
+            clearInterval(int); let bonus=player.energy*4; player.energy+=bonus;
+            Telegram.WebApp.showAlert(`RAID УСПЕХ! +${bonus.toLocaleString()}`);
+            raidActive=false; document.getElementById('raidBtn').innerText='⚔️ RAID';
+        }
+    },100);
 }
+
+// Глобальные
+window.buyItem=buyItem; window.hireCrew=hireCrew; window.closePopup=closePopup; window.openShop=openShop; window.openCrew=openCrew; window.openImplants=openImplants; window.startRaid=startRaid;
 </script>
 </body>
 </html>
