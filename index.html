@@ -2,161 +2,319 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>CosmoPunk Tap Game v4.1</title>
+<title>CosmoPunk Tap Game v5</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- TON Connect (если используешь, положи manifest на сервер и поменяй URL в инициализации) -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <style>
 :root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--glow:0 0 40px}
-body{margin:0;background:radial-gradient(circle at center,#1a0033,var(--bg));color:#fff;font-family:'Courier New',monospace;overflow:hidden}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at center,#1a0033,var(--bg));color:#fff;font-family:'Inter',system-ui,monospace;overflow:hidden}
 #app{position:relative;width:100vw;height:100vh}
-#energy,#punk,#inc,#rank{position:absolute;left:0;right:0;text-align:center;z-index:10;text-shadow:var(--glow) var(--n1);font-weight:bold}
-#rank{top:10px;font-size:16px;background:rgba(0,0,0,0.6);padding:5px 15px;border:2px solid var(--n2);border-radius:12px}
-#energy{top:50px;font-size:38px}
-#punk{top:100px;font-size:28px;color:var(--n2)}
-#inc{top:140px;font-size:20px}
-#reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;background:url(https://i.ibb.co/0jKX7Wv/reactor.gif) center/contain no-repeat;filter:drop-shadow(var(--glow) var(--n1));cursor:pointer}
-.pulse{animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-.glitch{animation:g 0.15s}@keyframes g{0%{transform:translate(0)}25%{transform:translate(-10px,10px)}50%{transform:translate(10px,-10px)}75%{transform:translate(-10px,-10px)}}
-.btn{position:absolute;background:linear-gradient(45deg,rgba(0,255,255,0.25),rgba(255,0,255,0.25));border:2px solid var(--n2);color:#fff;padding:16px;border-radius:20px;box-shadow:var(--glow) var(--n1);font-weight:bold;backdrop-filter:blur(12px);transition:0.3s;cursor:pointer}
-.btn:active{transform:scale(0.94)}
-#b1{bottom:180px;left:20px;right:20px}
-#b2{bottom:120px;left:20px;width:calc(50%-30px)}
-#b3{bottom:120px;right:20px;width:calc(50%-30px)}
-#b4{bottom:60px;left:20px;width:calc(50%-30px)}
-#b5{bottom:60px;right:20px;width:calc(50%-30px)}
-#ton{bottom:10px;left:50%;transform:translateX(-50%);width:90%;background:#ffd700;color:#000;border-color:#ffd700}
-.p{position:absolute;color:var(--n2);font-size:42px;pointer-events:none;animation:f 1.4s forwards;text-shadow:var(--glow) var(--n1)}@keyframes f{to{transform:translateY(-500px) rotate(1080deg);opacity:0}}
-#pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:999;overflow-y:auto;padding:20px;box-sizing:border-box;color:#fff}
-.item{margin:15px 0;padding:20px;border:2px solid var(--n1);border-radius:15px;background:rgba(255,0,255,0.07);line-height:1.6}
+.hud{position:absolute;left:0;right:0;text-align:center;z-index:30}
+#rank{top:8px;font-size:14px;padding:6px 12px;border-radius:12px;display:inline-block;background:rgba(0,0,0,0.45);border:2px solid var(--n2);text-shadow: var(--glow) var(--n1)}
+#energy{top:44px;font-size:34px;font-weight:700;text-shadow: var(--glow) var(--n1)}
+#punk{top:84px;font-size:18px;color:var(--n2)}
+#inc{top:112px;font-size:14px;color:#ddd}
+#reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;background:url(https://i.ibb.co/0jKX7Wv/reactor.gif) center/contain no-repeat;filter:drop-shadow(var(--glow) var(--n1));cursor:pointer;border-radius:20px}
+.pulse{animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.glitch{animation:g 0.18s}@keyframes g{0%{transform:translate(0)}25%{transform:translate(-6px,6px)}50%{transform:translate(6px,-6px)}75%{transform:translate(-6px,-6px)}}
+.btn{position:fixed;background:linear-gradient(45deg,rgba(0,255,255,0.08),rgba(255,0,255,0.08));border:2px solid var(--n2);color:#fff;padding:12px;border-radius:14px;box-shadow:var(--glow) var(--n1);font-weight:700;backdrop-filter: blur(6px);cursor:pointer}
+#controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:8px;z-index:25}
+.btn.small{flex:1;padding:10px 8px;font-size:14px}
+#ton{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:88%;padding:10px;border-radius:12px;background:#ffd700;color:#000;border:2px solid #ffd700;z-index:26}
+.p{position:absolute;color:var(--n2);font-size:38px;pointer-events:none;animation:f 1.4s forwards;text-shadow:var(--glow) var(--n1)}@keyframes f{to{transform:translateY(-460px) rotate(720deg);opacity:0}}
+#pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:999;overflow:auto;padding:18px;box-sizing:border-box;color:#fff}
+.item{margin:12px 0;padding:14px;border:2px solid var(--n1);border-radius:12px;background:linear-gradient(180deg,rgba(255,0,255,0.04),rgba(0,255,255,0.02));line-height:1.5}
+.badge{display:inline-block;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.04);font-size:12px;margin-left:8px}
+.smallmuted{font-size:12px;color:#9aa}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="rank">Street Rat</div>
-  <div id="energy">0 PUNK</div>
-  <div id="punk">0.0000 $PUNK</div>
-  <div id="inc">0 /сек</div>
-  <div id="reactor" class="pulse" onclick="tap()"></div>
-  <div id="b1" class="btn" onclick="shop()">ФЛОТ</div>
-  <div id="b2" class="btn" onclick="crew()">ЭКИПАЖ</div>
-  <div id="b3" class="btn" onclick="impl()">ИМПЛАНТЫ</div>
-  <div id="b4" class="btn" onclick="raid()">RAID</div>
-  <div id="b5" class="btn" onclick="market()">ТЁМНЫЙ РЫНОК</div>
-  <div id="ton" class="btn">CONNECT TON</div>
+  <div class="hud">
+    <div id="rank">Street Rat</div>
+    <div id="energy">0 PUNK</div>
+    <div id="punk">0.0000 $PUNK <span class="smallmuted">(курс 1000:1)</span></div>
+    <div id="inc">0 /сек</div>
+  </div>
+
+  <div id="reactor" class="pulse" ontouchstart="tap(event)" onclick="tap(event)"></div>
+
+  <div id="ton" class="btn" onclick="tonAction()">CONNECT TON</div>
+
+  <div id="controls">
+    <button class="btn small" onclick="openShop('fleet')">ФЛОТ</button>
+    <button class="btn small" onclick="openShop('crew')">ЭКИПАЖ</button>
+    <button class="btn small" onclick="openShop('impl')">ИМПЛАНТЫ</button>
+    <button class="btn small" onclick="openShop('raid')">RAID</button>
+    <button class="btn small" onclick="openShop('market')">Т. РЫНОК</button>
+  </div>
 </div>
+
 <div id="pop"></div>
 
 <script>
-// ДАННЫЕ
-let s = {e:0,p:0,t:0,tap:1,pass:0,mult:1,ships:{r:0,c:0,h:0,f:0,d:0},crew:{},impl:{},rank:0,refs:[],last:Date.now()};
-const ships = {
-  r:{p:20000000,i:1000,n:"Void Reaper S"},
-  c:{p:10000000,i:500,n:"Neon Corsair A"},
-  h:{p:5000000,i:200,n:"Punk Hauler B"},
-  f:{p:2000000,i:100,n:"Scrap Fighter C"},
-  d:{p:1000000,i:50,n:"Rusty Drone D"}
+/* =========== GAME STATE =========== */
+const SAVE_KEY = 'cp_tap_v5';
+let s = {
+  energy: 0,        // raw energy
+  punk: 0,          // $PUNK token balance
+  totalEarned: 0,   // lifetime
+  tapBase: 1,       // energy per tap base
+  tapMult: 1.0,     // overall multipliers
+  passive: 0,       // income/sec
+  ships: { r:0, c:0, h:0, f:0, d:0 },
+  crew: {},         // hired crew
+  impl: {},         // implants
+  rank: 0,
+  lastSave: Date.now()
 };
-const ranks = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
-const rankReq = [0,1000,1000000,1000000000,1000000000000];
 
-// TON
-const ton = new TON_CONNECT.UI.TonConnectUI({manifestUrl:location.origin+"/tonconnect-manifest.json"});
-document.getElementById("ton").onclick=async()=>{
-  if(!ton.connected){
-    await ton.connectWallet();
-    document.getElementById("ton").innerText="WITHDRAW $PUNK";
-  }else{
-    alert("Вывод $PUNK скоро будет доступен!");
+/* Ships definition */
+const SHIPS = {
+  r: { key:'r', name:'Void Reaper (S)', basePrice:2e7, income:1000 },
+  c: { key:'c', name:'Neon Corsair (A)', basePrice:1e7, income:500 },
+  h: { key:'h', name:'Punk Hauler (B)', basePrice:5e6, income:200 },
+  f: { key:'f', name:'Scrap Fighter (C)', basePrice:2e6, income:100 },
+  d: { key:'d', name:'Rusty Drone (D)', basePrice:1e6, income:50 }
+};
+
+/* Rank thresholds */
+const RANKS = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
+const RANK_REQ = [0,1e3,1e6,1e9,1e12];
+
+/* TON UI placeholder (manifest must exist on your server for production) */
+let tonUI;
+try{
+  tonUI = new TON_CONNECT.UI.TonConnectUI({
+    /* change manifestUrl to your server when deployed */
+    manifestUrl: location.origin + "/tonconnect-manifest.json"
+  });
+}catch(e){ console.warn('TonConnect init failed', e); }
+
+/* Tele WebApp ready */
+const tg = Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+/* =========== UTIL =========== */
+function formatNum(n){ return (n>=1000)?Math.floor(n).toLocaleString():n.toFixed(2) }
+function priceFor(shipKey){
+  const owned = s.ships[shipKey] || 0;
+  const base = SHIPS[shipKey].basePrice;
+  return Math.floor(base * Math.pow(1.15, owned));
+}
+function recalcPassive(){
+  // sum ship income
+  let sum = 0;
+  for(const k in SHIPS){
+    sum += (s.ships[k]||0) * SHIPS[k].income;
   }
-};
+  // implants / crew multipliers (simple example)
+  let implMult = 1;
+  if(s.impl['neuro']) implMult += 2; // example: +200%
+  if(s.crew['captain']) implMult += 0.5; // +50% if captain
+  s.passive = sum * implMult;
+}
 
-// СОХРАНЕНИЕ + ОФФЛАЙН
-setInterval(()=>{localStorage.cp41=JSON.stringify(s);s.last=Date.now()},4000);
-if(localStorage.cp41){Object.assign(s,JSON.parse(localStorage.cp41))};
-let diff=Math.min((Date.now()-s.last)/1000,43200);
-s.e += s.pass*diff;
-if(diff>3600)Telegram.WebApp.showAlert("Оффлайн: +"+(s.pass*diff).toFixed(0)+" энергии");
+/* =========== SAVE / LOAD =========== */
+function saveState(){ s.lastSave = Date.now(); localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
+function loadState(){
+  const raw = localStorage.getItem(SAVE_KEY);
+  if(raw){
+    try{ Object.assign(s, JSON.parse(raw)); }
+    catch(e){ console.warn('load error', e); }
+  }
+  // apply offline gains
+  const now = Date.now();
+  const secs = Math.min((now - (s.lastSave||now))/1000, 12*3600); // cap 12h
+  if(secs > 2){
+    recalcPassive();
+    const gained = s.passive * secs;
+    s.energy += gained;
+    s.totalEarned += gained;
+    tg.showAlert(`Оффлайн: +${Math.floor(gained)} энергии`);
+  }
+  recalcPassive();
+  ui();
+}
 
-// ЦИКЛ
+/* =========== UI =========== */
+function ui(){
+  document.getElementById('energy').innerText = `${formatNum(s.energy)} PUNK`;
+  document.getElementById('punk').innerText = `${s.punk.toFixed(4)} $PUNK`;
+  document.getElementById('inc').innerText = `${s.passive.toFixed(1)} /сек`;
+  // rank
+  for(let i=RANK_REQ.length-1;i>=0;i--) if(s.totalEarned >= RANK_REQ[i]){ s.rank=i; break; }
+  document.getElementById('rank').innerText = RANKS[s.rank];
+}
+
+/* =========== TAP =========== */
+function tap(ev){
+  // allow event-safe coordinates
+  const x = (ev.touches && ev.touches[0])? ev.touches[0].clientX : (ev.clientX || window.innerWidth/2);
+  const y = (ev.touches && ev.touches[0])? ev.touches[0].clientY : (ev.clientY || window.innerHeight/2);
+  const gain = s.tapBase * s.tapMult;
+  s.energy += gain;
+  s.totalEarned += gain;
+  // visual pop
+  const el = document.createElement('div'); el.className='p'; el.innerText='+'+formatNum(gain);
+  el.style.left = (x - 20) + 'px'; el.style.top = (y - 20) + 'px';
+  document.body.appendChild(el); setTimeout(()=>el.remove(),1400);
+  // glitch animation
+  const r = document.getElementById('reactor');
+  r.classList.add('glitch'); setTimeout(()=>r.classList.remove('glitch'),180);
+  // haptic if available
+  try{ tg.HapticFeedback?.impactOccurred('light'); }catch(e){}
+  ui(); saveState();
+}
+
+/* =========== MAIN LOOP =========== */
 setInterval(()=>{
-  s.e+=s.pass/10;
-  if(s.e>=1000){
-    let c=Math.floor(s.e/1000);
-    s.p+=c*0.95;
-    s.e-=c*1000;
+  // add passive by small step for smoothness
+  recalcPassive();
+  s.energy += s.passive / 10; // every 100ms adds 1/10 of per-second
+  // auto convert to $PUNK if >= 1000 energy (configurable)
+  if(s.energy >= 1000){
+    const whole = Math.floor(s.energy / 1000);
+    const toAdd = whole * 0.95; // 5% fee
+    s.punk += toAdd;
+    s.energy -= whole * 1000;
   }
   ui();
 },100);
-Telegram.WebApp.ready();Telegram.WebApp.expand();
 
-// UI
-function ui(){
-  document.getElementById("energy").innerText=Number(s.e.toFixed(0)).toLocaleString()+" PUNK";
-  document.getElementById("punk").innerText=s.p.toFixed(4)+" $PUNK";
-  document.getElementById("inc").innerText=s.pass.toFixed(1)+" /сек";
-  for(let i=4;i>=0;i--)if(s.t>=rankReq[i]){s.rank=i;break}
-  document.getElementById("rank").innerText=ranks[s.rank];
+/* autosave */
+setInterval(()=>saveState(),4000);
+window.addEventListener('beforeunload', saveState);
+
+/* =========== SHOPS & ACTIONS =========== */
+function openShop(type){
+  if(type==='fleet') return openFleet();
+  if(type==='crew') return openCrew();
+  if(type==='impl') return openImplants();
+  if(type==='raid') return openRaid();
+  if(type==='market') return openMarket();
 }
 
-// ТАП
-function tap(){
-  let g=s.tap*s.mult;
-  s.e+=g; s.t+=g;
-  let el=document.createElement("div");el.className="p";el.innerText="+"+g.toLocaleString();
-  el.style.left=(event.touches?event.touches[0].clientX:event.clientX)+"px";
-  el.style.top=(event.touches?event.touches[0].clientY:event.clientY)+"px";
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),1400);
-  document.getElementById("reactor").classList.add("glitch");
-  setTimeout(()=>document.getElementById("reactor").classList.remove("glitch"),200);
-}
-
-// МАГАЗИН ФЛОТА
-function shop(){
-  let h="<h2 style='color:#ff00ff;text-align:center'>ФЛОТ</h2>";
-  for(let k in ships){
-    let sh=ships[k];
-    let owned=s.ships[k];
-    let price=sh.p*Math.pow(1.15,owned);
-    h+=`<div class="item">
-      <strong>${sh.n}</strong><br>
-      Доход: ${sh.i}/сек<br>
-      Цена: ${price.toLocaleString(undefined,{maximumFractionDigits:0})} энергии<br>
+/* Fleet shop */
+function openFleet(){
+  let html = `<div style="max-width:700px;margin:0 auto"><h2 style="color:${getComputedStyle(document.documentElement).getPropertyValue('--n1')};text-align:center">ФЛОТ</h2>`;
+  for(const k in SHIPS){
+    const sh = SHIPS[k];
+    const owned = s.ships[k] || 0;
+    const price = priceFor(k);
+    html += `<div class="item">
+      <strong>${sh.name}</strong><br>
+      Доход: ${sh.income}/сек<br>
+      Цена: ${price.toLocaleString()} энергии<br>
       У тебя: ${owned}<br>
-      <button class="btn" style="margin-top:10px;width:100%" onclick="buyShip('\( {k}', \){price})">КУПИТЬ</button>
+      <div style="margin-top:8px;">
+        <button class="btn small" onclick="buyShip('${k}', ${price})">Купить</button>
+      </div>
     </div>`;
   }
-  pop(h);
+  html += `<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;
+  pop(html);
 }
-function buyShip(id,price){
-  if(s.e>=price){
-    s.e-=price;
-    s.ships[id]++;
-    s.pass+=ships[id].i;
-    Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
-    popClose();
-    shop();
-  }else{
-    Telegram.WebApp.showAlert("Недостаточно энергии!");
+
+/* Ship purchase */
+function buyShip(key, price){
+  if(s.energy >= price){
+    s.energy -= price;
+    s.ships[key] = (s.ships[key]||0) + 1;
+    recalcPassive();
+    tg.showAlert('Корабль куплен!');
+    ui(); saveState(); openFleet();
+  } else {
+    tg.showAlert('Недостаточно энергии!');
   }
 }
 
-// Остальные магазины
-function crew(){pop("<h2 style='color:#ff00ff;text-align:center'>ЭКИПАЖ</h2><div class='item'>Капитан Космо (+50% флот)<br>Лиса-Хакер (+30% хак)<br>ГигаПанк-Бот (1 авто-тап/сек)<br>и ещё 7 персонажей — скоро в обновлении!</div>")}
-function impl(){pop("<h2 style='color:#ff00ff;text-align:center'>ИМПЛАНТЫ</h2><div class='item'>Нео-Нейрон S (+200% тап)<br>Глитч-Протез A (+100% пассив)<br>Кибер-Глаз B (+50% хак)<br>скоро в обновлении v5</div>")}
-function raid(){Telegram.WebApp.showAlert("Crypto-Raid: боссы, рейды, PvP — в v5 через 2 дня!")}
-function market(){pop("<h2 style='color:#ff00ff;text-align:center'>ТЁМНЫЙ РЫНОК NFT</h2><div class='item'>Ghost Ship NFT — x5 глобальный множитель<br>Цена: 1000 $PUNK<br>Шанс дропа: 0.1%<br>Минт в v5</div>")}
-
-// ПОПАП
-function pop(html){
-  document.getElementById("pop").innerHTML=`<div style="max-width:500px;margin:0 auto"><h1 style="color:#ff00ff;text-align:center">COSMOPUNK</h1>${html}<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;
-  document.getElementById("pop").style.display="block";
+/* Crew shop (simplified) */
+function openCrew(){
+  let html = `<div style="max-width:700px;margin:0 auto"><h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2>`;
+  const crewItems = [
+    { id:'captain', name:'Капитан Космо (S)', price:1e7, desc:'+50% флот-доход' },
+    { id:'hacker', name:'Лиса-Хакер (A)', price:5e6, desc:'+30% шанс хак' },
+    { id:'bot', name:'ГигаПанк-Бот (B)', price:2e6, desc:'Авто-тап 1/сек' }
+  ];
+  for(const c of crewItems){
+    const owned = s.crew[c.id] ? ' (нанят)' : '';
+    html += `<div class="item"><strong>${c.name}</strong>${owned}<br>${c.desc}<br>Цена: ${c.price.toLocaleString()} энергии<br><button class="btn small" onclick="hireCrew('${c.id}', ${c.price})">${s.crew[c.id] ? 'УВОЛИТЬ' : 'НАНЯТЬ'}</button></div>`;
+  }
+  html += `<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;
+  pop(html);
 }
-function popClose(){document.getElementById("pop").style.display="none";}
+function hireCrew(id, price){
+  if(s.crew[id]){
+    // fire
+    delete s.crew[id];
+    recalcPassive(); tg.showAlert('Экипаж уволен'); ui(); saveState(); openCrew(); return;
+  }
+  if(s.energy >= price){
+    s.energy -= price;
+    s.crew[id] = true;
+    // apply effect (simple)
+    if(id==='captain'){ /* captain adds 50% to passive via recalcPassive */ }
+    if(id==='bot'){ /* auto tap: add small passive or implement interval */ setInterval(()=>{ s.energy += 1; s.totalEarned += 1; }, 1000); }
+    recalcPassive();
+    tg.showAlert('Нанят!'); ui(); saveState(); openCrew();
+  } else tg.showAlert('Недостаточно энергии!');
+}
 
-window.buyShip=buyShip; window.popClose=popClose;
+/* Implants shop */
+function openImplants(){
+  let html = `<div style="max-width:700px;margin:0 auto"><h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2>`;
+  const impls = [
+    {id:'neuro', name:'Нео-Нейрон (S)', price:1e6, desc:'+200% тап-мульт'},
+    {id:'glitch', name:'Глитч-Протез (A)', price:5e5, desc:'+100% пассив'}
+  ];
+  for(const it of impls){
+    const owned = s.impl[it.id] ? ' (установлен)' : '';
+    html += `<div class="item"><strong>${it.name}</strong>${owned}<br>${it.desc}<br>Цена: ${it.price.toLocaleString()} энергии<br><button class="btn small" onclick="buyImpl('${it.id}', ${it.price})">${s.impl[it.id] ? 'Удалить' : 'Купить'}</button></div>`;
+  }
+  html += `<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;
+  pop(html);
+}
+function buyImpl(id, price){
+  if(s.impl[id]){
+    delete s.impl[id]; recalcPassive(); tg.showAlert('Имплант удалён'); ui(); saveState(); openImplants(); return;
+  }
+  if(s.energy >= price){
+    s.energy -= price; s.impl[id] = true;
+    // apply small bonuses
+    if(id==='neuro') s.tapMult += 2.0; // +200%
+    if(id==='glitch') { /* handled in recalcPassive via flag */ }
+    recalcPassive(); tg.showAlert('Имплант установлен'); ui(); saveState(); openImplants();
+  } else tg.showAlert('Недостаточно энергии!');
+}
+
+/* Raid & Market (stubs for future expansion) */
+function openRaid(){ pop(`<div style="max-width:700px;margin:0 auto"><h2 style="color:var(--n1);text-align:center">RAID</h2><div class="item">Crypto-Raid: PvE-рейды и мини-игры — скоро в v6</div><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`); }
+function openMarket(){ pop(`<div style="max-width:700px;margin:0 auto"><h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК</h2><div class="item">Ghost Ship NFT — Mint в будущем. $PUNK-обмен и товары появятся позже.</div><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`); }
+
+/* POP helpers */
+function pop(html){ document.getElementById('pop').innerHTML = `<div style="max-width:700px;margin:8px auto">${html}</div>`; document.getElementById('pop').style.display='block'; }
+function popClose(){ document.getElementById('pop').style.display='none'; }
+
+/* TON connect action (simplified) */
+async function tonAction(){
+  if(!tonUI){ tg.showAlert('TON not configured (manifest missing)'); return; }
+  if(!tonUI.connected){
+    try{ await tonUI.connectWallet(); tg.showAlert('TON wallet connected'); document.getElementById('ton').innerText='WITHDRAW $PUNK'; }
+    catch(e){ tg.showAlert('TON connect failed'); console.warn(e); }
+  } else {
+    tg.showAlert('Withdraw soon — payout system not yet enabled');
+  }
+}
+
+/* Initialize/load */
+loadState();
 ui();
+
 </script>
 </body>
 </html>
