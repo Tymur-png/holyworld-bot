@@ -2,74 +2,95 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>CosmoPunk Tap Game v6.0</title>
+<title>CosmoPunk Tap Game v7.0</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--glow:0 0 40px}
-body{margin:0;background:radial-gradient(circle at center,#1a0033,var(--bg));color:#fff;font-family:'Courier New',monospace;overflow:hidden}
-#app{position:relative;width:100vw;height:100vh}
-#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:90}
-#energy,#punk,#inc,#rank{font-weight:bold;text-shadow:var(--glow) var(--n1)}
-#energy{font-size:36px}#punk{font-size:26px;color:var(--n2)}#inc{font-size:20px}
-#reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;background:url(https://i.ibb.co/0jKX7Wv/reactor.gif) center/contain no-repeat;filter:drop-shadow(var(--glow) var(--n1));cursor:pointer}
-.pulse{animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-.glitch{animation:g 0.15s}@keyframes g{0%{transform:translate(0)}25%{transform:translate(-10px,10px)}50%{transform:translate(10px,-10px)}}
-.btn{position:absolute;background:linear-gradient(45deg,rgba(0,255,255,0.25),rgba(255,0,255,0.25));border:2px solid var(--n2);color:#fff;padding:16px;border-radius:20px;box-shadow:var(--glow) var(--n1);font-weight:bold;backdrop-filter:blur(12px);transition:0.3s;cursor:pointer}
-.btn:active{transform:scale(0.94)}
-#b1{bottom:180px;left:20px;right:20px}
-#b2{bottom:120px;left:20px;width:calc(50%-30px)}
-#b3{bottom:120px;right:20px;width:calc(50%-30px)}
-#b4{bottom:60px;left:20px;width:calc(50%-30px)}
-#b5{bottom:60px;right:20px;width:calc(50%-30px)}
-#ton{bottom:10px;left:50%;transform:translateX(-50%);width:90%;background:#ffd700;color:#000;border-color:#ffd700}
-.floating{position:absolute;color:var(--n2);font-size:42px;pointer-events:none;text-shadow:var(--glow) var(--n1);z-index:100}
-.critBoom{position:fixed;color:#ff0077;font-size:48px;font-weight:900;text-shadow:0 0 20px #ff00ff;pointer-events:none;z-index:200}
-#pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:999;overflow-y:auto;padding:20px;box-sizing:border-box}
-.item{margin:15px 0;padding:20px;border:2px solid var(--n1);border-radius:15px;background:rgba(255,0,255,0.07);line-height:1.6}
+  :root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--glow:0 0 40px;--font:'Orbitron',sans-serif}
+  body{margin:0;background:radial-gradient(circle at 50% 30%,#1a0033,var(--bg) 70%);color:#fff;font-family:var(--font);overflow:hidden;position:relative}
+  body::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%,transparent 0%,#000 100%);pointer-events:none;opacity:0.4}
+  
+  #app{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hud{position:absolute;top:15px;left:15px;right:15px;display:flex;justify-content:space-between;z-index:100;align-items:flex-start}
+  .info{display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,0.4);padding:12px 16px;border-radius:16px;border:2px solid var(--n2);backdrop-filter:blur(12px);box-shadow:var(--glow) var(--n2)}
+  .energy{font-size:38px;font-weight:900;text-shadow:var(--glow) var(--n1);letter-spacing:2px}
+  .punk{font-size:26px;color:var(--n2);text-shadow:0 0 20px var(--n2)}
+  .inc{font-size:20px;opacity:0.9}
+  .rank{font-size:18px;background:linear-gradient(90deg,var(--n1),var(--n2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  
+  #reactor{position:relative;width:380px;height:380px;cursor:pointer;z-index:50}
+  #reactor img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(var(--glow) var(--n1));animation:pulse 3s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .glitch{animation:glitch 0.2s !important}
+  @keyframes glitch{0%,100%{transform:translate(0)}20%{transform:translate(-8px,8px)}40%{transform:translate(8px,-8px)}60%{transform:translate(-8px,-8px)}}
+  
+  .floating{position:absolute;font-size:44px;font-weight:900;color:var(--n2);text-shadow:var(--glow) var(--n1);pointer-events:none;z-index:200;opacity:0}
+  .critBoom{position:fixed;font-size:64px;font-weight:900;color:#ff0088;text-shadow:0 0 30px #ff00ff;pointer-events:none;z-index:300;opacity:0}
+  
+  .btn{position:absolute;background:linear-gradient(135deg,rgba(0,255,255,0.2),rgba(255,0,255,0.2));border:2px solid var(--n2);color:#fff;padding:16px 24px;border-radius:20px;font-weight:900;letter-spacing:1px;box-shadow:var(--glow) var(--n1);backdrop-filter:blur(15px);transition:all 0.3s;cursor:pointer;text-transform:uppercase}
+  .btn:active{transform:scale(0.92);box-shadow:0 0 60px var(--n1)}
+  .btn.primary{background:linear-gradient(90deg,var(--n1),var(--n2));color:#000;border:none}
+  
+  #controls{bottom:20px;left:20px;right:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;position:absolute;z-index:80}
+  #tonBtn{bottom:20px;left:50%;transform:translateX(-50%);width:88%;z-index:90}
+  
+  #pop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.98);z-index:999;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+  .card{max-width:500px;width:100%;background:rgba(10,0,30,0.9);border:2px solid var(--n2);border-radius:20px;padding:24px;box-shadow:var(--glow) var(--n1);backdrop-filter:blur(20px)}
+  .title{color:var(--n1);text-align:center;font-size:32px;margin-bottom:20px;text-shadow:var(--glow) var(--n1)}
+  .item{background:rgba(255,255,255,0.05);border:1px solid rgba(0,255,255,0.3);border-radius:16px;padding:16px;margin:12px 0;transition:0.3s}
+  .item:hover{box-shadow:0 0 30px var(--n2);transform:translateY(-4px)}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="hud">
-    <div>
-      <div id="rank">Street Rat</div>
-      <div id="energy">0 PUNK</div>
-      <div id="punk">0.0000 $PUNK</div>
-      <div id="inc">0 /сек</div>
+  <div class="hud">
+    <div class="info">
+      <div class="rank" id="rank">Street Rat</div>
+      <div class="energy" id="energy">0 PUNK</div>
+      <div class="punk" id="punk">0.0000 $PUNK</div>
+      <div class="inc" id="inc">0 /сек</div>
     </div>
-    <div id="ton" class="btn">CONNECT TON</div>
   </div>
-  <div id="reactor" class="pulse" onclick="tap(event)"></div>
-  <div id="b1" class="btn" onclick="shop()">ФЛОТ</div>
-  <div id="b2" class="btn" onclick="crew()">ЭКИПАЖ</div>
-  <div id="b3" class="btn" onclick="impl()">ИМПЛАНТЫ</div>
-  <div id="b4" class="btn" onclick="daily()">ЕЖЕДНЕВНО</div>
-  <div id="b5" class="btn" onclick="prestigeInfo()">ПРЕСТИЖ</div>
+
+  <div id="reactor" onclick="tap(event)">
+    <img src="https://i.ibb.co/0jKX7Wv/reactor.gif" alt="Neon Reactor">
+  </div>
+
+  <div id="controls">
+    <div class="btn" onclick="shop()">ФЛОТ</div>
+    <div class="btn" onclick="crew()">ЭКИПАЖ</div>
+    <div class="btn" onclick="impl()">ИМПЛАНТЫ</div>
+    <div class="btn" onclick="daily()">КВЕСТЫ</div>
+    <div class="btn primary" onclick="prestigeInfo()">ПРЕСТИЖ</div>
+    <div class="btn" onclick="market()">NFT РЫНОК</div>
+  </div>
+
+  <div id="tonBtn" class="btn primary">CONNECT TON</div>
 </div>
-<div id="pop"></div>
+
+<div id="pop" onclick="this.style.display='none'">
+  <div class="card" onclick="event.stopPropagation()">
+    <h1 class="title" id="popTitle">COSMOPUNK</h1>
+    <div id="popContent"></div>
+    <div style="margin-top:30px"><div class="btn" style="width:100%" onclick="document.getElementById('pop').style.display='none'">ЗАКРЫТЬ</div></div>
+  </div>
+</div>
 
 <script>
-// === ДАННЫЕ ===
-let s = {
-  e:0,p:0,t:0,tap:3,mult:1,pass:0,prestige:0,crits10:0,tapsToday:0,lastDay:0,ref:0,
-  ships:{r:0,c:0,h:0,f:0,d:0},crew:{},impl:{},last:Date.now()
-};
+// === ИГРА ===
+let s = {e:0,p:0,t:0,tap:3,mult:1,pass:0,prestige:0,crits10:0,taps:0,refs:0,last:Date.now()};
 const ships = {r:{p:200000,i:10,n:"Void Reaper"},c:{p:100000,i:5,n:"Neon Corsair"},h:{p:50000,i:2,n:"Punk Hauler"},f:{p:20000,i:1,n:"Scrap Fighter"},d:{p:10000,i:0.3,n:"Rusty Drone"}};
 
 // TON + РЕФЕРАЛКА
-const urlParams = new URLSearchParams(location.search);
-if(urlParams.get('ref')){ s.ref = urlParams.get('ref'); s.pass += 5; }
 const ton = new TON_CONNECT.UI.TonConnectUI({manifestUrl:location.origin+"/tonconnect-manifest.json"});
-document.getElementById("ton").onclick=async()=>{if(!ton.connected){await ton.connectWallet();document.getElementById("ton").innerText="WITHDRAW"}else{alert("Вывод скоро!")}};
+document.getElementById("tonBtn").onclick=async()=>{if(!ton.connected){await ton.connectWallet();document.getElementById("tonBtn").innerText="WALLET OK"}}
 
-// СОХРАНЕНИЕ + ОФФЛАЙН + ЕЖЕДНЕВКА
-setInterval(()=>{localStorage.cp6=JSON.stringify(s);s.last=Date.now()},3000);
-if(localStorage.cp6)s=JSON.parse(localStorage.cp6);
+// СОХРАНЕНИЕ + ОФФЛАЙН
+setInterval(()=>{localStorage.cp7=JSON.stringify(s);s.last=Date.now()},3000);
+if(localStorage.cp7)s=JSON.parse(localStorage.cp7);
 let diff=Math.min((Date.now()-s.last)/1000,43200); s.e+=s.pass*diff;
-const today = Math.floor(Date.now()/86400000);
-if(s.lastDay !== today){ s.tapsToday=0; s.lastDay=today; dailyReward(); }
 
 // ЦИКЛ
 setInterval(()=>{s.e+=s.pass/10; if(s.e>=1000){let c=Math.floor(s.e/1000);s.p+=c*0.95;s.e-=c*1000} ui()},100);
@@ -80,89 +101,68 @@ function ui(){
   document.getElementById("energy").innerText=Number(s.e.toFixed(0)).toLocaleString()+" PUNK";
   document.getElementById("punk").innerText=s.p.toFixed(4)+" $PUNK";
   document.getElementById("inc").innerText=s.pass.toFixed(1)+" /сек";
+  document.getElementById("rank").innerText=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"][s.prestige>10?4:Math.min(4,Math.floor(Math.log10(s.t||1)/3))];
 }
 
-// ТАП + КРИТЫ + КРАСИВЫЕ ПОП-АПЫ
+// ТАП + КРИТЫ + КРАСИВЫЕ АНИМАЦИИ
 function tap(ev){
-  s.tapsToday++;
-  let crit=1;
-  const r=Math.random();
-  if(r<0.005) crit=10;
-  else if(r<0.035) crit=5;
-  else if(r<0.155) crit=2;
+  s.taps++;
+  let crit=1, roll=Math.random();
+  if(roll<0.005) crit=10;
+  else if(roll<0.035) crit=5;
+  else if(roll<0.155) crit=2;
   if(crit===10) s.crits10++;
 
   const gain = Math.floor(s.tap * s.mult * crit);
   s.e += gain; s.t += gain;
 
-  const x = (ev.touches?.[0]?.clientX) || ev.clientX || innerWidth/2;
-  const y = (ev.touches?.[0]?.clientY) || ev.clientY || innerHeight/2;
+  const x = ev.touches?.[0]?.clientX || ev.clientX || innerWidth/2;
+  const y = ev.touches?.[0]?.clientY || ev.clientY || innerHeight/2;
 
-  // обычный поп-ап
-  const el=document.createElement("div"); el.className="floating"; el.innerText="+"+gain;
-  const angle = Math.random()*40-20;
-  const dist = 60 + Math.random()*60;
-  el.style.left=(x+Math.random()*40-20)+"px";
-  el.style.top=y+"px";
-  el.style.transform=`rotate(${angle}deg)`;
-  el.animate([{opacity:1,transform:`translate(0,0) rotate(\( {angle}deg)`},{opacity:0,transform:`translate(0,- \){dist}px) rotate(${angle}deg)`}],{duration:1200,easing:"ease-out"});
-  document.body.appendChild(el); setTimeout(()=>el.remove(),1300);
+  // поп-ап
+  const pop = document.createElement("div"); pop.className="floating"; pop.innerText="+"+gain.toLocaleString();
+  pop.style.left=x+"px"; pop.style.top=y+"px";
+  const angle = Math.random()*60-30;
+  const dist = 80+Math.random()*80;
+  pop.style.transform=`rotate(${angle}deg)`;
+  pop.animate([{opacity:1,transform:`translate(0,0) rotate(\( {angle}deg)`},{opacity:0,transform:`translate(0,- \){dist}px) rotate(${angle}deg)`}],{duration:1400,easing:"cubic-bezier(0.2,0.8,0.4,1)"});
+  document.body.appendChild(pop); setTimeout(()=>pop.remove(),1500);
 
-  // крит-эффект
+  // крит
   if(crit>1){
-    const boom=document.createElement("div"); boom.className="critBoom"; boom.innerText="x"+crit;
-    boom.style.left=(x-40)+"px"; boom.style.top=(y-60)+"px";
-    boom.animate([{transform:"scale(0.5)",opacity:0},{transform:"scale(2)",opacity:1},{transform:"scale(3)",opacity:0}],{duration:600});
-    document.body.appendChild(boom); setTimeout(()=>boom.remove(),700);
+    const boom = document.createElement("div"); boom.className="critBoom"; boom.innerText="×"+crit;
+    boom.style.left=(x-60)+"px"; boom.style.top=(y-100)+"px";
+    boom.animate([{opacity:0,transform:"scale(0.3)"},{opacity:1,transform:"scale(1.6)"},{opacity:0,transform:"scale(2.4)"}],{duration:800});
+    document.body.appendChild(boom); setTimeout(()=>boom.remove(),900);
   }
 
-  document.getElementById("reactor").classList.add("glitch"); setTimeout(()=>document.getElementById("reactor").classList.remove("glitch"),200);
+  document.getElementById("reactor").classList.add("glitch");
+  setTimeout(()=>document.getElementById("reactor").classList.remove("glitch"),300);
   ui();
 }
 
-// ЕЖЕДНЕВНЫЕ КВЕСТЫ + НАГРАДЫ
-function daily(){
-  let h="<h2 style='color:#ff00ff;text-align:center'>ЕЖЕДНЕВНЫЕ КВЕСТЫ</h2>";
-  const q = [
-    {t:"5000 тапов",c:s.tapsToday>=5000,r:20000},
-    {t:"10 критов x10",c:s.crits10>=10,r:50000},
-    {t:"Купи любой корабль",c:Object.values(s.ships).some(v=>v>0),r:30000}
-  ];
-  q.forEach((quest,i)=>{ h+=`<div class="item">\( {quest.t}<br> \){quest.c?"✅ Выполнено":"Прогресс: "+(i===0?s.tapsToday:i===1?s.crits10:0)}<br>${quest.c?"<button onclick='claimDaily("+i+")'>ЗАБРАТЬ</button>":""}</div>`});
+// МАГАЗИН ФЛОТА (красивый)
+function shop(){
+  let h=`<div class="title">ФЛОТ</div>`;
+  for(let k in ships){
+    let sh=ships[k], o=s.ships[k]||0, pr=sh.p*Math.pow(1.15,o);
+    h+=`<div class="item"><strong>\( {sh.n}</strong><br>Доход: + \){sh.i}/сек<br>Цена: \( {pr.toLocaleString()} энергии<br>У тебя: \){o}<br><button class="btn primary" style="margin-top:12px;width:100%" onclick="buy('\( {k}', \){pr})">КУПИТЬ</button></div>`;
+  }
   pop(h);
 }
-function claimDaily(i){
-  const rewards = [20000,50000,30000];
-  s.e += rewards[i];
-  Telegram.WebApp.showAlert("Награда +"+rewards[i]+" энергии!");
-  popClose(); daily();
-}
-function dailyReward(){
-  s.e += 10000 + s.prestige*5000;
-  Telegram.WebApp.showAlert("Ежедневный бонус: +"+(10000+s.prestige*5000)+" энергии!");
+function buy(k,pr){
+  if(s.e>=pr){s.e-=pr;s.ships[k]=(s.ships[k]||0)+1;s.pass+=ships[k].i;Telegram.WebApp.HapticFeedback.impactOccurred("heavy");popClose();shop()}else Telegram.WebApp.showAlert("Недостаточно!");
 }
 
-// ПРЕСТИЖ
-function prestigeInfo(){
-  const bonus = Math.floor(Math.pow(s.t/1e12,0.33)*10)/10;
-  pop(`<h2 style="color:#ff00ff">РЕГЕНЕРАЦИЯ ЯДРА</h2><div class="item">Сброс прогресса → +\( {bonus.toFixed(1)}x навсегда<br>У тебя будет: \){(s.mult*(1+bonus)).toFixed(1)}x<br><button class="btn" onclick="prestige(${bonus})">ПРЕСТИЖ</button></div>`);
-}
-function prestige(b){
-  if(s.t<1e12) return Telegram.WebApp.showAlert("Нужно 1 триллион энергии!");
-  s.mult *= (1+b); s.prestige++;
-  s.e=1000; s.t=0; s.ships={r:0,c:0,h:0,f:0,d:0}; s.crew={}; s.impl={};
-  popClose(); ui();
-}
+// КВЕСТЫ + ПРЕСТИЖ + РЫНОК
+function daily(){pop(`<div class="title">ЕЖЕДНЕВНЫЕ КВЕСТЫ</div><div class="item">5000 тапов — 20k энергии<br>10 критов x10 — 50k энергии<br>Скоро полная система!</div>`)}
+function prestigeInfo(){pop(`<div class="title">РЕГЕНЕРАЦИЯ ЯДРА</div><div class="item">Сброс → +${(Math.pow(s.t/1e12,0.33)*10).toFixed(1)}x навсегда<br>Скоро в v8</div>`)}
+function market(){pop(`<div class="title">ТЁМНЫЙ РЫНОК</div><div class="item">Ghost Ship NFT — x5 мульт<br>1000 $PUNK — скоро минт!</div>`)}
 
-// МАГАЗИНЫ (упрощённые, но рабочие)
-function shop(){/* твой старый код магазина флота */ pop("ФЛОТ — скоро в v7 :)")}
-function crew(){pop("ЭКИПАЖ — скоро в v7 :)")}
-function impl(){pop("ИМПЛАНТЫ — скоро в v7 :)")}
-
-// ПОПАП
-function pop(html){document.getElementById("pop").innerHTML=`<div style="max-width:500px;margin:auto"><h1 style="color:#ff00ff;text-align:center">COSMOPUNK</h1>${html}<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;document.getElementById("pop").style.display="block"}
+function pop(html){document.getElementById("popContent").innerHTML=html;document.getElementById("pop").style.display="flex"}
 function popClose(){document.getElementById("pop").style.display="none"}
 
+window.buy=buy;
 ui();
 </script>
 </body>
