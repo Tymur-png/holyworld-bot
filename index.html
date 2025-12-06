@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>CosmoPunk Tap Game</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-  <style>
-    :root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--glow:0 0 40px}
-    body{margin:0;background:radial-gradient(circle at center,#1a0033,var(--bg));color:#fff;font-family:'Courier New',monospace;overflow:hidden}
-    #app{position:relative;width:100vw;height:100vh}
-    #energy,#punk,#inc,#rank{position:absolute;left:0;right:0;text-align:center;z-index:10;text-shadow:var(--glow) var(--n1);font-weight:bold}
-    #rank{top:10px;font-size:16px;background:rgba(0,0,0,0.6);padding:5px;border:2px solid var(--n2);border-radius:10px}
-    #energy{top:50px;font-size:38px}
-    #punk{top:100px;font-size:28px;color:var(--n2)}
-    #inc{top:140px;font-size:20px}
-    #reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;background:url(https://i.ibb.co/0jKX7Wv/reactor.gif) center/contain no-repeat;filter:drop-shadow(var(--glow) var(--n1));cursor:pointer}
-    .pulse{animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-    .glitch{animation:g 0.15s}@keyframes g{0%{transform:translate(0)}25%{transform:translate(-10px,10px)}50%{transform:translate(10px,-10px)}75%{transform:translate(-10px,-10px)}}
-    .btn{position:absolute;background:linear-gradient(45deg,rgba(0,255,255,0.25),rgba(255,0,255,0.25));border:2px solid var(--n2);color:#fff;padding:16px;border-radius:20px;box-shadow:var(--glow) var(--n1);font-weight:bold;backdrop-filter:blur(12px);transition:0.3s}
-    .btn:active{transform:scale(0.94)}
-    #b1{bottom:180px;left:20px;right:20px}
-    #b2{bottom:120px;left:20px;width:calc(50%-30px)}
-    #b3{bottom:120px;right:20px;width:calc(50%-30px)}
-    #b4{bottom:60px;left:20px;width:calc(50%-30px)}
-    #b5{bottom:60px;right:20px;width:calc(50%-30px)}
-    #ton{bottom:10px;left:50%;transform:translateX(-50%);width:90%;background:#ffd700;color:#000;border-color:#ffd700}
-    .p{position:absolute;color:var(--n2);font-size:42px;pointer-events:none;animation:f 1.4s forwards;text-shadow:var(--glow) var(--n1)}@keyframes f{to{transform:translateY(-500px) rotate(1080deg);opacity:0}}
-    #pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:999;overflow-y:auto;padding:20px;box-sizing:border-box;color:#fff}
-    .item{margin:15px 0;padding:20px;border:2px solid var(--n1);border-radius:15px;background:rgba(255,0,255,0.07)}
-  </style>
+<meta charset="UTF-8">
+<title>CosmoPunk Tap Game v4.1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<style>
+:root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--glow:0 0 40px}
+body{margin:0;background:radial-gradient(circle at center,#1a0033,var(--bg));color:#fff;font-family:'Courier New',monospace;overflow:hidden}
+#app{position:relative;width:100vw;height:100vh}
+#energy,#punk,#inc,#rank{position:absolute;left:0;right:0;text-align:center;z-index:10;text-shadow:var(--glow) var(--n1);font-weight:bold}
+#rank{top:10px;font-size:16px;background:rgba(0,0,0,0.6);padding:5px 15px;border:2px solid var(--n2);border-radius:12px}
+#energy{top:50px;font-size:38px}
+#punk{top:100px;font-size:28px;color:var(--n2)}
+#inc{top:140px;font-size:20px}
+#reactor{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;background:url(https://i.ibb.co/0jKX7Wv/reactor.gif) center/contain no-repeat;filter:drop-shadow(var(--glow) var(--n1));cursor:pointer}
+.pulse{animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.glitch{animation:g 0.15s}@keyframes g{0%{transform:translate(0)}25%{transform:translate(-10px,10px)}50%{transform:translate(10px,-10px)}75%{transform:translate(-10px,-10px)}}
+.btn{position:absolute;background:linear-gradient(45deg,rgba(0,255,255,0.25),rgba(255,0,255,0.25));border:2px solid var(--n2);color:#fff;padding:16px;border-radius:20px;box-shadow:var(--glow) var(--n1);font-weight:bold;backdrop-filter:blur(12px);transition:0.3s;cursor:pointer}
+.btn:active{transform:scale(0.94)}
+#b1{bottom:180px;left:20px;right:20px}
+#b2{bottom:120px;left:20px;width:calc(50%-30px)}
+#b3{bottom:120px;right:20px;width:calc(50%-30px)}
+#b4{bottom:60px;left:20px;width:calc(50%-30px)}
+#b5{bottom:60px;right:20px;width:calc(50%-30px)}
+#ton{bottom:10px;left:50%;transform:translateX(-50%);width:90%;background:#ffd700;color:#000;border-color:#ffd700}
+.p{position:absolute;color:var(--n2);font-size:42px;pointer-events:none;animation:f 1.4s forwards;text-shadow:var(--glow) var(--n1)}@keyframes f{to{transform:translateY(-500px) rotate(1080deg);opacity:0}}
+#pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:999;overflow-y:auto;padding:20px;box-sizing:border-box;color:#fff}
+.item{margin:15px 0;padding:20px;border:2px solid var(--n1);border-radius:15px;background:rgba(255,0,255,0.07);line-height:1.6}
+</style>
 </head>
 <body>
 <div id="app">
@@ -42,30 +42,52 @@
   <div id="b2" class="btn" onclick="crew()">ЭКИПАЖ</div>
   <div id="b3" class="btn" onclick="impl()">ИМПЛАНТЫ</div>
   <div id="b4" class="btn" onclick="raid()">RAID</div>
-  <div id="b5" class="btn" onclick="market()">NFT</div>
+  <div id="b5" class="btn" onclick="market()">ТЁМНЫЙ РЫНОК</div>
   <div id="ton" class="btn">CONNECT TON</div>
 </div>
 <div id="pop"></div>
 
 <script>
 // ДАННЫЕ
-let s = {e:0,p:0,t:0,tap:1,pass:0,mult:1,ships:{},crew:{},impl:{},rank:0,refs:[],last:Date.now()};
-const ships = {r:{p:2e7,i:1000,n:"Void Reaper"},c:{p:1e7,i:500,n:"Neon Corsair"},h:{p:5e6,i:200,n:"Punk Hauler"},f:{p:2e6,i:100,n:"Scrap Fighter"},d:{p:1e6,i:50,n:"Rusty Drone"}};
+let s = {e:0,p:0,t:0,tap:1,pass:0,mult:1,ships:{r:0,c:0,h:0,f:0,d:0},crew:{},impl:{},rank:0,refs:[],last:Date.now()};
+const ships = {
+  r:{p:20000000,i:1000,n:"Void Reaper S"},
+  c:{p:10000000,i:500,n:"Neon Corsair A"},
+  h:{p:5000000,i:200,n:"Punk Hauler B"},
+  f:{p:2000000,i:100,n:"Scrap Fighter C"},
+  d:{p:1000000,i:50,n:"Rusty Drone D"}
+};
 const ranks = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
-const rankReq = [0,1e3,1e6,1e9,1e12];
+const rankReq = [0,1000,1000000,1000000000,1000000000000];
 
 // TON
 const ton = new TON_CONNECT.UI.TonConnectUI({manifestUrl:location.origin+"/tonconnect-manifest.json"});
-document.getElementById("ton").onclick=async()=>{if(!ton.connected){await ton.connectWallet();document.getElementById("ton").innerText="WITHDRAW $PUNK"}else{alert("Вывод 1 $PUNK = 1 TON скоро!")}};
+document.getElementById("ton").onclick=async()=>{
+  if(!ton.connected){
+    await ton.connectWallet();
+    document.getElementById("ton").innerText="WITHDRAW $PUNK";
+  }else{
+    alert("Вывод $PUNK скоро будет доступен!");
+  }
+};
 
 // СОХРАНЕНИЕ + ОФФЛАЙН
-setInterval(()=>{localStorage.cp4=JSON.stringify(s);s.last=Date.now()},4000);
-if(localStorage.cp4)s=JSON.parse(localStorage.cp4);
+setInterval(()=>{localStorage.cp41=JSON.stringify(s);s.last=Date.now()},4000);
+if(localStorage.cp41){Object.assign(s,JSON.parse(localStorage.cp41))};
 let diff=Math.min((Date.now()-s.last)/1000,43200);
-s.e += s.pass*diff; if(diff>3600)Telegram.WebApp.showAlert("Оффлайн: +"+(s.pass*diff).toFixed(0));
+s.e += s.pass*diff;
+if(diff>3600)Telegram.WebApp.showAlert("Оффлайн: +"+(s.pass*diff).toFixed(0)+" энергии");
 
 // ЦИКЛ
-setInterval(()=>{s.e+=s.pass/10; if(s.e>=1000){let c=Math.floor(s.e/1000);s.p+=c*0.95;s.e-=c*1000} ui()},100);
+setInterval(()=>{
+  s.e+=s.pass/10;
+  if(s.e>=1000){
+    let c=Math.floor(s.e/1000);
+    s.p+=c*0.95;
+    s.e-=c*1000;
+  }
+  ui();
+},100);
 Telegram.WebApp.ready();Telegram.WebApp.expand();
 
 // UI
@@ -79,28 +101,61 @@ function ui(){
 
 // ТАП
 function tap(){
-  let g=s.tap*s.mult; s.e+=g; s.t+=g;
-  let el=document.createElement("div");el.className="p";el.innerText="+"+g;
+  let g=s.tap*s.mult;
+  s.e+=g; s.t+=g;
+  let el=document.createElement("div");el.className="p";el.innerText="+"+g.toLocaleString();
   el.style.left=(event.touches?event.touches[0].clientX:event.clientX)+"px";
   el.style.top=(event.touches?event.touches[0].clientY:event.clientY)+"px";
-  document.body.appendChild(el);setTimeout(()=>el.remove(),1400);
-  document.getElementById("reactor").classList.add("glitch");setTimeout(()=>document.getElementById("reactor").classList.remove("glitch"),200);
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1400);
+  document.getElementById("reactor").classList.add("glitch");
+  setTimeout(()=>document.getElementById("reactor").classList.remove("glitch"),200);
 }
 
-// МАГАЗИНЫ
-function shop(){let h="<h2 style='color:#ff00ff'>ФЛОТ</h2>";for(let k in ships){let sh=ships[k],o=s.ships[k]||0,pr=sh.p*Math.pow(1.15,o);h+=`<div class="item">\( {sh.n}<br>Доход \){sh.i}/сек<br>Цена \( {pr.toExponential(2)}<br>У тебя: \){o}<br><button class="btn" onclick="buy('\( {k}', \){pr})">КУПИТЬ</button></div>`}pop(h)}
-function buy(id,pr){if(s.e>=pr){s.e-=pr;s.ships[id]=(s.ships[id]||0)+1;s.pass+=ships[id].i;Telegram.WebApp.HapticFeedback.impactOccurred("heavy");popClose()}}
-function crew(){pop("<h2 style='color:#ff00ff'>ЭКИПАЖ</h2><div class='item'>Капитан Космо +50% флот<br>Лиса-Хакер +30% хак<br>Доктор Нейро +20% реген<br>ГигаПанк-Бот 1 авто-тап/сек<br>СКОРО</div>")}
-function impl(){pop("<h2 style='color:#ff00ff'>ИМПЛАНТЫ</h2>Нео-Нейрон S +200% тап — скоро")}
-function raid(){Telegram.WebApp.showAlert("Crypto-Raid: тапай босса 100 раз — награда x10! Скоро")}
-function market(){pop("<h2 style='color:#ff00ff'>ТЁМНЫЙ РЫНОК</h2><div class='item'>Ghost Ship NFT x5 мульт<br>Цена: 1000 $PUNK<br>Шанс: 0.1%</div>")}
+// МАГАЗИН ФЛОТА
+function shop(){
+  let h="<h2 style='color:#ff00ff;text-align:center'>ФЛОТ</h2>";
+  for(let k in ships){
+    let sh=ships[k];
+    let owned=s.ships[k];
+    let price=sh.p*Math.pow(1.15,owned);
+    h+=`<div class="item">
+      <strong>${sh.n}</strong><br>
+      Доход: ${sh.i}/сек<br>
+      Цена: ${price.toLocaleString(undefined,{maximumFractionDigits:0})} энергии<br>
+      У тебя: ${owned}<br>
+      <button class="btn" style="margin-top:10px;width:100%" onclick="buyShip('\( {k}', \){price})">КУПИТЬ</button>
+    </div>`;
+  }
+  pop(h);
+}
+function buyShip(id,price){
+  if(s.e>=price){
+    s.e-=price;
+    s.ships[id]++;
+    s.pass+=ships[id].i;
+    Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
+    popClose();
+    shop();
+  }else{
+    Telegram.WebApp.showAlert("Недостаточно энергии!");
+  }
+}
+
+// Остальные магазины
+function crew(){pop("<h2 style='color:#ff00ff;text-align:center'>ЭКИПАЖ</h2><div class='item'>Капитан Космо (+50% флот)<br>Лиса-Хакер (+30% хак)<br>ГигаПанк-Бот (1 авто-тап/сек)<br>и ещё 7 персонажей — скоро в обновлении!</div>")}
+function impl(){pop("<h2 style='color:#ff00ff;text-align:center'>ИМПЛАНТЫ</h2><div class='item'>Нео-Нейрон S (+200% тап)<br>Глитч-Протез A (+100% пассив)<br>Кибер-Глаз B (+50% хак)<br>скоро в обновлении v5</div>")}
+function raid(){Telegram.WebApp.showAlert("Crypto-Raid: боссы, рейды, PvP — в v5 через 2 дня!")}
+function market(){pop("<h2 style='color:#ff00ff;text-align:center'>ТЁМНЫЙ РЫНОК NFT</h2><div class='item'>Ghost Ship NFT — x5 глобальный множитель<br>Цена: 1000 $PUNK<br>Шанс дропа: 0.1%<br>Минт в v5</div>")}
 
 // ПОПАП
-function pop(html){document.getElementById("pop").innerHTML=`<div style="text-align:center;max-width:500px;margin:0 auto"><h1 style="color:#ff00ff">COSMOPUNK</h1>${html}<br><button class="btn" style="width:80%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;document.getElementById("pop").style.display="block"}
-function popClose(){document.getElementById("pop").style.display="none"}
+function pop(html){
+  document.getElementById("pop").innerHTML=`<div style="max-width:500px;margin:0 auto"><h1 style="color:#ff00ff;text-align:center">COSMOPUNK</h1>${html}<br><button class="btn" style="width:100%" onclick="popClose()">ЗАКРЫТЬ</button></div>`;
+  document.getElementById("pop").style.display="block";
+}
+function popClose(){document.getElementById("pop").style.display="none";}
 
-// Глобальные функции
-window.buy=buy;window.popClose=popClose;window.tap=tap;
+window.buyShip=buyShip; window.popClose=popClose;
 ui();
 </script>
 </body>
