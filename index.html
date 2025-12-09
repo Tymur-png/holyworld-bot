@@ -197,6 +197,10 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradien
     z-index: 3000;
     pointer-events: none;
 }
+
+/* icons */
+.icon { width:20px; height:20px; margin-right:6px; vertical-align:middle; }
+.ship-icon { width:64px; height:64px; display:block; margin-bottom:8px; object-fit:contain; }
 </style>
 </head>
 <body class="theme-neon">
@@ -219,7 +223,9 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradien
 
   <div class="stage">
     <div class="reactor-wrap">
-      <div id="reactor" class="reactor" onclick="tap(event)"><img alt="reactor" src="https://i.ibb.co/0jKX7Wv/reactor.gif"/></div>
+      <div id="reactor" class="reactor" onclick="tap(event)">
+        <img alt="reactor" src="assets/reactor/reactor.gif"/>
+      </div>
       <div class="center-info" style="margin-top:12px">
         <div id="inc" class="small-muted">0 /сек (PPH: 0)</div>
         <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
@@ -229,13 +235,13 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; --panel:linear-gradien
 
   <div class="bottom-bar">
     <div class="scroll-container">
-      <button class="btn ghost" onclick="openShop('fleet')">ФЛОТ</button>
-      <button class="btn ghost" onclick="openShop('crew')">ЭКИПАЖ</button>
-      <button class="btn ghost" onclick="openShop('impl')">ИМПЛАНТЫ</button>
-      <button class="btn primary" onclick="openShop('raid')">RAID</button>
-      <button class="btn ghost" onclick="openQuests()">КВЕСТЫ</button>
-      <button class="btn ghost" onclick="openShop('market')">ТЁМНЫЙ РЫНОК</button>
-      <button class="btn ghost" onclick="openProfile()">ПРОФИЛЬ</button>
+      <button class="btn ghost" onclick="openShop('fleet')"><img src="assets/ui/fleet.png" class="icon">ФЛОТ</button>
+      <button class="btn ghost" onclick="openShop('crew')"><img src="assets/ui/crew.png" class="icon">ЭКИПАЖ</button>
+      <button class="btn ghost" onclick="openShop('impl')"><img src="assets/ui/impl.png" class="icon">ИМПЛАНТЫ</button>
+      <button class="btn primary" onclick="openShop('raid')"><img src="assets/ui/raid.png" class="icon">RAID</button>
+      <button class="btn ghost" onclick="openQuests()"><img src="assets/ui/quests.png" class="icon">КВЕСТЫ</button>
+      <button class="btn ghost" onclick="openShop('market')"><img src="assets/ui/market.png" class="icon">ТЁМНЫЙ РЫНОК</button>
+      <button class="btn ghost" onclick="openProfile()"><img src="assets/ui/profile.png" class="icon">ПРОФИЛЬ</button>
     </div>
   </div>
   </div>
@@ -262,11 +268,11 @@ let s = {
 
 // GDD БАЛАНС - КОРАБЛИ
 const SHIPS = {
-  r:{name:'Void Reaper (S)', basePrice:20000000, income:1000}, // Доход/сек на 1 уровне
-  c:{name:'Neon Corsair (A)', basePrice:10000000, income:500},
-  h:{name:'Punk Hauler (B)', basePrice:5000000, income:200},
-  f:{name:'Scrap Fighter (C)', basePrice:2000000, income:100},
-  d:{name:'Rusty Drone (D)', basePrice:1000000, income:50}
+  r:{name:'Void Reaper (S)', basePrice:20000000, income:1000, id:'void_reaper'},
+  c:{name:'Neon Corsair (A)', basePrice:10000000, income:500, id:'neon_corsair'},
+  h:{name:'Punk Hauler (B)', basePrice:5000000, income:200, id:'punk_hauler'},
+  f:{name:'Scrap Fighter (C)', basePrice:2000000, income:100, id:'scrap_fighter'},
+  d:{name:'Rusty Drone (D)', basePrice:1000000, income:50, id:'rusty_drone'}
 };
 
 // GDD БАЛАНС - ИМПЛАНТЫ (Теперь с Max Level)
@@ -527,7 +533,16 @@ function openFleet(){
     const sh = SHIPS[k];
     const owned = s.ships[k]||0;
     const price = priceForShip(k);
-    html += `<div class="pop-item"><strong>${sh.name}</strong><div class="small-muted">Базовый Доход: ${sh.income}/сек • Слоты: ${k==='r'?5:(k==='c'?4:(k==='h'?3:(k==='f'?2:1)))}</div>Цена: ${price.toLocaleString('ru-RU')} энергии • У тебя: ${owned}<div style="margin-top:8px"><button class="btn primary" onclick="buyShip('${k}',${price})">Купить</button></div></div>`;
+    const imgPath = `assets/ships/${sh.id}.png`;
+    html += `<div class="pop-item" style="display:flex; gap:12px; align-items:center">
+      <img src="${imgPath}" class="ship-icon" alt="${sh.name}" />
+      <div style="flex:1">
+        <strong>${sh.name}</strong>
+        <div class="small-muted">Базовый Доход: ${sh.income}/сек • Слоты: ${k==='r'?5:(k==='c'?4:(k==='h'?3:(k==='f'?2:1)))}</div>
+        Цена: ${price.toLocaleString('ru-RU')} энергии • У тебя: ${owned}
+        <div style="margin-top:8px"><button class="btn primary" onclick="buyShip('${k}',${price})">Купить</button></div>
+      </div>
+    </div>`;
   }
   html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
   pop(html);
@@ -548,8 +563,17 @@ function openCrew(){
     const hired = s.crew[it.id];
     const ownedText = hired ? ' (нанят)' : '';
     const descText = it.type === 'pph' ? it.desc : (it.type === 'autotap' ? `${it.mult} авто-тап/сек` : it.desc);
+    const imgPath = `assets/crew/${it.id}.png`;
     
-    html += `<div class="pop-item"><strong>${it.name}</strong><div class="small-muted">${descText}</div>Цена: ${it.price.toLocaleString('ru-RU')} энергии${ownedText}<div style="margin-top:8px"><button class="btn" onclick="toggleCrew('${it.id}',${it.price})">${hired?'Уволить':'Нанять'}</button></div></div>`;
+    html += `<div class="pop-item" style="display:flex; gap:12px; align-items:center">
+      <img src="${imgPath}" alt="${it.name}" style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 8px var(--n2))" />
+      <div style="flex:1">
+        <strong>${it.name}</strong>
+        <div class="small-muted">${descText}</div>
+        Цена: ${it.price.toLocaleString('ru-RU')} энергии${ownedText}
+        <div style="margin-top:8px"><button class="btn" onclick="toggleCrew('${it.id}',${it.price})">${hired?'Уволить':'Нанять'}</button></div>
+      </div>
+    </div>`;
   }
   html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
   pop(html);
@@ -566,20 +590,52 @@ function toggleCrew(id, price){
   else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
 }
 
+/* ===== OPEN IMPLANTS - updated (with image support) ===== */
+
 function openImplants(){
-  let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2>`;
+  let html = `
+    <h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2>
+  `;
+
   for(const k in IMPLANTS){
     const it = IMPLANTS[k];
     const currentLevel = s.impl[it.id]?.level || 0;
     const price = priceForImpl(it.id);
-    const ownedText = currentLevel > 0 ? ` (Уровень: ${currentLevel}/${it.maxLvl})` : '';
     const isMax = currentLevel >= it.maxLvl;
-    
-    html += `<div class="pop-item"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div>Цена: ${price.toLocaleString('ru-RU')} энергии${ownedText}<div style="margin-top:8px"><button class="btn ${!isMax ? 'primary' : 'ghost'}" onclick="buyImpl('${it.id}',${price})" ${isMax ? 'disabled' : ''}>${isMax ? 'МАКС. УРОВЕНЬ' : 'Улучшить'}</button></div></div>`;
+
+    // Подключаем изображение
+    const img = `/assets/implants/${it.id}.png`;
+
+    html += `
+      <div class="pop-item" style="display:flex; gap:12px; align-items:center">
+        <img src="${img}" 
+             alt="${it.name}" 
+             style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 8px var(--n1))" />
+
+        <div style="flex:1">
+          <strong>${it.name}</strong>
+          <div class="small-muted">${it.desc}</div>
+          <div class="small-muted">Цена: ${price.toLocaleString('ru-RU')}</div>
+          <div class="small-muted">Уровень: ${currentLevel}/${it.maxLvl}</div>
+
+          <button class="btn ${!isMax ? 'primary' : 'ghost'}" 
+                  onclick="buyImpl('${it.id}', ${price})"
+                  style="margin-top:8px;width:100%"
+                  ${isMax ? 'disabled' : ''}>
+            ${isMax ? 'МАКС. УРОВЕНЬ' : 'УЛУЧШИТЬ'}
+          </button>
+        </div>
+      </div>
+    `;
   }
-  html += `<div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`;
+
+  html += `<div style="margin-top:12px;text-align:center">
+    <button class="btn ghost" onclick="popClose()">Закрыть</button>
+  </div>`;
+
   pop(html);
 }
+
 function buyImpl(id, price){
   const it = IMPLANTS[id];
   const currentLevel = s.impl[it.id]?.level || 0;
@@ -597,11 +653,13 @@ function buyImpl(id, price){
   else try{ tg.showAlert('Недостаточно энергии'); }catch(e){}
 }
 
+/* remaining shop functions */
+
 function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">КРИПТО-РЕЙД: NeonCorp</h2><div class="pop-item">Событие Community Raid. Тапайте по барьеру корпорации вместе с другими игроками, чтобы получить общий $PUNK приз. Cooldown 4 часа.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
 function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК (NFT)</h2><div class="pop-item">NFT-Флот (Ghost Ship), Временные Бустеры (x2 PPH) и другие редкие предметы за $PUNK. Появятся в следующем обновлении.</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
 function openProfile(){ pop(`<h2 style="color:var(--n1);text-align:center">ПРОФИЛЬ</h2><div class="pop-item">Ранг: ${RANK_NAMES[s.rank]}<br>Всего заработано: ${fmt(s.totalEarned)}<br>PPH Множитель: x${s.pphMult.toFixed(2)}<br>Следующий ранг: ${RANK_NAMES[s.rank + 1]||'МАКС.'} (Требуется: ${fmt(RANK_REQ[s.rank + 1]||0)})</div><div style="margin-top:12px"><button class="btn ghost" onclick="popClose()">Закрыть</button></div>`); }
 
-/* ======== QUEST SYSTEM LOGIC (без изменений) ======== */
+/* ======== QUEST SYSTEM LOGIC ======== */
 
 function updateQuestProgress(category, amount, data = {}) {
   const questList = QUESTS[category];
@@ -711,7 +769,6 @@ function buildQuestList(category) {
   }
   return listHtml;
 }
-
 
 /* init */
 loadState();
