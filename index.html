@@ -29,7 +29,7 @@ body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;backgroun
 #pop{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.85));z-index:999}
 .pop-card{width:min(92%,980px);max-height:90%;overflow:auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.26));padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,0.04)}
 .thumb-list{display:flex;flex-wrap:wrap;gap:10px;padding:8px}
-.thumb{width:140px;background:rgba(255,255,255,0.02);padding:8px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
+.thumb{width:140px;background:rgba(255,255,255,0.02);padding:8px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;justify-content:space-between;} /* Added flex styles */
 .thumb img{width:80px;height:80px;object-fit:contain;margin-bottom:6px}
 .profile-window{width:92%;max-width:920px;border-radius:14px;border:2px solid var(--n2);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.22));padding:16px;display:grid;grid-template-columns:240px 1fr;gap:14px}
 .profile-avatar{width:200px;height:200px;border-radius:12px;object-fit:cover;border:3px solid rgba(255,255,255,0.06)}
@@ -40,73 +40,73 @@ body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;backgroun
 </head>
 <body class="theme-neon">
 <div id="app">
-  <div class="hud">
-    <div>
-      <div class="badge">CosmoPunk Tap Game</div>
-      <div class="badge balance" id="energy">0 PUNK</div>
-      <div class="small-muted" id="punk">$0.0000 $PUNK • курс 1000:1</div>
-    </div>
-    <div class="theme-switch" id="themeSwitch">
-      <button class="theme-button active" data-theme="neon">N</button>
-      <button class="theme-button" data-theme="holo">H</button>
-      <button class="theme-button" data-theme="cartoon">C</button>
-      <button class="theme-button" data-theme="dark">D</button>
-      <button class="theme-button" data-theme="3d">3D</button>
-    </div>
-  </div>
+  <div class="hud">
+    <div>
+      <div class="badge">CosmoPunk Tap Game</div>
+      <div class="badge balance" id="energy">0 PUNK</div>
+      <div class="small-muted" id="punk">$0.0000 $PUNK • курс 1000:1</div>
+    </div>
+    <div class="theme-switch" id="themeSwitch">
+      <button class="theme-button active" data-theme="neon">N</button>
+      <button class="theme-button" data-theme="holo">H</button>
+      <button class="theme-button" data-theme="cartoon">C</button>
+      <button class="theme-button" data-theme="dark">D</button>
+      <button class="theme-button" data-theme="3d">3D</button>
+    </div>
+  </div>
 
-  <div class="reactor-wrap">
-    <div id="reactor" class="reactor"><img src="/assets/reactor/reactor.gif" alt="reactor"></div>
-    <div style="margin-top:12px;text-align:center">
-      <div id="inc" class="small-muted">0 /сек (PPH: 0)</div>
-      <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
-    </div>
-  </div>
+  <div class="reactor-wrap">
+    <div id="reactor" class="reactor"><img src="/assets/reactor/reactor.gif" alt="reactor"></div>
+    <div style="margin-top:12px;text-align:center">
+      <div id="inc" class="small-muted">0 /сек (PPH: 0)</div>
+      <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
+    </div>
+  </div>
 
-  <div class="bottom-bar">
-    <div class="scroll-container" id="controlsRow">
-      <button class="btn" data-action="fleet"><img src="/assets/ui/fleet.png" width="18">ФЛОТ</button>
-      <button class="btn" data-action="crew"><img src="/assets/ui/crew.png" width="18">ЭКИПАЖ</button>
-      <button class="btn" data-action="impl"><img src="/assets/ui/impl.png" width="18">ИМПЛАНТЫ</button>
-      <button class="btn primary" data-action="raid"><img src="/assets/ui/raid.png" width="18">RAID</button>
-      <button class="btn" data-action="quests"><img src="/assets/ui/quests.png" width="18">КВЕСТЫ</button>
-      <button class="btn" data-action="market"><img src="/assets/ui/market.png" width="18">МАРКЕТ</button>
-      <button class="btn" data-action="profile"><img src="/assets/ui/profile.png" width="18">ПРОФИЛЬ</button>
-    </div>
-  </div>
+  <div class="bottom-bar">
+    <div class="scroll-container" id="controlsRow">
+      <button class="btn" data-action="fleet"><img src="/assets/ui/fleet.png" width="18">ФЛОТ</button>
+      <button class="btn" data-action="crew"><img src="/assets/ui/crew.png" width="18">ЭКИПАЖ</button>
+      <button class="btn" data-action="impl"><img src="/assets/ui/impl.png" width="18">ИМПЛАНТЫ</button>
+      <button class="btn primary" data-action="raid"><img src="/assets/ui/raid.png" width="18">RAID</button>
+      <button class="btn" data-action="quests"><img src="/assets/ui/quests.png" width="18">КВЕСТЫ</button>
+      <button class="btn" data-action="market"><img src="/assets/ui/market.png" width="18">МАРКЕТ</button>
+      <button class="btn" data-action="profile"><img src="/assets/ui/profile.png" width="18">ПРОФИЛЬ</button>
+    </div>
+  </div>
 </div>
 
 <div id="pop" onclick="if(event.target.id==='pop') popClose()">
-  <div class="pop-card" id="popcard"></div>
+  <div class="pop-card" id="popcard"></div>
 </div>
 
 <script>
 /* ====== Simple game state (kept minimal for demo) ====== */
 const SAVE_KEY = 'cosmo_buttons_fix_v1';
 let s = {
-  energy:0, punk:0, totalEarned:0, tapBase:3, tapMult:1,
-  ships:{r:0,c:0,h:0,f:0,d:0}, impl:{}, crew:{}, rank:0, lastSave:Date.now(),
-  equipped:{impl:[], ships:[]}
+  energy:0, punk:0, totalEarned:0, tapBase:3, tapMult:1,
+  ships:{r:0,c:0,h:0,f:0,d:0}, impl:{}, crew:{}, rank:0, lastSave:Date.now(),
+  equipped:{impl:[], ships:[]}
 };
 const SHIPS = {
-  r:{name:'Void Reaper (S)', basePrice:20000000, income:1000, id:'void_reaper'},
-  c:{name:'Neon Corsair (A)', basePrice:10000000, income:500, id:'neon_corsair'},
-  h:{name:'Punk Hauler (B)', basePrice:5000000, income:200, id:'punk_hauler'},
-  f:{name:'Scrap Fighter (C)', basePrice:2000000, income:100, id:'scrap_fighter'},
-  d:{name:'Rusty Drone (D)', basePrice:1000000, income:50, id:'rusty_drone'}
+  r:{name:'Void Reaper (S)', basePrice:20000000, income:1000, id:'void_reaper'},
+  c:{name:'Neon Corsair (A)', basePrice:10000000, income:500, id:'neon_corsair'},
+  h:{name:'Punk Hauler (B)', basePrice:5000000, income:200, id:'punk_hauler'},
+  f:{name:'Scrap Fighter (C)', basePrice:2000000, income:100, id:'scrap_fighter'},
+  d:{name:'Rusty Drone (D)', basePrice:1000000, income:50, id:'rusty_drone'}
 };
 const IMPLANTS = {
-  neuro:{id:'neuro', name:'Нео-Нейрон (S)', basePrice:1e6, effect:2.0, levelMult:0.04, maxLvl:50, type:'tap', desc:'+200% тапы'},
-  glitch:{id:'glitch', name:'Глитч-Протез (A)', basePrice:5e5, effect:1.0, levelMult:0.025, maxLvl:40, type:'pph', desc:'+100% пассив'},
-  eye:{id:'eye', name:'Кибер-Глаз (B)', basePrice:2e5, effect:0.5, levelMult:0.016, maxLvl:30, type:'hack', desc:'+ шанс хак'},
-  chip:{id:'chip', name:'Ржавый Чип (C)', basePrice:1e5, effect:0.2, levelMult:0.008, maxLvl:25, type:'pph', desc:'+20% пассив'},
-  base:{id:'base', name:'Базовый Имплант (D)', basePrice:5e4, effect:0.1, levelMult:0.005, maxLvl:20, type:'tap', desc:'+10% тапы'}
+  neuro:{id:'neuro', name:'Нео-Нейрон (S)', basePrice:1e6, effect:2.0, levelMult:0.04, maxLvl:50, type:'tap', desc:'+200% тапы'},
+  glitch:{id:'glitch', name:'Глитч-Протез (A)', basePrice:5e5, effect:1.0, levelMult:0.025, maxLvl:40, type:'pph', desc:'+100% пассив'},
+  eye:{id:'eye', name:'Кибер-Глаз (B)', basePrice:2e5, effect:0.5, levelMult:0.016, maxLvl:30, type:'hack', desc:'+ шанс хак'},
+  chip:{id:'chip', name:'Ржавый Чип (C)', basePrice:1e5, effect:0.2, levelMult:0.008, maxLvl:25, type:'pph', desc:'+20% пассив'},
+  base:{id:'base', name:'Базовый Имплант (D)', basePrice:5e4, effect:0.1, levelMult:0.005, maxLvl:20, type:'tap', desc:'+10% тапы'}
 };
 const CREW = {
-  captain:{id:'captain', name:'Капитан Космо (S)', price:1e7, mult:0.5, type:'pph', desc:'+50% флот-доход'},
-  hacker:{id:'hacker', name:'Лиса-Хакер (A)', price:5e6, mult:0.3, type:'hack', desc:'+30% шанс хаков'},
-  doctor:{id:'doctor', name:'Доктор Нейро (A)', price:4e6, mult:0.2, type:'regen', desc:'+20% реген/мин'},
-  bot:{id:'bot', name:'ГигаПанк-Бот (B)', price:2e6, mult:1, type:'autotap', desc:'1 авто-тап/сек'}
+  captain:{id:'captain', name:'Капитан Космо (S)', price:1e7, mult:0.5, type:'pph', desc:'+50% флот-доход'},
+  hacker:{id:'hacker', name:'Лиса-Хакер (A)', price:5e6, mult:0.3, type:'hack', desc:'+30% шанс хаков'},
+  doctor:{id:'doctor', name:'Доктор Нейро (A)', price:4e6, mult:0.2, type:'regen', desc:'+20% реген/мин'},
+  bot:{id:'bot', name:'ГигаПанк-Бот (B)', price:2e6, mult:1, type:'autotap', desc:'1 авто-тап/сек'}
 };
 const RANK_NAMES = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
 const RANK_REQ = [0,1e3,1e6,1e9,1e12];
@@ -118,38 +118,38 @@ function load(){ const raw = localStorage.getItem(SAVE_KEY); if(raw) Object.assi
 
 /* ====== Passive & recalc ====== */
 function recalcPassive(){
-  let shipIncomeSum = 0;
-  let tapImplSum = 0, pphImplSum = 0;
-  for(let k in s.ships){ const lvl=s.ships[k]||0; shipIncomeSum += SHIPS[k].income * Math.pow(lvl,1.2); }
-  for(let id in s.impl){ const impl=IMPLANTS[id]; const lvl=s.impl[id]?.level||1; const cur = impl.effect + impl.levelMult*(lvl-1); if(impl.type==='tap') tapImplSum += cur; if(impl.type==='pph') pphImplSum += cur; }
-  let crewMult = 1; if(s.crew['captain']) crewMult += CREW.captain.mult;
-  s.pph = shipIncomeSum * (1 + pphImplSum) * crewMult;
-  s.tapMult = 1 + tapImplSum;
+  let shipIncomeSum = 0;
+  let tapImplSum = 0, pphImplSum = 0;
+  for(let k in s.ships){ const lvl=s.ships[k]||0; shipIncomeSum += SHIPS[k].income * Math.pow(lvl,1.2); }
+  for(let id in s.impl){ const impl=IMPLANTS[id]; const lvl=s.impl[id]?.level||1; const cur = impl.effect + impl.levelMult*(lvl-1); if(impl.type==='tap') tapImplSum += cur; if(impl.type==='pph') pphImplSum += cur; }
+  let crewMult = 1; if(s.crew['captain']) crewMult += CREW.captain.mult;
+  s.pph = shipIncomeSum * (1 + pphImplSum) * crewMult;
+  s.tapMult = 1 + tapImplSum;
 }
 function offlineGain(){ const now=Date.now(); const secs=Math.min((now-(s.lastSave||now))/1000,12*3600); if(secs>2){ recalcPassive(); const gain=s.pph*secs; s.energy+=gain; s.totalEarned+=gain; try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert(`Оффлайн: +${Math.floor(gain).toLocaleString('ru-RU')} энергии`) }catch(e){} } }
 
 /* ====== UI update ====== */
 function updateUI(){
-  document.getElementById('energy').innerText = fmt(s.energy) + ' PUNK';
-  document.getElementById('punk').innerText = (s.punk||0).toFixed(4) + ' $PUNK';
-  document.getElementById('inc').innerText = fmt(s.pph) + ' /сек (PPH: ' + fmt(s.pph*3600) + ')';
-  for(let i=RANK_REQ.length-1;i>=0;i--) if(s.totalEarned>=RANK_REQ[i]){ s.rank=i; break; }
-  document.getElementById('rank').innerText = RANK_NAMES[s.rank];
+  document.getElementById('energy').innerText = fmt(s.energy) + ' PUNK';
+  document.getElementById('punk').innerText = (s.punk||0).toFixed(4) + ' $PUNK';
+  document.getElementById('inc').innerText = fmt(s.pph) + ' /сек (PPH: ' + fmt(s.pph*3600) + ')';
+  for(let i=RANK_REQ.length-1;i>=0;i--) if(s.totalEarned>=RANK_REQ[i]){ s.rank=i; break; }
+  document.getElementById('rank').innerText = RANK_NAMES[s.rank];
 }
 
 /* ====== Tap behavior ====== */
 const reactor = document.getElementById('reactor');
 reactor.addEventListener('click', (ev)=>{ doTap(ev); });
 function doTap(ev){
-  const rect = document.body.getBoundingClientRect();
-  const x = ev.clientX || rect.width/2;
-  const y = ev.clientY || rect.height/2;
-  let crit=1; const r=Math.random();
-  if(r<0.005) crit=10; else if(r<0.035) crit=5; else if(r<0.155) crit=2;
-  const gain = Math.floor(s.tapBase * s.tapMult * crit);
-  s.energy += gain; s.totalEarned += gain; showFloating('+'+gain,x,y); if(crit>1) showCrit('x'+crit,x,y);
-  reactor.classList.add('glitch'); setTimeout(()=>reactor.classList.remove('glitch'),180);
-  updateUI(); save();
+  const rect = document.body.getBoundingClientRect();
+  const x = ev.clientX || rect.width/2;
+  const y = ev.clientY || rect.height/2;
+  let crit=1; const r=Math.random();
+  if(r<0.005) crit=10; else if(r<0.035) crit=5; else if(r<0.155) crit=2;
+  const gain = Math.floor(s.tapBase * s.tapMult * crit);
+  s.energy += gain; s.totalEarned += gain; showFloating('+'+gain,x,y); if(crit>1) showCrit('x'+crit,x,y);
+  reactor.classList.add('glitch'); setTimeout(()=>reactor.classList.remove('glitch'),180);
+  updateUI(); save();
 }
 function showFloating(text,x,y){ const el=document.createElement('div'); el.className='floating'; el.innerText=text; const angle=(Math.random()*40-20); const offsetX=(Math.random()*60-30); const offsetY=Math.random()*140+80; el.style.left=(x+offsetX)+'px'; el.style.top=(y+10)+'px'; document.body.appendChild(el); el.animate([{transform:`translate(0,0) rotate(${angle}deg)`,opacity:1},{transform:`translate(0,-${offsetY}px) rotate(${angle}deg)`,opacity:0}],{duration:1100+Math.random()*400,easing:'ease-out'}); setTimeout(()=>el.remove(),1600); }
 function showCrit(text,x,y){ const boom=document.createElement('div'); boom.className='critBoom'; boom.innerText=text; boom.style.left=(x-20)+'px'; boom.style.top=(y-20)+'px'; document.body.appendChild(boom); boom.animate([{transform:'scale(1)',opacity:1},{transform:'scale(2.2)',opacity:0}],{duration:420,easing:'ease-out'}); setTimeout(()=>boom.remove(),500); }
@@ -165,41 +165,123 @@ function popClose(){ document.getElementById('pop').style.display = 'none'; }
 function priceForShip(key){ const owned = s.ships[key]||0; return Math.floor(SHIPS[key].basePrice * Math.pow(1.15, owned)); }
 function priceForImpl(id){ const lvl = s.impl[id]?.level || 0; return Math.floor(IMPLANTS[id].basePrice * Math.pow(1.2, lvl)); }
 
-function openFleet(){
-  console.log('openFleet called');
-  let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2><div class="thumb-list">`;
-  for(const k in SHIPS){
-    const sh = SHIPS[k]; const owned = s.ships[k]||0; const price = priceForShip(k);
-    html += `<div class="thumb"><img src="/assets/ships/${sh.id}.png" alt="${sh.name}" onerror="this.style.opacity=.45"><strong>${sh.name}</strong><div class="small-muted">${sh.income}/сек</div><div style="margin-top:8px">${price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn primary" data-buy-ship="${k}" data-price="${price}">Купить</button></div></div>`;
-  }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
-  pop(html);
-  // delegate events inside pop
-  delegatePopClicks();
-}
-
-function openCrew(){
-  console.log('openCrew called');
-  let html = `<h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2><div class="thumb-list">`;
-  for(const k in CREW){
-    const it = CREW[k]; const hired = s.crew[it.id] ? true : false;
-    html += `<div class="thumb"><img src="/assets/crew/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div style="margin-top:8px">${it.price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn" data-hire="${it.id}" data-price="${it.price}">${hired?'Уволить':'Нанять'}</button></div></div>`;
-  }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
-  pop(html);
-  delegatePopClicks();
-}
-
+/** 1. РАЗДЕЛ "ИМПЛАНТЫ" */
 function openImplants(){
-  console.log('openImplants called');
-  let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2><div class="thumb-list">`;
-  for(const k in IMPLANTS){
-    const it = IMPLANTS[k]; const lvl = s.impl[it.id]?.level || 0; const price = priceForImpl(it.id); const isMax = lvl >= it.maxLvl; const equipped = s.equipped.impl.includes(it.id);
-    html += `<div class="thumb"><img src="/assets/implants/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div class="small-muted">Ур: ${lvl}/${it.maxLvl}</div><div style="margin-top:8px">${price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn" data-buy-impl="${it.id}" data-price="${price}" ${isMax?'disabled':''}>${isMax?'MAX':'Улучшить'}</button></div><div style="margin-top:8px"><button class="btn" data-equip-impl="${it.id}">${equipped?'Снять':'Экипировать'}</button></div></div>`;
-  }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
-  pop(html);
-  delegatePopClicks();
+  console.log('openImplants called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2><div class="thumb-list">`;
+  for(const k in IMPLANTS){
+    const it = IMPLANTS[k]; 
+    const lvl = s.impl[it.id]?.level || 0; 
+    const price = priceForImpl(it.id); 
+    const isMax = lvl >= it.maxLvl; 
+    const equipped = s.equipped.impl.includes(it.id);
+    
+    let buttonsHTML = '';
+    let statusHTML = '';
+
+    if (lvl === 0) {
+      // Имплант не куплен: Только цена и кнопка "Купить/Улучшить"
+      statusHTML = `<div style="font-weight:900; color:var(--n2)">${price.toLocaleString('ru-RU')} energy</div><div class="small-muted">Ур: 0/${it.maxLvl}</div>`;
+      buttonsHTML = `<button class="btn primary" data-buy-impl="${it.id}" data-price="${price}">Купить</button>`;
+    } else {
+      // Имплант куплен (lvl > 0): Уровень, Улучшить и Экипировать/Снять
+      statusHTML = `<div class="small-muted">Уровень: <strong>${lvl}/${it.maxLvl}</strong></div><div style="font-weight:900; color:var(--n2)">${isMax ? 'МАКС.' : `${price.toLocaleString('ru-RU')} energy`}</div>`;
+      
+      buttonsHTML += `<button class="btn ${!isMax ? 'primary' : ''}" data-buy-impl="${it.id}" data-price="${price}" ${isMax?'disabled':''}>${isMax?'МАКС.':'Улучшить'}</button>`;
+      buttonsHTML += `<button class="btn" data-equip-impl="${it.id}" style="margin-top:8px">${equipped?'Снять':'Экипировать'}</button>`;
+    }
+
+    html += `<div class="thumb">
+      <div>
+        <img src="/assets/implants/${it.id}.png" onerror="this.style.opacity=.5">
+        <strong>${it.name}</strong>
+        <div class="small-muted">${it.desc}</div>
+      </div>
+      
+      <div style="margin-top:10px">${statusHTML}</div>
+      <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px">
+        ${buttonsHTML}
+      </div>
+    </div>`;
+  }
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
+  pop(html);
+  delegatePopClicks();
+}
+
+/** 2. РАЗДЕЛ "ФЛОТ" */
+function openFleet(){
+  console.log('openFleet called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2><div class="thumb-list">`;
+  for(const k in SHIPS){
+    const sh = SHIPS[k]; 
+    const owned = s.ships[k]||0; 
+    const price = priceForShip(k);
+    
+    let buttonsHTML = '';
+    let statusHTML = '';
+
+    if (owned === 0) {
+      // Корабль не куплен: Только характеристики и кнопка "Купить"
+      statusHTML = `<div class="small-muted">Цена:</div><div style="font-weight:900; color:var(--n2)">${price.toLocaleString('ru-RU')} energy</div>`;
+      buttonsHTML = `<button class="btn primary" data-buy-ship="${k}" data-price="${price}">Купить</button>`;
+    } else {
+      // Корабль куплен: Количество, "Купить ещё" и "Экипировать/Снять"
+      const equipped = s.equipped.ships.includes(k);
+      statusHTML = `<div class="small-muted">В наличии: <strong>${owned}</strong></div><div class="small-muted">След. цена:</div><div style="font-weight:900; color:var(--n2)">${price.toLocaleString('ru-RU')} energy</div>`;
+      
+      buttonsHTML += `<button class="btn primary" data-buy-ship="${k}" data-price="${price}">Купить ещё</button>`;
+      buttonsHTML += `<button class="btn" data-equip-ship="${k}" style="margin-top:8px">${equipped?'Снять':'Экипировать'}</button>`;
+    }
+
+    html += `<div class="thumb">
+      <div>
+        <img src="/assets/ships/${sh.id}.png" alt="${sh.name}" onerror="this.style.opacity=.45">
+        <strong>${sh.name}</strong>
+        <div class="small-muted">Доход: ${sh.income}/сек</div>
+      </div>
+
+      <div style="margin-top:10px">${statusHTML}</div>
+      <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px">
+        ${buttonsHTML}
+      </div>
+    </div>`;
+  }
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
+  pop(html);
+  delegatePopClicks();
+}
+
+/** 3. РАЗДЕЛ "ЭКИПАЖ" */
+function openCrew(){
+  console.log('openCrew called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2><div class="thumb-list">`;
+  for(const k in CREW){
+    const it = CREW[k]; 
+    const hired = s.crew[it.id] ? true : false;
+    
+    const buttonText = hired ? 'Уволить' : 'Нанять';
+    const buttonClass = hired ? 'primary' : ''; // Можно инвертировать, чтобы "Нанять" был primary
+
+    html += `<div class="thumb">
+      <div>
+        <img src="/assets/crew/${it.id}.png" onerror="this.style.opacity=.5">
+        <strong>${it.name}</strong>
+        <div class="small-muted">${it.desc}</div>
+      </div>
+      
+      <div style="margin-top:10px">
+        <div class="small-muted">Цена:</div>
+        <div style="font-weight:900; color:var(--n2)">${it.price.toLocaleString('ru-RU')} energy</div>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn ${buttonClass}" data-hire="${it.id}" data-price="${it.price}">${buttonText}</button>
+      </div>
+    </div>`;
+  }
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
+  pop(html);
+  delegatePopClicks();
 }
 
 function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК</h2><div style="padding:10px">NFT, бустеры и т.п. — скоро.</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`); delegatePopClicks(); }
@@ -207,128 +289,169 @@ function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">КРИП
 function openQuests(){ pop(`<h2 style="color:var(--n1);text-align:center">КВЕСТЫ</h2><div style="padding:10px">Система квестов — в разработке.</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`); delegatePopClicks(); }
 
 function openProfile(){
-  console.log('openProfile called');
-  const nextRank = RANK_NAMES[s.rank+1] || 'MAX';
-  const nextReq = RANK_REQ[s.rank+1] || Math.max(1, s.totalEarned);
-  const progress = Math.min(100, Math.floor((s.totalEarned / nextReq)*100));
-  const avatar = '/assets/profile/avatar.png';
-  const name = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user && Telegram.WebApp.initDataUnsafe.user.first_name) ? Telegram.WebApp.initDataUnsafe.user.first_name : 'Пилот';
+  console.log('openProfile called');
+  const nextRank = RANK_NAMES[s.rank+1] || 'MAX';
+  const nextReq = RANK_REQ[s.rank+1] || Math.max(1, s.totalEarned);
+  const progress = Math.min(100, Math.floor((s.totalEarned / nextReq)*100));
+  const avatar = '/assets/profile/avatar.png';
+  const name = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user && Telegram.WebApp.initDataUnsafe.user.first_name) ? Telegram.WebApp.initDataUnsafe.user.first_name : 'Пилот';
 
-  const fleetInv = Object.keys(SHIPS).map(k=>{
-    const sh=SHIPS[k]; const owned=s.ships[k]||0; const eq = s.equipped.ships.includes(k);
-    return `<div style="display:flex;flex-direction:column;align-items:center;width:110px;margin-right:8px"><img src="/assets/ships/${sh.id}.png" style="width:80px;height:80px;object-fit:contain" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${sh.name}</div><div style="font-weight:800;margin-top:4px">${owned}</div><div style="margin-top:6px"><button class="btn" data-equip-ship="${k}">${eq?'Снять':'Экипировать'}</button></div></div>`;
-  }).join('');
+  const fleetInv = Object.keys(SHIPS).map(k=>{
+    const sh=SHIPS[k]; const owned=s.ships[k]||0; const eq = s.equipped.ships.includes(k);
+    if (owned === 0) return ''; // Скрываем некупленные корабли из инвентаря в профиле
+    return `<div style="display:flex;flex-direction:column;align-items:center;width:110px;margin-right:8px"><img src="/assets/ships/${sh.id}.png" style="width:80px;height:80px;object-fit:contain" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${sh.name}</div><div style="font-weight:800;margin-top:4px">${owned}</div><div style="margin-top:6px"><button class="btn" data-equip-ship="${k}">${eq?'Снять':'Экипировать'}</button></div></div>`;
+  }).join('');
 
-  const implInv = Object.keys(IMPLANTS).map(k=>{
-    const it=IMPLANTS[k]; const lvl=s.impl[it.id]?.level||0; const eq = s.equipped.impl.includes(it.id);
-    return `<div style="display:flex;flex-direction:column;align-items:center;width:84px;margin-right:8px"><img src="/assets/implants/${it.id}.png" style="width:64px;height:64px" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${it.name}</div><div style="font-weight:800">${lvl}</div><div style="margin-top:6px"><button class="btn" data-equip-impl="${it.id}">${eq?'Снять':'Экипировать'}</button></div></div>`;
-  }).join('');
+  const implInv = Object.keys(IMPLANTS).map(k=>{
+    const it=IMPLANTS[k]; const lvl=s.impl[it.id]?.level||0; const eq = s.equipped.impl.includes(it.id);
+    if (lvl === 0) return ''; // Скрываем некупленные импланты из инвентаря в профиле
+    return `<div style="display:flex;flex-direction:column;align-items:center;width:84px;margin-right:8px"><img src="/assets/implants/${it.id}.png" style="width:64px;height:64px" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${it.name}</div><div style="font-weight:800">${lvl}</div><div style="margin-top:6px"><button class="btn" data-equip-impl="${it.id}">${eq?'Снять':'Экипировать'}</button></div></div>`;
+  }).join('');
 
-  let html = `<div class="profile-window">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
-      <img src="${avatar}" class="profile-avatar" onerror="this.style.opacity=.5">
-      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--n1)">${name}</div><div class="small-muted">@CosmoPunk</div></div>
-      <div style="margin-top:8px"><button class="btn" data-close>Закрыть</button></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="stat-block"><div class="small-muted">Ранг</div><div style="font-weight:900">${RANK_NAMES[s.rank]}</div></div>
-      <div class="stat-block"><div class="small-muted">Всего заработано</div><div style="font-weight:900">${fmt(s.totalEarned)} PUNK</div></div>
-      <div class="stat-block"><div class="small-muted">PPH (пассив)</div><div style="font-weight:900">${fmt(s.pph)} /сек</div></div>
-      <div class="stat-block"><div class="small-muted">Инвентарь — Флот</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${fleetInv}</div></div>
-      <div class="stat-block"><div class="small-muted">Инвентарь — Импланты</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${implInv}</div></div>
-    </div>
-  </div>`;
-  pop(html);
-  delegatePopClicks();
+  let html = `<div class="profile-window">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <img src="${avatar}" class="profile-avatar" onerror="this.style.opacity=.5">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--n1)">${name}</div><div class="small-muted">@CosmoPunk</div></div>
+      <div style="margin-top:8px"><button class="btn" data-close>Закрыть</button></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="stat-block"><div class="small-muted">Ранг</div><div style="font-weight:900">${RANK_NAMES[s.rank]}</div></div>
+      <div class="stat-block"><div class="small-muted">Всего заработано</div><div style="font-weight:900">${fmt(s.totalEarned)} PUNK</div></div>
+      <div class="stat-block"><div class="small-muted">PPH (пассив)</div><div style="font-weight:900">${fmt(s.pph)} /сек</div></div>
+      <div class="stat-block"><div class="small-muted">Инвентарь — Флот</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${fleetInv||'Нет кораблей'}</div></div>
+      <div class="stat-block"><div class="small-muted">Инвентарь — Импланты</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${implInv||'Нет имплантов'}</div></div>
+    </div>
+  </div>`;
+  pop(html);
+  delegatePopClicks();
 }
 
 /* ====== Delegation for pop clicks (buttons generated inside pop) ====== */
 function delegatePopClicks(){
-  const popCard = document.getElementById('popcard');
-  popCard.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click', popClose));
-  popCard.querySelectorAll('[data-buy-ship]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ const k = btn.getAttribute('data-buy-ship'); const price = Number(btn.getAttribute('data-price')); buyShip(k, price); });
-  });
-  popCard.querySelectorAll('[data-hire]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-hire'); const price = Number(btn.getAttribute('data-price')); toggleCrew(id, price); });
-  });
-  popCard.querySelectorAll('[data-buy-impl]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-buy-impl'); const price = Number(btn.getAttribute('data-price')); buyImpl(id, price); });
-  });
-  popCard.querySelectorAll('[data-equip-impl]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-impl'); toggleEquipImpl(id); });
-  });
-  popCard.querySelectorAll('[data-equip-ship]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-ship'); toggleEquipShip(id); });
-  });
+  const popCard = document.getElementById('popcard');
+  popCard.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click', popClose));
+  popCard.querySelectorAll('[data-buy-ship]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const k = btn.getAttribute('data-buy-ship'); const price = Number(btn.getAttribute('data-price')); buyShip(k, price); });
+  });
+  popCard.querySelectorAll('[data-hire]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-hire'); const price = Number(btn.getAttribute('data-price')); toggleCrew(id, price); });
+  });
+  popCard.querySelectorAll('[data-buy-impl]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-buy-impl'); const price = Number(btn.getAttribute('data-price')); buyImpl(id, price); });
+  });
+  popCard.querySelectorAll('[data-equip-impl]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-impl'); toggleEquipImpl(id); });
+  });
+  popCard.querySelectorAll('[data-equip-ship]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-ship'); toggleEquipShip(id); });
+  });
 }
 
 /* ====== Shop actions used by delegates ====== */
 function buyShip(k,price){
-  console.log('buyShip',k,price);
-  if(s.energy >= price){ s.energy -= price; s.ships[k] = (s.ships[k]||0)+1; recalcPassive(); updateUI(); save(); popClose(); try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль куплен') }catch(e){} } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  console.log('buyShip',k,price);
+  if(s.energy >= price){ 
+    s.energy -= price; 
+    s.ships[k] = (s.ships[k]||0)+1; 
+    recalcPassive(); 
+    updateUI(); 
+    save(); 
+    popClose(); 
+    openFleet(); // Переоткрываем флот для обновления
+    try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль куплен') }catch(e){} 
+  } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
 }
 function toggleCrew(id,price){
-  console.log('toggleCrew',id,price);
-  if(s.crew[id]){ delete s.crew[id]; recalcPassive(); updateUI(); save(); popClose(); openCrew(); return; }
-  if(s.energy >= price){ s.energy -= price; s.crew[id] = true; recalcPassive(); updateUI(); save(); popClose(); openCrew(); } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  console.log('toggleCrew',id,price);
+  if(s.crew[id]){ 
+    delete s.crew[id]; 
+    recalcPassive(); 
+    updateUI(); 
+    save(); 
+    popClose(); 
+    openCrew(); // Переоткрываем экипаж
+    return; 
+  }
+  if(s.energy >= price){ 
+    s.energy -= price; 
+    s.crew[id] = true; 
+    recalcPassive(); 
+    updateUI(); 
+    save(); 
+    popClose(); 
+    openCrew(); // Переоткрываем экипаж
+  } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
 }
 function buyImpl(id,price){
-  console.log('buyImpl',id,price);
-  const it = IMPLANTS[id]; const lvl = s.impl[id]?.level || 0; if(lvl >= it.maxLvl) return;
-  if(s.energy >= price){ s.energy -= price; if(!s.impl[id]) s.impl[id] = {level:0}; s.impl[id].level++; recalcPassive(); updateUI(); save(); popClose(); openImplants(); } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  console.log('buyImpl',id,price);
+  const it = IMPLANTS[id]; const lvl = s.impl[id]?.level || 0; if(lvl >= it.maxLvl) return;
+  if(s.energy >= price){ 
+    s.energy -= price; 
+    if(!s.impl[id]) s.impl[id] = {level:0}; 
+    s.impl[id].level++; 
+    recalcPassive(); 
+    updateUI(); 
+    save(); 
+    popClose(); 
+    openImplants(); // Переоткрываем импланты
+  } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
 }
 function toggleEquipImpl(id){
-  console.log('toggleEquipImpl',id);
-  if((s.impl[id]?.level||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Имплант не куплен') }catch(e){} return; }
-  const idx = s.equipped.impl.indexOf(id);
-  if(idx >= 0) s.equipped.impl.splice(idx,1); else s.equipped.impl.push(id);
-  save(); popClose(); openImplants();
+  console.log('toggleEquipImpl',id);
+  if((s.impl[id]?.level||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Имплант не куплен') }catch(e){} return; }
+  const idx = s.equipped.impl.indexOf(id);
+  if(idx >= 0) s.equipped.impl.splice(idx,1); else s.equipped.impl.push(id);
+  save(); 
+  popClose(); 
+  openImplants(); // Переоткрываем импланты
 }
 function toggleEquipShip(k){
-  console.log('toggleEquipShip',k);
-  if((s.ships[k]||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль не куплен') }catch(e){} return; }
-  const idx = s.equipped.ships.indexOf(k);
-  if(idx >= 0) s.equipped.ships.splice(idx,1); else s.equipped.ships.push(k);
-  save(); popClose(); openProfile();
+  console.log('toggleEquipShip',k);
+  if((s.ships[k]||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль не куплен') }catch(e){} return; }
+  const idx = s.equipped.ships.indexOf(k);
+  if(idx >= 0) s.equipped.ships.splice(idx,1); else s.equipped.ships.push(k);
+  save(); 
+  popClose(); 
+  // После экипировки корабля в списке флота, лучше переоткрыть флот, а не профиль
+  openFleet(); 
 }
 
 /* ====== Wiring bottom buttons AFTER DOM Content loaded ====== */
 document.addEventListener('DOMContentLoaded', ()=>{
-  // load state
-  load();
+  // load state
+  load();
 
-  // find all bottom buttons and map data-action to handler
-  const actionsMap = {
-    'fleet': openFleet,
-    'crew': openCrew,
-    'impl': openImplants,
-    'raid': openRaid,
-    'quests': openQuests,
-    'market': openMarket,
-    'profile': openProfile
-  };
-  const controlsRow = document.getElementById('controlsRow');
-  controlsRow.querySelectorAll('button[data-action]').forEach(btn=>{
-    const action = btn.getAttribute('data-action');
-    if(actionsMap[action]) {
-      btn.addEventListener('click', ()=>{ try{ actionsMap[action]() }catch(e){ console.error('action error',e) } });
-    } else {
-      console.warn('No handler for', action);
-    }
-  });
+  // find all bottom buttons and map data-action to handler
+  const actionsMap = {
+    'fleet': openFleet,
+    'crew': openCrew,
+    'impl': openImplants,
+    'raid': openRaid,
+    'quests': openQuests,
+    'market': openMarket,
+    'profile': openProfile
+  };
+  const controlsRow = document.getElementById('controlsRow');
+  controlsRow.querySelectorAll('button[data-action]').forEach(btn=>{
+    const action = btn.getAttribute('data-action');
+    if(actionsMap[action]) {
+      btn.addEventListener('click', ()=>{ try{ actionsMap[action]() }catch(e){ console.error('action error',e) } });
+    } else {
+      console.warn('No handler for', action);
+    }
+  });
 
-  // theme switching
-  document.querySelectorAll('.theme-button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.theme-button').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      const t = btn.getAttribute('data-theme') || 'neon';
-      document.body.className = 'theme-' + t;
-    });
-  });
+  // theme switching
+  document.querySelectorAll('.theme-button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.theme-button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.getAttribute('data-theme') || 'neon';
+      document.body.className = 'theme-' + t;
+    });
+  });
 
-  console.log('Initialization complete — bottom buttons wired.');
+  console.log('Initialization complete — bottom buttons wired.');
 });
 
 /* ====== Ensure telegram ready if present ====== */
