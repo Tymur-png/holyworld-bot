@@ -2,137 +2,76 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<title>CosmoPunk Tap Game — Full (fixed)</title>
+<title>CosmoPunk Tap Game — Fixed Buttons</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
-  --bg:#0a001a; --n1:#ff00ff; --n2:#00ffff; --panel:rgba(255,255,255,0.04);
-  --glass: rgba(255,255,255,0.04);
-  --glow: 0 0 30px;
-}
+:root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#app{height:100%}
-body{
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background: radial-gradient(circle at 25% 20%, #1a0033 0%, var(--bg) 45%, #000 100%);
-  color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;
-}
-
-/* Themes */
-body.theme-neon { --bg:#0a001a; --n1:#ff00ff; --n2:#00ffff; background: radial-gradient(circle at 25% 20%, #1a0033 0%, var(--bg) 45%, #000 100%);}
-body.theme-holo { --bg:#001022; --n1:#7fe3ff; --n2:#a7ffa8; background:radial-gradient(circle at 50% 30%, #003344 0%, #001022 45%, #000 100%);}
-body.theme-cartoon { --bg:#0a1022; --n1:#ffd166; --n2:#7ee7a6; background: linear-gradient(180deg,#071029,#0a1022);}
-body.theme-dark { --bg:#03040a; --n1:#ff3333; --n2:#33ff99; background:radial-gradient(circle at 70% 20%, #06060a 0%, #03040a 60%, #000 100%);}
-body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; background: linear-gradient(180deg,#041021,#08111a);}
-
-/* HUD */
-#app{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
-.hud{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;z-index:120}
-.badge{padding:6px 10px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,0.03);font-weight:700}
-.title{font-size:14px;color:var(--n2);letter-spacing:0.6px}
-.balance{font-size:18px;font-weight:800;text-shadow:0 0 18px var(--n1)}
-.small-muted{font-size:12px;color:rgba(255,255,255,0.7)}
-
-/* Theme buttons */
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:radial-gradient(circle at 25% 20%,#1a0033 0%,var(--bg) 45%,#000 100%);color:#fff;overflow:hidden}
 .theme-switch{display:flex;gap:8px;align-items:center}
 .theme-button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;cursor:pointer;color:#fff;font-weight:700;min-width:36px;text-align:center}
 .theme-button.active{box-shadow:0 0 20px var(--n1);transform:scale(1.04)}
-
-/* Reactor */
-.stage{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-.reactor-wrap{width:min(74vmin,600px);height:min(74vmin,600px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60}
-.reactor{width:100%;height:100%;border-radius:26px;background:
-  radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.03) 0%, transparent 35%),
-  linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
-  display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;
-  border:2px solid rgba(255,255,255,0.04);box-shadow: 0 0 36px var(--n1);transition:transform .12s}
-.reactor img{width:72%;height:72%;object-fit:contain;filter:drop-shadow(0 0 22px var(--n1))}
-.reactor.glitch{animation:glitch .18s steps(2);transform:translate3d(0,0,0)}
-@keyframes glitch{20%{transform:translate(-6px,6px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-6px,-6px)}80%{transform:translate(3px,3px)}}
-
-/* Floating numbers */
+#app{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+.hud{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;z-index:120}
+.badge{padding:6px 10px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03)}
+.balance{font-size:18px;font-weight:800;text-shadow:0 0 18px var(--n1)}
+.reactor-wrap{width:min(74vmin,600px);height:min(74vmin,600px);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.reactor{width:100%;height:100%;border-radius:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:2px solid rgba(255,255,255,0.04);box-shadow:0 0 36px var(--n1);transition:transform .12s}
+.reactor img{width:72%;height:72%;object-fit:contain}
 .floating{position:absolute;pointer-events:none;font-size:28px;color:var(--n2);text-shadow:0 0 14px var(--n1)}
 .critBoom{position:fixed;color:#ff0077;font-size:34px;font-weight:900;text-shadow:0 0 10px #ff00ff;pointer-events:none;z-index:2000}
-
-/* bottom bar */
 .bottom-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 0;background:linear-gradient(180deg, rgba(0,0,0,0.02), var(--bg) 90%);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.04);z-index:100}
 .scroll-container{display:flex;gap:10px;overflow-x:auto;padding:0 12px}
-.btn{padding:10px 14px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#fff;font-weight:800;display:flex;align-items:center;gap:8px}
+.btn{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#fff;font-weight:800;display:flex;align-items:center;gap:8px}
 .btn.primary{background:linear-gradient(90deg,var(--n1),var(--n2));color:#000}
-
-/* popup overlay */
 #pop{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.85));z-index:999}
 .pop-card{width:min(92%,980px);max-height:90%;overflow:auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.26));padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,0.04)}
-
-/* profile big */
-.profile-window{width:92%;max-width:920px;border-radius:14px;border:2px solid var(--n2);box-shadow:0 0 44px rgba(0,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.22));padding:16px;display:grid;grid-template-columns:260px 1fr;gap:14px}
-.profile-left{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px}
-.profile-avatar{width:200px;height:200px;border-radius:12px;object-fit:cover;border:3px solid rgba(255,255,255,0.06);box-shadow:0 0 20px var(--n1)}
-.profile-name{font-size:20px;font-weight:900;color:var(--n1)}
-.profile-id{font-size:13px;color:rgba(255,255,255,0.75)}
-.profile-right{padding:8px;display:flex;flex-direction:column;gap:10px}
-
-/* stats */
-.stat-row{display:flex;gap:12px;align-items:center}
-.stat-block{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);flex:1}
-.stat-title{font-size:12px;color:rgba(255,255,255,0.7)}
-.stat-value{font-size:20px;font-weight:900;color:var(--n2)}
-
-/* ships & implants lists */
 .thumb-list{display:flex;flex-wrap:wrap;gap:10px;padding:8px}
-.thumb{width:120px;background:rgba(255,255,255,0.02);padding:8px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
+.thumb{width:140px;background:rgba(255,255,255,0.02);padding:8px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
 .thumb img{width:80px;height:80px;object-fit:contain;margin-bottom:6px}
-
-/* inventory badges */
-.badge-eq{display:inline-block;padding:4px 8px;border-radius:8px;background:linear-gradient(90deg,var(--n1),var(--n2));color:#000;font-weight:800;margin-top:6px}
-
-/* small responsive */
-@media (max-width:980px){
-  .profile-window{grid-template-columns:1fr;grid-auto-rows:auto}
-  .profile-avatar{width:140px;height:140px}
-  .profile-left{flex-direction:row;gap:12px;justify-content:flex-start}
-}
+.profile-window{width:92%;max-width:920px;border-radius:14px;border:2px solid var(--n2);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.22));padding:16px;display:grid;grid-template-columns:240px 1fr;gap:14px}
+.profile-avatar{width:200px;height:200px;border-radius:12px;object-fit:cover;border:3px solid rgba(255,255,255,0.06)}
+.stat-block{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
+.small-muted{font-size:12px;color:rgba(255,255,255,0.7)}
+@media (max-width:980px){.profile-window{grid-template-columns:1fr}.profile-avatar{width:140px;height:140px}}
 </style>
 </head>
 <body class="theme-neon">
 <div id="app">
   <div class="hud">
     <div>
-      <div class="badge title">CosmoPunk Tap Game</div>
+      <div class="badge">CosmoPunk Tap Game</div>
       <div class="badge balance" id="energy">0 PUNK</div>
       <div class="small-muted" id="punk">$0.0000 $PUNK • курс 1000:1</div>
     </div>
     <div class="theme-switch" id="themeSwitch">
-      <button class="theme-button active" data-theme="neon" title="Cyberpunk Neon">N</button>
-      <button class="theme-button" data-theme="holo" title="Hologram">H</button>
-      <button class="theme-button" data-theme="cartoon" title="Cartoon">C</button>
-      <button class="theme-button" data-theme="dark" title="Dark">D</button>
-      <button class="theme-button" data-theme="3d" title="3d">3D</button>
+      <button class="theme-button active" data-theme="neon">N</button>
+      <button class="theme-button" data-theme="holo">H</button>
+      <button class="theme-button" data-theme="cartoon">C</button>
+      <button class="theme-button" data-theme="dark">D</button>
+      <button class="theme-button" data-theme="3d">3D</button>
     </div>
   </div>
 
-  <div class="stage">
-    <div class="reactor-wrap">
-      <div id="reactor" class="reactor" onclick="tap(event)">
-        <img src="/assets/reactor/reactor.gif" alt="reactor">
-      </div>
-      <div style="margin-top:12px;text-align:center">
-        <div id="inc" class="small-muted">0 /сек (PPH: 0)</div>
-        <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
-      </div>
+  <div class="reactor-wrap">
+    <div id="reactor" class="reactor"><img src="/assets/reactor/reactor.gif" alt="reactor"></div>
+    <div style="margin-top:12px;text-align:center">
+      <div id="inc" class="small-muted">0 /сек (PPH: 0)</div>
+      <div id="rank" class="badge" style="margin-top:6px">Street Rat</div>
     </div>
   </div>
 
   <div class="bottom-bar">
-    <div class="scroll-container">
-      <button class="btn" onclick="openShop('fleet')"><img src="/assets/ui/fleet.png" width="18" style="vertical-align:middle">ФЛОТ</button>
-      <button class="btn" onclick="openShop('crew')"><img src="/assets/ui/crew.png" width="18" style="vertical-align:middle">ЭКИПАЖ</button>
-      <button class="btn" onclick="openShop('impl')"><img src="/assets/ui/impl.png" width="18" style="vertical-align:middle">ИМПЛАНТЫ</button>
-      <button class="btn primary" onclick="openShop('raid')"><img src="/assets/ui/raid.png" width="18" style="vertical-align:middle">RAID</button>
-      <button class="btn" onclick="openQuests()"><img src="/assets/ui/quests.png" width="18" style="vertical-align:middle">КВЕСТЫ</button>
-      <button class="btn" onclick="openShop('market')"><img src="/assets/ui/market.png" width="18" style="vertical-align:middle">РЫНОК</button>
-      <button class="btn" onclick="openProfile()"><img src="/assets/ui/profile.png" width="18" style="vertical-align:middle">ПРОФИЛЬ</button>
+    <div class="scroll-container" id="controlsRow">
+      <button class="btn" data-action="fleet"><img src="/assets/ui/fleet.png" width="18">ФЛОТ</button>
+      <button class="btn" data-action="crew"><img src="/assets/ui/crew.png" width="18">ЭКИПАЖ</button>
+      <button class="btn" data-action="impl"><img src="/assets/ui/impl.png" width="18">ИМПЛАНТЫ</button>
+      <button class="btn primary" data-action="raid"><img src="/assets/ui/raid.png" width="18">RAID</button>
+      <button class="btn" data-action="quests"><img src="/assets/ui/quests.png" width="18">КВЕСТЫ</button>
+      <button class="btn" data-action="market"><img src="/assets/ui/market.png" width="18">МАРКЕТ</button>
+      <button class="btn" data-action="profile"><img src="/assets/ui/profile.png" width="18">ПРОФИЛЬ</button>
     </div>
   </div>
 </div>
@@ -142,17 +81,13 @@ body.theme-3d { --bg:#08111a; --n1:#ff66cc; --n2:#66ddff; background: linear-gra
 </div>
 
 <script>
-/* ------------------ State ------------------ */
-const SAVE_KEY = 'cosmopunk_full_v1_fixed';
+/* ====== Simple game state (kept minimal for demo) ====== */
+const SAVE_KEY = 'cosmo_buttons_fix_v1';
 let s = {
-  energy:0, punk:0, totalEarned:0,
-  tapBase:3, tapMult:1,
-  pph:0,
-  ships:{r:0,c:0,h:0,f:0,d:0},
-  impl:{}, crew:{}, rank:0, lastSave:Date.now(),
+  energy:0, punk:0, totalEarned:0, tapBase:3, tapMult:1,
+  ships:{r:0,c:0,h:0,f:0,d:0}, impl:{}, crew:{}, rank:0, lastSave:Date.now(),
   equipped:{impl:[], ships:[]}
 };
-
 const SHIPS = {
   r:{name:'Void Reaper (S)', basePrice:20000000, income:1000, id:'void_reaper'},
   c:{name:'Neon Corsair (A)', basePrice:10000000, income:500, id:'neon_corsair'},
@@ -160,7 +95,6 @@ const SHIPS = {
   f:{name:'Scrap Fighter (C)', basePrice:2000000, income:100, id:'scrap_fighter'},
   d:{name:'Rusty Drone (D)', basePrice:1000000, income:50, id:'rusty_drone'}
 };
-
 const IMPLANTS = {
   neuro:{id:'neuro', name:'Нео-Нейрон (S)', basePrice:1e6, effect:2.0, levelMult:0.04, maxLvl:50, type:'tap', desc:'+200% тапы'},
   glitch:{id:'glitch', name:'Глитч-Протез (A)', basePrice:5e5, effect:1.0, levelMult:0.025, maxLvl:40, type:'pph', desc:'+100% пассив'},
@@ -168,46 +102,33 @@ const IMPLANTS = {
   chip:{id:'chip', name:'Ржавый Чип (C)', basePrice:1e5, effect:0.2, levelMult:0.008, maxLvl:25, type:'pph', desc:'+20% пассив'},
   base:{id:'base', name:'Базовый Имплант (D)', basePrice:5e4, effect:0.1, levelMult:0.005, maxLvl:20, type:'tap', desc:'+10% тапы'}
 };
-
 const CREW = {
   captain:{id:'captain', name:'Капитан Космо (S)', price:1e7, mult:0.5, type:'pph', desc:'+50% флот-доход'},
   hacker:{id:'hacker', name:'Лиса-Хакер (A)', price:5e6, mult:0.3, type:'hack', desc:'+30% шанс хаков'},
   doctor:{id:'doctor', name:'Доктор Нейро (A)', price:4e6, mult:0.2, type:'regen', desc:'+20% реген/мин'},
   bot:{id:'bot', name:'ГигаПанк-Бот (B)', price:2e6, mult:1, type:'autotap', desc:'1 авто-тап/сек'}
 };
-
 const RANK_NAMES = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
 const RANK_REQ = [0,1e3,1e6,1e9,1e12];
 
-/* ------------------ Utils ------------------ */
+/* ====== Utilities ====== */
 function fmt(n){ return n>=1000?Math.floor(n).toLocaleString('ru-RU'):n.toFixed(2) }
 function save(){ s.lastSave=Date.now(); localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
-function load(){ const raw=localStorage.getItem(SAVE_KEY); if(raw) Object.assign(s, JSON.parse(raw)); recalcPassive(); offlineGain(); updateUI(); }
+function load(){ const raw = localStorage.getItem(SAVE_KEY); if(raw) Object.assign(s, JSON.parse(raw)); recalcPassive(); offlineGain(); updateUI(); }
 
-/* ------------------ Offline gain ------------------ */
-function offlineGain(){
-  const now = Date.now();
-  const secs = Math.min((now - (s.lastSave||now))/1000, 12*3600);
-  if(secs>2){ recalcPassive(); const gain = s.pph * secs; s.energy += gain; s.totalEarned += gain; try{ Telegram.WebApp.showAlert(`Оффлайн: +${Math.floor(gain).toLocaleString('ru-RU')} энергии`) }catch(e){} }
-}
-
-/* ------------------ Recalc passive ------------------ */
+/* ====== Passive & recalc ====== */
 function recalcPassive(){
   let shipIncomeSum = 0;
-  let tapImplSum = 0;
-  let pphImplSum = 0;
-  for(let k in s.ships){ const lvl = s.ships[k]||0; shipIncomeSum += SHIPS[k].income * Math.pow(lvl,1.2); }
-  for(let id in s.impl){
-    const impl = IMPLANTS[id]; const lvl = s.impl[id]?.level || 1;
-    const cur = impl.effect + impl.levelMult*(lvl-1);
-    if(impl.type==='tap') tapImplSum += cur; if(impl.type==='pph') pphImplSum += cur;
-  }
+  let tapImplSum = 0, pphImplSum = 0;
+  for(let k in s.ships){ const lvl=s.ships[k]||0; shipIncomeSum += SHIPS[k].income * Math.pow(lvl,1.2); }
+  for(let id in s.impl){ const impl=IMPLANTS[id]; const lvl=s.impl[id]?.level||1; const cur = impl.effect + impl.levelMult*(lvl-1); if(impl.type==='tap') tapImplSum += cur; if(impl.type==='pph') pphImplSum += cur; }
   let crewMult = 1; if(s.crew['captain']) crewMult += CREW.captain.mult;
   s.pph = shipIncomeSum * (1 + pphImplSum) * crewMult;
   s.tapMult = 1 + tapImplSum;
 }
+function offlineGain(){ const now=Date.now(); const secs=Math.min((now-(s.lastSave||now))/1000,12*3600); if(secs>2){ recalcPassive(); const gain=s.pph*secs; s.energy+=gain; s.totalEarned+=gain; try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert(`Оффлайн: +${Math.floor(gain).toLocaleString('ru-RU')} энергии`) }catch(e){} } }
 
-/* ------------------ UI update ------------------ */
+/* ====== UI update ====== */
 function updateUI(){
   document.getElementById('energy').innerText = fmt(s.energy) + ' PUNK';
   document.getElementById('punk').innerText = (s.punk||0).toFixed(4) + ' $PUNK';
@@ -216,197 +137,202 @@ function updateUI(){
   document.getElementById('rank').innerText = RANK_NAMES[s.rank];
 }
 
-/* ------------------ Tap handler ------------------ */
-function tap(ev){
-  const x = (ev.touches && ev.touches[0])?ev.touches[0].clientX:(ev.clientX||window.innerWidth/2);
-  const y = (ev.touches && ev.touches[0])?ev.touches[0].clientY:(ev.clientY||window.innerHeight/2);
-  let crit=1; const roll=Math.random();
-  if(roll<0.005) crit=10; else if(roll<0.035) crit=5; else if(roll<0.155) crit=2;
+/* ====== Tap behavior ====== */
+const reactor = document.getElementById('reactor');
+reactor.addEventListener('click', (ev)=>{ doTap(ev); });
+function doTap(ev){
+  const rect = document.body.getBoundingClientRect();
+  const x = ev.clientX || rect.width/2;
+  const y = ev.clientY || rect.height/2;
+  let crit=1; const r=Math.random();
+  if(r<0.005) crit=10; else if(r<0.035) crit=5; else if(r<0.155) crit=2;
   const gain = Math.floor(s.tapBase * s.tapMult * crit);
-  s.energy += gain; s.totalEarned += gain;
-  showFloating('+'+gain, x, y);
-  if(crit>1) showCrit('x'+crit, x, y);
-  document.getElementById('reactor').classList.add('glitch'); setTimeout(()=>document.getElementById('reactor').classList.remove('glitch'),180);
-  try{ Telegram.WebApp.HapticFeedback?.impactOccurred('light') }catch(e){}
+  s.energy += gain; s.totalEarned += gain; showFloating('+'+gain,x,y); if(crit>1) showCrit('x'+crit,x,y);
+  reactor.classList.add('glitch'); setTimeout(()=>reactor.classList.remove('glitch'),180);
   updateUI(); save();
 }
-function showFloating(text,x,y){
-  const el = document.createElement('div'); el.className='floating'; el.innerText = text;
-  const angle = (Math.random()*40-20); const offsetX=(Math.random()*60-30); const offsetY=Math.random()*140+80;
-  el.style.left = (x+offsetX)+'px'; el.style.top = (y+10)+'px'; document.body.appendChild(el);
-  el.animate([{transform:`translate(0,0) rotate(${angle}deg)`,opacity:1},{transform:`translate(0,-${offsetY}px) rotate(${angle}deg)`,opacity:0}],{duration:1100+Math.random()*400,easing:'ease-out'});
-  setTimeout(()=>el.remove(),1600);
-}
-function showCrit(text,x,y){ const boom=document.createElement('div'); boom.className='critBoom'; boom.innerText=text; boom.style.left=(x-20)+'px'; boom.style.top=(y-20)+'px'; document.body.appendChild(boom); boom.animate([{transform:'scale(1)',opacity:1},{transform:'scale(2.2)',opacity:0}],{duration:420,easing:'ease-out'}); setTimeout(()=>boom.remove(),500); try{ Telegram.WebApp.HapticFeedback?.notificationOccurred('success') }catch(e){} }
+function showFloating(text,x,y){ const el=document.createElement('div'); el.className='floating'; el.innerText=text; const angle=(Math.random()*40-20); const offsetX=(Math.random()*60-30); const offsetY=Math.random()*140+80; el.style.left=(x+offsetX)+'px'; el.style.top=(y+10)+'px'; document.body.appendChild(el); el.animate([{transform:`translate(0,0) rotate(${angle}deg)`,opacity:1},{transform:`translate(0,-${offsetY}px) rotate(${angle}deg)`,opacity:0}],{duration:1100+Math.random()*400,easing:'ease-out'}); setTimeout(()=>el.remove(),1600); }
+function showCrit(text,x,y){ const boom=document.createElement('div'); boom.className='critBoom'; boom.innerText=text; boom.style.left=(x-20)+'px'; boom.style.top=(y-20)+'px'; document.body.appendChild(boom); boom.animate([{transform:'scale(1)',opacity:1},{transform:'scale(2.2)',opacity:0}],{duration:420,easing:'ease-out'}); setTimeout(()=>boom.remove(),500); }
 
-/* ------------------ passive loop ------------------ */
-setInterval(()=>{ recalcPassive(); s.energy += s.pph/10; if(s.energy >= 1000){ const whole=Math.floor(s.energy/1000); const toAdd = whole*0.95; s.punk = (s.punk||0)+toAdd; s.energy -= whole*1000; } updateUI(); },100);
+/* ====== Passive loop ====== */
+setInterval(()=>{ recalcPassive(); s.energy += s.pph/10; if(s.energy >= 1000){ const whole = Math.floor(s.energy/1000); const toAdd = whole*0.95; s.punk = (s.punk||0) + toAdd; s.energy -= whole*1000; } updateUI(); },100);
 
-/* ------------------ save/load ------------------ */
-setInterval(()=>save(),4000); window.addEventListener('beforeunload', save); load();
-
-/* ------------------ pop helpers ------------------ */
+/* ====== Popup helpers ====== */
 function pop(html){ document.getElementById('popcard').innerHTML = html; document.getElementById('pop').style.display = 'flex'; }
 function popClose(){ document.getElementById('pop').style.display = 'none'; }
 
-/* ------------------ Shops ------------------ */
+/* ====== Shops & Profile (kept similar) ====== */
 function priceForShip(key){ const owned = s.ships[key]||0; return Math.floor(SHIPS[key].basePrice * Math.pow(1.15, owned)); }
 function priceForImpl(id){ const lvl = s.impl[id]?.level || 0; return Math.floor(IMPLANTS[id].basePrice * Math.pow(1.2, lvl)); }
 
 function openFleet(){
-  let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2>`;
-  html += `<div class="thumb-list">`;
+  console.log('openFleet called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ФЛОТ</h2><div class="thumb-list">`;
   for(const k in SHIPS){
     const sh = SHIPS[k]; const owned = s.ships[k]||0; const price = priceForShip(k);
-    html += `<div class="thumb"><img src="/assets/ships/${sh.id}.png" alt="${sh.name}" onerror="this.style.opacity=.45"><strong style="display:block">${sh.name}</strong><div class="small-muted">${sh.income}/сек</div><div style="margin-top:6px">${price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn primary" onclick="buyShip('${k}',${price})">Купить</button>`;
-    html += `</div></div>`;
+    html += `<div class="thumb"><img src="/assets/ships/${sh.id}.png" alt="${sh.name}" onerror="this.style.opacity=.45"><strong>${sh.name}</strong><div class="small-muted">${sh.income}/сек</div><div style="margin-top:8px">${price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn primary" data-buy-ship="${k}" data-price="${price}">Купить</button></div></div>`;
   }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`;
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
   pop(html);
-}
-function buyShip(k,price){
-  if(s.energy>=price){ s.energy-=price; s.ships[k]=(s.ships[k]||0)+1; recalcPassive(); updateUI(); save(); popClose(); try{ Telegram.WebApp.showAlert('Корабль куплен') }catch(e){} } else try{ Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  // delegate events inside pop
+  delegatePopClicks();
 }
 
 function openCrew(){
-  let html=`<h2 style="color:var(--n1);text-align:center">Экипаж</h2><div class="thumb-list">`;
+  console.log('openCrew called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ЭКИПАЖ</h2><div class="thumb-list">`;
   for(const k in CREW){
-    const it=CREW[k]; const hired = s.crew[it.id]; html += `<div class="thumb"><img src="/assets/crew/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div style="margin-top:8px">${it.price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn" onclick="toggleCrew('${it.id}',${it.price})">${hired?'Уволить':'Нанять'}</button></div></div>`;
+    const it = CREW[k]; const hired = s.crew[it.id] ? true : false;
+    html += `<div class="thumb"><img src="/assets/crew/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div style="margin-top:8px">${it.price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn" data-hire="${it.id}" data-price="${it.price}">${hired?'Уволить':'Нанять'}</button></div></div>`;
   }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`;
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
   pop(html);
-}
-function toggleCrew(id,price){
-  if(s.crew[id]){ delete s.crew[id]; recalcPassive(); updateUI(); save(); openCrew(); return; }
-  if(s.energy>=price){ s.energy-=price; s.crew[id]=true; recalcPassive(); updateUI(); save(); openCrew(); }
-  else try{ Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  delegatePopClicks();
 }
 
 function openImplants(){
-  let html=`<h2 style="color:var(--n1);text-align:center">Импланты</h2><div class="thumb-list">`;
+  console.log('openImplants called');
+  let html = `<h2 style="color:var(--n1);text-align:center">ИМПЛАНТЫ</h2><div class="thumb-list">`;
   for(const k in IMPLANTS){
-    const it=IMPLANTS[k]; const lvl = s.impl[it.id]?.level||0; const price=priceForImpl(it.id); const isMax = lvl>=it.maxLvl;
-    const equipped = s.equipped.impl.includes(it.id);
-    html += `<div class="thumb"><img src="/assets/implants/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div class="small-muted">Ур: ${lvl}/${it.maxLvl}</div><div style="margin-top:6px">${price.toLocaleString('ru-RU')} energy</div>`;
-    html += `<div style="margin-top:8px"><button class="btn ${isMax?'':'primary'}" onclick="buyImpl('${it.id}',${price})" ${isMax?'disabled':''}>${isMax?'MAX':'Улучшить'}</button></div>`;
-    html += `<div style="margin-top:8px"><button class="btn" onclick="toggleEquipImpl('${it.id}')">${equipped?'Снять':'Экипировать'}</button></div>`;
-    html += `</div>`;
+    const it = IMPLANTS[k]; const lvl = s.impl[it.id]?.level || 0; const price = priceForImpl(it.id); const isMax = lvl >= it.maxLvl; const equipped = s.equipped.impl.includes(it.id);
+    html += `<div class="thumb"><img src="/assets/implants/${it.id}.png" onerror="this.style.opacity=.5"><strong>${it.name}</strong><div class="small-muted">${it.desc}</div><div class="small-muted">Ур: ${lvl}/${it.maxLvl}</div><div style="margin-top:8px">${price.toLocaleString('ru-RU')} energy</div><div style="margin-top:8px"><button class="btn" data-buy-impl="${it.id}" data-price="${price}" ${isMax?'disabled':''}>${isMax?'MAX':'Улучшить'}</button></div><div style="margin-top:8px"><button class="btn" data-equip-impl="${it.id}">${equipped?'Снять':'Экипировать'}</button></div></div>`;
   }
-  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`;
+  html += `</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`;
   pop(html);
-}
-function buyImpl(id,price){
-  const it = IMPLANTS[id]; const lvl = s.impl[id]?.level||0;
-  if(lvl>=it.maxLvl) return;
-  if(s.energy>=price){ s.energy-=price; if(!s.impl[id]) s.impl[id]={level:0}; s.impl[id].level++; recalcPassive(); updateUI(); save(); openImplants(); }
-  else try{ Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+  delegatePopClicks();
 }
 
-function toggleEquipImpl(id){
-  // require at least level 1 to equip
-  if((s.impl[id]?.level || 0) < 1){ try{ Telegram.WebApp.showAlert('Имплант не куплен') }catch(e){} return; }
-  const idx = s.equipped.impl.indexOf(id);
-  if(idx >= 0){ s.equipped.impl.splice(idx,1); } else { s.equipped.impl.push(id); }
-  save(); openImplants();
-}
+function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК</h2><div style="padding:10px">NFT, бустеры и т.п. — скоро.</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`); delegatePopClicks(); }
+function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">КРИПТО-РЕЙД</h2><div style="padding:10px">Community Raid — в разработке.</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`); delegatePopClicks(); }
+function openQuests(){ pop(`<h2 style="color:var(--n1);text-align:center">КВЕСТЫ</h2><div style="padding:10px">Система квестов — в разработке.</div><div style="text-align:center;margin-top:12px"><button class="btn" data-close>Закрыть</button></div>`); delegatePopClicks(); }
 
-function toggleEquipShip(k){
-  // equip ship if user owns at least 1
-  if((s.ships[k]||0) < 1){ try{ Telegram.WebApp.showAlert('Корабль не куплен') }catch(e){} return; }
-  const idx = s.equipped.ships.indexOf(k);
-  if(idx >= 0){ s.equipped.ships.splice(idx,1); } else { s.equipped.ships.push(k); }
-  save(); openProfile();
-}
-
-function openMarket(){ pop(`<h2 style="color:var(--n1);text-align:center">ТЁМНЫЙ РЫНОК</h2><div style="padding:10px">NFT и бустеры — скоро</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`); }
-function openRaid(){ pop(`<h2 style="color:var(--n1);text-align:center">КРИПТО-РЕЙД</h2><div style="padding:10px">Community Raid — в разработке</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`); }
-function openQuests(){ pop(`<h2 style="color:var(--n1);text-align:center">КВЕСТЫ</h2><div style="padding:10px">Ежедневные задания и прогресс — скоро</div><div style="text-align:center;margin-top:12px"><button class="btn" onclick="popClose()">Закрыть</button></div>`); }
-
-/* ------------------ Profile — big revamped with inventory ------------------ */
 function openProfile(){
+  console.log('openProfile called');
   const nextRank = RANK_NAMES[s.rank+1] || 'MAX';
   const nextReq = RANK_REQ[s.rank+1] || Math.max(1, s.totalEarned);
   const progress = Math.min(100, Math.floor((s.totalEarned / nextReq)*100));
   const avatar = '/assets/profile/avatar.png';
   const name = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user && Telegram.WebApp.initDataUnsafe.user.first_name) ? Telegram.WebApp.initDataUnsafe.user.first_name : 'Пилот';
-  // build fleet inventory UI (owned)
+
   const fleetInv = Object.keys(SHIPS).map(k=>{
-    const sh = SHIPS[k]; const owned = s.ships[k]||0; const eq = s.equipped.ships.includes(k);
-    return `<div style="display:flex;flex-direction:column;align-items:center;width:110px;margin-right:8px">
-      <img src="/assets/ships/${sh.id}.png" style="width:80px;height:80px;object-fit:contain" onerror="this.style.opacity=.5">
-      <div class="small-muted" style="margin-top:6px">${sh.name}</div>
-      <div style="font-weight:800;margin-top:4px">${owned}</div>
-      <div style="margin-top:6px"><button class="btn" onclick="toggleEquipShip('${k}')">${eq?'Снять':'Экипировать'}</button></div>
-    </div>`;
+    const sh=SHIPS[k]; const owned=s.ships[k]||0; const eq = s.equipped.ships.includes(k);
+    return `<div style="display:flex;flex-direction:column;align-items:center;width:110px;margin-right:8px"><img src="/assets/ships/${sh.id}.png" style="width:80px;height:80px;object-fit:contain" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${sh.name}</div><div style="font-weight:800;margin-top:4px">${owned}</div><div style="margin-top:6px"><button class="btn" data-equip-ship="${k}">${eq?'Снять':'Экипировать'}</button></div></div>`;
   }).join('');
-  // implants inventory
+
   const implInv = Object.keys(IMPLANTS).map(k=>{
-    const it = IMPLANTS[k]; const lvl = s.impl[it.id]?.level||0; const eq = s.equipped.impl.includes(it.id);
-    return `<div style="display:flex;flex-direction:column;align-items:center;width:84px;margin-right:8px">
-      <img src="/assets/implants/${it.id}.png" style="width:64px;height:64px" onerror="this.style.opacity=.5">
-      <div class="small-muted" style="margin-top:6px">${it.name}</div>
-      <div style="font-weight:800">${lvl}</div>
-      <div style="margin-top:6px"><button class="btn" onclick="toggleEquipImpl('${it.id}')">${eq?'Снять':'Экипировать'}</button></div>
-    </div>`;
+    const it=IMPLANTS[k]; const lvl=s.impl[it.id]?.level||0; const eq = s.equipped.impl.includes(it.id);
+    return `<div style="display:flex;flex-direction:column;align-items:center;width:84px;margin-right:8px"><img src="/assets/implants/${it.id}.png" style="width:64px;height:64px" onerror="this.style.opacity=.5"><div class="small-muted" style="margin-top:6px">${it.name}</div><div style="font-weight:800">${lvl}</div><div style="margin-top:6px"><button class="btn" data-equip-impl="${it.id}">${eq?'Снять':'Экипировать'}</button></div></div>`;
   }).join('');
+
   let html = `<div class="profile-window">
-    <div class="profile-left">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
       <img src="${avatar}" class="profile-avatar" onerror="this.style.opacity=.5">
-      <div style="text-align:center">
-        <div class="profile-name">${name}</div>
-        <div class="profile-id small-muted">@CosmoPunk</div>
-        <div style="margin-top:8px"><button class="btn" onclick="popClose()">Редактировать</button></div>
-      </div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--n1)">${name}</div><div class="small-muted">@CosmoPunk</div></div>
+      <div style="margin-top:8px"><button class="btn" data-close>Закрыть</button></div>
     </div>
-
-    <div class="profile-right">
-      <div class="stat-row">
-        <div class="stat-block"><div class="stat-title">Ранг</div><div class="stat-value">${RANK_NAMES[s.rank]}</div></div>
-        <div class="stat-block"><div class="stat-title">Всего заработано</div><div class="stat-value">${fmt(s.totalEarned)} PUNK</div></div>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat-block"><div class="stat-title">PPH (пассив)</div><div class="stat-value">${fmt(s.pph)}/сек</div></div>
-        <div class="stat-block"><div class="stat-title">Множитель тап</div><div class="stat-value">x${(s.tapMult||1).toFixed(2)}</div></div>
-      </div>
-
-      <div class="stat-block">
-        <div class="stat-title">Прогресс к рангу ${nextRank}</div>
-        <div style="display:block;margin-top:8px;background:rgba(255,255,255,0.03);border-radius:10px;height:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.04)">
-          <div style="width:${progress}%;height:100%;background:linear-gradient(90deg,var(--n1),var(--n2));"></div>
-        </div>
-        <div class="small-muted" style="margin-top:8px">${progress}% • ${fmt(s.totalEarned)} / ${fmt(nextReq)}</div>
-      </div>
-
-      <div class="stat-block">
-        <div class="stat-title">Инвентарь — Флот</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${fleetInv}</div>
-      </div>
-
-      <div class="stat-block">
-        <div class="stat-title">Инвентарь — Импланты</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${implInv}</div>
-      </div>
-
-      <div style="text-align:right;margin-top:8px"><button class="btn" onclick="popClose()">Закрыть</button></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="stat-block"><div class="small-muted">Ранг</div><div style="font-weight:900">${RANK_NAMES[s.rank]}</div></div>
+      <div class="stat-block"><div class="small-muted">Всего заработано</div><div style="font-weight:900">${fmt(s.totalEarned)} PUNK</div></div>
+      <div class="stat-block"><div class="small-muted">PPH (пассив)</div><div style="font-weight:900">${fmt(s.pph)} /сек</div></div>
+      <div class="stat-block"><div class="small-muted">Инвентарь — Флот</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${fleetInv}</div></div>
+      <div class="stat-block"><div class="small-muted">Инвентарь — Импланты</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${implInv}</div></div>
     </div>
   </div>`;
   pop(html);
+  delegatePopClicks();
 }
 
-/* ------------------ Theme switching ------------------ */
-document.querySelectorAll('.theme-button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.theme-button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    const t = btn.getAttribute('data-theme') || 'neon';
-    // set single class to body preserving nothing else
-    document.body.className = 'theme-' + t;
+/* ====== Delegation for pop clicks (buttons generated inside pop) ====== */
+function delegatePopClicks(){
+  const popCard = document.getElementById('popcard');
+  popCard.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click', popClose));
+  popCard.querySelectorAll('[data-buy-ship]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const k = btn.getAttribute('data-buy-ship'); const price = Number(btn.getAttribute('data-price')); buyShip(k, price); });
   });
+  popCard.querySelectorAll('[data-hire]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-hire'); const price = Number(btn.getAttribute('data-price')); toggleCrew(id, price); });
+  });
+  popCard.querySelectorAll('[data-buy-impl]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-buy-impl'); const price = Number(btn.getAttribute('data-price')); buyImpl(id, price); });
+  });
+  popCard.querySelectorAll('[data-equip-impl]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-impl'); toggleEquipImpl(id); });
+  });
+  popCard.querySelectorAll('[data-equip-ship]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-equip-ship'); toggleEquipShip(id); });
+  });
+}
+
+/* ====== Shop actions used by delegates ====== */
+function buyShip(k,price){
+  console.log('buyShip',k,price);
+  if(s.energy >= price){ s.energy -= price; s.ships[k] = (s.ships[k]||0)+1; recalcPassive(); updateUI(); save(); popClose(); try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль куплен') }catch(e){} } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+}
+function toggleCrew(id,price){
+  console.log('toggleCrew',id,price);
+  if(s.crew[id]){ delete s.crew[id]; recalcPassive(); updateUI(); save(); popClose(); openCrew(); return; }
+  if(s.energy >= price){ s.energy -= price; s.crew[id] = true; recalcPassive(); updateUI(); save(); popClose(); openCrew(); } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+}
+function buyImpl(id,price){
+  console.log('buyImpl',id,price);
+  const it = IMPLANTS[id]; const lvl = s.impl[id]?.level || 0; if(lvl >= it.maxLvl) return;
+  if(s.energy >= price){ s.energy -= price; if(!s.impl[id]) s.impl[id] = {level:0}; s.impl[id].level++; recalcPassive(); updateUI(); save(); popClose(); openImplants(); } else try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Недостаточно энергии') }catch(e){}
+}
+function toggleEquipImpl(id){
+  console.log('toggleEquipImpl',id);
+  if((s.impl[id]?.level||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Имплант не куплен') }catch(e){} return; }
+  const idx = s.equipped.impl.indexOf(id);
+  if(idx >= 0) s.equipped.impl.splice(idx,1); else s.equipped.impl.push(id);
+  save(); popClose(); openImplants();
+}
+function toggleEquipShip(k){
+  console.log('toggleEquipShip',k);
+  if((s.ships[k]||0) < 1){ try{ Telegram.WebApp.showAlert && Telegram.WebApp.showAlert('Корабль не куплен') }catch(e){} return; }
+  const idx = s.equipped.ships.indexOf(k);
+  if(idx >= 0) s.equipped.ships.splice(idx,1); else s.equipped.ships.push(k);
+  save(); popClose(); openProfile();
+}
+
+/* ====== Wiring bottom buttons AFTER DOM Content loaded ====== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // load state
+  load();
+
+  // find all bottom buttons and map data-action to handler
+  const actionsMap = {
+    'fleet': openFleet,
+    'crew': openCrew,
+    'impl': openImplants,
+    'raid': openRaid,
+    'quests': openQuests,
+    'market': openMarket,
+    'profile': openProfile
+  };
+  const controlsRow = document.getElementById('controlsRow');
+  controlsRow.querySelectorAll('button[data-action]').forEach(btn=>{
+    const action = btn.getAttribute('data-action');
+    if(actionsMap[action]) {
+      btn.addEventListener('click', ()=>{ try{ actionsMap[action]() }catch(e){ console.error('action error',e) } });
+    } else {
+      console.warn('No handler for', action);
+    }
+  });
+
+  // theme switching
+  document.querySelectorAll('.theme-button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.theme-button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.getAttribute('data-theme') || 'neon';
+      document.body.className = 'theme-' + t;
+    });
+  });
+
+  console.log('Initialization complete — bottom buttons wired.');
 });
 
-/* Make Telegram ready if available */
-try{ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }catch(e){}
+/* ====== Ensure telegram ready if present ====== */
+try{ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }catch(e){ console.warn('Telegram WebApp not available', e); }
 </script>
 </body>
 </html>
