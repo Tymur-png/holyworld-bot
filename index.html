@@ -1,223 +1,214 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"/>
+<meta charset="UTF-8">
 <title>CosmoPunk Tap Game</title>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-:root{
-  --bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--text:#fff;
-  --panel:rgba(255,255,255,0.05);--glow:0 0 30px;
-}
+:root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--panel:rgba(255,255,255,.06);--glow:0 0 30px}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body,#app{height:100%}
+html,body{height:100%}
 body{
-  font-family:Inter,system-ui;
   background:radial-gradient(circle at 30% 20%,#1a0033,var(--bg));
-  color:var(--text);overflow:hidden
+  color:#fff;font-family:Arial,system-ui;overflow:hidden
 }
 
-/* THEMES */
-body.theme-neon{--n1:#ff00ff;--n2:#00ffff}
-body.theme-holo{--n1:#7fe3ff;--n2:#a7ffa8}
-body.theme-cartoon{--n1:#ffd166;--n2:#7ee7a6}
-body.theme-dark{--n1:#ff3333;--n2:#33ff99}
-body.theme-3d{--n1:#ff66cc;--n2:#66ddff}
+#app{height:100%;position:relative}
 
 /* HUD */
-.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:10}
-.badge{background:var(--panel);padding:6px 10px;border-radius:12px}
-.balance{font-size:18px;font-weight:800;text-shadow:var(--glow) var(--n1)}
-.small{font-size:12px;opacity:.7}
+#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:10}
+.badge{background:var(--panel);padding:6px 10px;border-radius:12px;font-weight:700}
+#energy{text-shadow:var(--glow) var(--n1)}
+#rank{font-size:12px;opacity:.7}
 
-/* THEME BUTTONS */
-.theme-switch{display:flex;gap:6px}
-.theme-btn{border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;padding:6px 8px;border-radius:8px;cursor:pointer}
-.theme-btn.active{box-shadow:var(--glow) var(--n1)}
-
-/* REACTOR */
-.stage{height:100%;display:flex;align-items:center;justify-content:center}
-.reactor{
-  width:300px;height:300px;border-radius:24px;
-  background:rgba(255,255,255,.04);
+/* Reactor */
+#center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#reactor{
+  width:280px;height:280px;border-radius:24px;
+  background:rgba(255,255,255,.05);
+  box-shadow:var(--glow) var(--n1);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:var(--glow) var(--n1);cursor:pointer
+  cursor:pointer
 }
-.reactor img{width:80%;filter:drop-shadow(var(--glow) var(--n1))}
+#reactor img{width:80%;filter:drop-shadow(var(--glow) var(--n1))}
 
-/* FLOAT */
-.float{position:absolute;font-size:26px;color:var(--n2);pointer-events:none}
+/* Floating text */
+.float{position:absolute;color:var(--n2);font-size:24px;pointer-events:none}
 
-/* BOTTOM BAR */
-.bottom{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:10px;background:linear-gradient(transparent,var(--bg));
-}
-.bar{display:flex;gap:8px;overflow-x:auto}
+/* Bottom bar */
+#bottom{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,var(--bg))}
+#bar{display:flex;gap:8px;overflow-x:auto}
 .btn{
-  background:var(--panel);border:1px solid rgba(255,255,255,.1);
-  padding:8px 12px;border-radius:12px;color:#fff;
-  display:flex;align-items:center;gap:6px;cursor:pointer
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.1);
+  padding:8px 12px;
+  border-radius:14px;
+  display:flex;align-items:center;gap:6px;
+  cursor:pointer;
+  white-space:nowrap
 }
-.btn img{width:18px}
+.btn img{width:18px;height:18px}
 
-/* POPUP */
-#pop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:99}
-.card{background:var(--bg);padding:16px;border-radius:16px;max-width:90%;max-height:90%;overflow:auto}
-.item{padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:10px;display:flex;gap:12px}
-.item img{width:64px;height:64px;object-fit:contain}
+/* Popup */
+#pop{
+  position:fixed;inset:0;
+  display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,.75);
+  z-index:99
+}
+#card{
+  background:#0a001a;
+  padding:16px;
+  border-radius:16px;
+  max-width:92%;
+  max-height:92%;
+  overflow:auto
+}
+.item{display:flex;gap:12px;margin-bottom:10px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px}
+.item img{width:60px;height:60px;object-fit:contain}
 </style>
 </head>
 
-<body class="theme-neon">
+<body>
 <div id="app">
 
-<div class="hud">
+<div id="hud">
   <div>
-    <div class="badge balance" id="energy">0 PUNK</div>
-    <div class="small" id="rank">Street Rat</div>
-  </div>
-  <div class="theme-switch">
-    <button class="theme-btn active" onclick="setTheme('neon')">N</button>
-    <button class="theme-btn" onclick="setTheme('holo')">H</button>
-    <button class="theme-btn" onclick="setTheme('cartoon')">C</button>
-    <button class="theme-btn" onclick="setTheme('dark')">D</button>
-    <button class="theme-btn" onclick="setTheme('3d')">3D</button>
+    <div id="energy" class="badge">0 PUNK</div>
+    <div id="rank">Street Rat</div>
   </div>
 </div>
 
-<div class="stage">
-  <div class="reactor" onclick="tap(event)">
+<div id="center">
+  <div id="reactor">
     <img src="assets/reactor/reactor.gif">
   </div>
 </div>
 
-<div class="bottom">
-  <div class="bar">
+<div id="bottom">
+  <div id="bar">
     <div class="btn" onclick="openFleet()"><img src="assets/ui/fleet.png">ФЛОТ</div>
     <div class="btn" onclick="openCrew()"><img src="assets/ui/crew.png">ЭКИПАЖ</div>
     <div class="btn" onclick="openImplants()"><img src="assets/ui/impl.png">ИМПЛАНТЫ</div>
     <div class="btn" onclick="openRaid()"><img src="assets/ui/raid.png">РЕЙД</div>
     <div class="btn" onclick="openMarket()"><img src="assets/ui/market.png">МАГАЗИН</div>
     <div class="btn" onclick="openProfile()"><img src="assets/ui/profile.png">ПРОФИЛЬ</div>
-    <div class="btn" onclick="openSettings()"><img src="assets/ui/settings.png">⚙️</div>
   </div>
 </div>
 
 </div>
 
 <div id="pop" onclick="if(event.target.id==='pop')closePop()">
-  <div class="card" id="popc"></div>
+  <div id="card"></div>
 </div>
 
 <script>
-/* ================= STATE ================= */
+Telegram.WebApp.ready();
+
+/* ========= STATE ========= */
 let s = JSON.parse(localStorage.getItem('cp_save')) || {
   energy:0,total:0,rank:0,
-  ships:{},impl:{},crew:{},
-  maxShips:3,
-  lang:null
+  ships:{},impl:{},
+  maxShips:3
 };
 
 const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord"];
+
 const SHIPS={
-  void_reaper:{name:"Void Reaper",img:"assets/ships/void_reaper.png"},
-  neon_corsair:{name:"Neon Corsair",img:"assets/ships/neon_corsair.png"},
-  punk_hauler:{name:"Punk Hauler",img:"assets/ships/punk_hauler.png"},
-  scrap_fighter:{name:"Scrap Fighter",img:"assets/ships/scrap_fighter.png"},
-  rusty_drone:{name:"Rusty Drone",img:"assets/ships/rusty_drone.png"}
+  void:{name:"Void Reaper",img:"assets/ships/void_reaper.png"},
+  neon:{name:"Neon Corsair",img:"assets/ships/neon_corsair.png"},
+  punk:{name:"Punk Hauler",img:"assets/ships/punk_hauler.png"}
 };
+
 const IMPL={
   neuro:{name:"Neo-Neuron",img:"assets/implants/neuro.png"},
   glitch:{name:"Glitch Arm",img:"assets/implants/glitch.png"},
-  eye:{name:"Cyber Eye",img:"assets/implants/eye.png"},
-  chip:{name:"Rust Chip",img:"assets/implants/chip.png"},
-  base:{name:"Base Implant",img:"assets/implants/base.png"}
+  eye:{name:"Cyber Eye",img:"assets/implants/eye.png"}
 };
 
-/* ================= CORE ================= */
+/* ========= CORE ========= */
+const energyEl=document.getElementById('energy');
+const rankEl=document.getElementById('rank');
+const reactor=document.getElementById('reactor');
+
 function save(){localStorage.setItem('cp_save',JSON.stringify(s))}
 function ui(){
-  energy.innerText=Math.floor(s.energy)+" PUNK";
-  rank.innerText=RANKS[s.rank]||RANKS.at(-1);
+  energyEl.textContent=Math.floor(s.energy)+" PUNK";
+  rankEl.textContent=RANKS[s.rank]||RANKS.at(-1);
 }
-function tap(e){
-  s.energy+=3;s.total+=3;
+
+reactor.onclick=(e)=>{
+  s.energy+=1;s.total+=1;
   if(s.total>1000)s.rank=1;
-  if(s.total>10000)s.rank=2;
-  if(s.total>100000)s.rank=3;
+  if(s.total>5000)s.rank=2;
+  if(s.total>20000)s.rank=3;
 
   const f=document.createElement('div');
-  f.className='float';f.innerText='+3';
-  f.style.left=e.clientX+'px';f.style.top=e.clientY+'px';
+  f.className='float';
+  f.textContent='+1';
+  f.style.left=e.clientX+'px';
+  f.style.top=e.clientY+'px';
   document.body.appendChild(f);
-  f.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-80px)',opacity:0}],{duration:800});
-  setTimeout(()=>f.remove(),800);
+  f.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-80px)',opacity:0}],{duration:700});
+  setTimeout(()=>f.remove(),700);
+
   ui();save();
-}
+};
 
-/* ================= POPUPS ================= */
-function pop(h){popc.innerHTML=h;pop.style.display='flex'}
-function closePop(){pop.style.display='none'}
+/* ========= POPUPS ========= */
+const pop=document.getElementById('pop');
+const card=document.getElementById('card');
 
-function openFleet(){
+window.closePop=()=>pop.style.display='none';
+function show(html){card.innerHTML=html;pop.style.display='flex';}
+
+/* ========= BUTTONS (FIXED) ========= */
+window.openFleet=()=>{
   let h='<h2>ФЛОТ</h2>';
   Object.keys(SHIPS).forEach(k=>{
     if(s.ships[k])return;
     if(Object.keys(s.ships).length>=s.maxShips)return;
     h+=`<div class="item">
       <img src="${SHIPS[k].img}">
-      <div>
-        <b>${SHIPS[k].name}</b><br>
-        <button onclick="buyShip('${k}')">Купить</button>
-      </div></div>`;
+      <div><b>${SHIPS[k].name}</b><br>
+      <button onclick="buyShip('${k}')">Купить</button></div>
+    </div>`;
   });
-  pop(h);
-}
-function buyShip(k){s.ships[k]=1;save();openFleet()}
+  show(h);
+};
 
-function openImplants(){
+window.buyShip=(k)=>{s.ships[k]=1;save();openFleet();};
+
+window.openImplants=()=>{
   let h='<h2>ИМПЛАНТЫ</h2>';
   Object.keys(IMPL).forEach(k=>{
     if(s.impl[k])return;
     h+=`<div class="item">
       <img src="${IMPL[k].img}">
       <div><b>${IMPL[k].name}</b><br>
-      <button onclick="buyImpl('${k}')">Купить</button></div></div>`;
+      <button onclick="buyImpl('${k}')">Купить</button></div>
+    </div>`;
   });
-  pop(h);
-}
-function buyImpl(k){s.impl[k]=1;save();openImplants()}
+  show(h);
+};
 
-function openProfile(){
+window.buyImpl=(k)=>{s.impl[k]=1;save();openImplants();};
+
+window.openProfile=()=>{
   let h='<h2>ПРОФИЛЬ</h2><h3>Корабли</h3>';
   Object.keys(s.ships).forEach(k=>h+=`<div>${SHIPS[k].name}</div>`);
   h+='<h3>Импланты</h3>';
   Object.keys(s.impl).forEach(k=>h+=`<div>${IMPL[k].name}</div>`);
-  pop(h);
-}
+  show(h);
+};
 
-function openCrew(){pop('<h2>ЭКИПАЖ</h2><p>Будет расширено</p>')}
-function openRaid(){pop('<h2>РЕЙД</h2><p>В разработке</p>')}
-function openMarket(){pop('<h2>МАГАЗИН</h2><p>В разработке</p>')}
+window.openCrew=()=>show('<h2>ЭКИПАЖ</h2><p>Скоро</p>');
+window.openRaid=()=>show('<h2>РЕЙД</h2><p>В разработке</p>');
+window.openMarket=()=>show('<h2>МАГАЗИН</h2><p>В разработке</p>');
 
-function openSettings(){
-  pop(`<h2>НАСТРОЙКИ</h2>
-  <button onclick="setLang('ru')">Русский</button>
-  <button onclick="setLang('en')">English</button>
-  <button onclick="setLang('pl')">Polski</button>`);
-}
-function setLang(l){s.lang=l;save();closePop()}
-
-function setTheme(t){
-  document.body.className='theme-'+t;
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-}
-
-/* INIT */
 ui();
 </script>
 </body>
