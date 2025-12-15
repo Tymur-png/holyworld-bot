@@ -1,306 +1,224 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>CosmoPunk</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<title>CosmoPunk Tap Game</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 :root{
---bg:#0a001a;
---n1:#ff00ff;
---n2:#00ffff;
+  --bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--text:#fff;
+  --panel:rgba(255,255,255,0.05);--glow:0 0 30px;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#app{height:100%}
 body{
-margin:0;
-background:radial-gradient(circle at top,#1a0033,var(--bg));
-color:#fff;
-font-family:Inter,Arial,monospace;
-overflow:hidden;
+  font-family:Inter,system-ui;
+  background:radial-gradient(circle at 30% 20%,#1a0033,var(--bg));
+  color:var(--text);overflow:hidden
 }
-#app{height:100vh;display:flex;flex-direction:column}
 
-/* HEADER */
-#top{
-padding:10px;
-text-align:center;
-}
-#energy{font-size:28px;color:var(--n1)}
-#inc{font-size:14px;color:var(--n2)}
-#rank{font-size:12px;opacity:.7}
+/* THEMES */
+body.theme-neon{--n1:#ff00ff;--n2:#00ffff}
+body.theme-holo{--n1:#7fe3ff;--n2:#a7ffa8}
+body.theme-cartoon{--n1:#ffd166;--n2:#7ee7a6}
+body.theme-dark{--n1:#ff3333;--n2:#33ff99}
+body.theme-3d{--n1:#ff66cc;--n2:#66ddff}
+
+/* HUD */
+.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:10}
+.badge{background:var(--panel);padding:6px 10px;border-radius:12px}
+.balance{font-size:18px;font-weight:800;text-shadow:var(--glow) var(--n1)}
+.small{font-size:12px;opacity:.7}
+
+/* THEME BUTTONS */
+.theme-switch{display:flex;gap:6px}
+.theme-btn{border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;padding:6px 8px;border-radius:8px;cursor:pointer}
+.theme-btn.active{box-shadow:var(--glow) var(--n1)}
 
 /* REACTOR */
-#reactor{
-width:260px;
-height:260px;
-margin:10px auto;
-background:url("/assets/reactor.png") center/contain no-repeat;
-filter:drop-shadow(0 0 35px var(--n1));
-cursor:pointer;
+.stage{height:100%;display:flex;align-items:center;justify-content:center}
+.reactor{
+  width:300px;height:300px;border-radius:24px;
+  background:rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--glow) var(--n1);cursor:pointer
 }
+.reactor img{width:80%;filter:drop-shadow(var(--glow) var(--n1))}
 
-/* MENU */
-#menu{
-margin-top:auto;
-display:grid;
-grid-template-columns:repeat(5,1fr);
-padding:6px;
-background:rgba(0,0,0,.4);
+/* FLOAT */
+.float{position:absolute;font-size:26px;color:var(--n2);pointer-events:none}
+
+/* BOTTOM BAR */
+.bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:10px;background:linear-gradient(transparent,var(--bg));
 }
+.bar{display:flex;gap:8px;overflow-x:auto}
 .btn{
-margin:4px;
-padding:10px;
-border-radius:14px;
-border:2px solid var(--n2);
-background:linear-gradient(45deg,rgba(255,0,255,.15),rgba(0,255,255,.15));
-font-weight:700;
-text-align:center;
-cursor:pointer;
+  background:var(--panel);border:1px solid rgba(255,255,255,.1);
+  padding:8px 12px;border-radius:12px;color:#fff;
+  display:flex;align-items:center;gap:6px;cursor:pointer
 }
+.btn img{width:18px}
 
-/* MODAL */
-.modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.85);
-display:none;
-z-index:1000;
-overflow:auto;
-}
-.box{
-max-width:520px;
-margin:30px auto;
-border:2px solid var(--n1);
-border-radius:18px;
-padding:16px;
-background:rgba(10,0,30,.95);
-}
-.item{
-display:flex;
-gap:12px;
-align-items:center;
-border:1px solid var(--n2);
-border-radius:12px;
-padding:10px;
-margin-bottom:10px;
-}
-.item img{width:48px;height:48px}
-.close{margin-top:10px}
-
-/* LANGUAGE */
-#langModal{
-position:fixed;
-inset:0;
-background:#000;
-display:none;
-z-index:2000;
-align-items:center;
-justify-content:center;
-}
+/* POPUP */
+#pop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:99}
+.card{background:var(--bg);padding:16px;border-radius:16px;max-width:90%;max-height:90%;overflow:auto}
+.item{padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:10px;display:flex;gap:12px}
+.item img{width:64px;height:64px;object-fit:contain}
 </style>
 </head>
 
-<body>
+<body class="theme-neon">
 <div id="app">
 
-<div id="top">
-<div id="energy">0 PUNK</div>
-<div id="inc">0 / сек</div>
-<div id="rank">Street Rat</div>
+<div class="hud">
+  <div>
+    <div class="badge balance" id="energy">0 PUNK</div>
+    <div class="small" id="rank">Street Rat</div>
+  </div>
+  <div class="theme-switch">
+    <button class="theme-btn active" onclick="setTheme('neon')">N</button>
+    <button class="theme-btn" onclick="setTheme('holo')">H</button>
+    <button class="theme-btn" onclick="setTheme('cartoon')">C</button>
+    <button class="theme-btn" onclick="setTheme('dark')">D</button>
+    <button class="theme-btn" onclick="setTheme('3d')">3D</button>
+  </div>
 </div>
 
-<div id="reactor"></div>
+<div class="stage">
+  <div class="reactor" onclick="tap(event)">
+    <img src="assets/reactor/reactor.gif">
+  </div>
+</div>
 
-<div id="menu">
-<div class="btn" onclick="openFleet()">ФЛОТ</div>
-<div class="btn" onclick="openImplants()">ИМПЛАНТЫ</div>
-<div class="btn" onclick="openCrew()">ЭКИПАЖ</div>
-<div class="btn" onclick="openProfile()">ПРОФИЛЬ</div>
-<div class="btn" onclick="openSettings()">⚙</div>
+<div class="bottom">
+  <div class="bar">
+    <div class="btn" onclick="openFleet()"><img src="assets/ui/fleet.png">ФЛОТ</div>
+    <div class="btn" onclick="openCrew()"><img src="assets/ui/crew.png">ЭКИПАЖ</div>
+    <div class="btn" onclick="openImplants()"><img src="assets/ui/impl.png">ИМПЛАНТЫ</div>
+    <div class="btn" onclick="openRaid()"><img src="assets/ui/raid.png">РЕЙД</div>
+    <div class="btn" onclick="openMarket()"><img src="assets/ui/market.png">МАГАЗИН</div>
+    <div class="btn" onclick="openProfile()"><img src="assets/ui/profile.png">ПРОФИЛЬ</div>
+    <div class="btn" onclick="openSettings()"><img src="assets/ui/settings.png">⚙️</div>
+  </div>
 </div>
 
 </div>
 
-<div id="modal" class="modal"><div class="box" id="box"></div></div>
-
-<div id="langModal">
-<div class="box">
-<h2>Select language</h2>
-<div class="btn" onclick="setLang('ru')">Русский</div>
-<div class="btn" onclick="setLang('en')">English</div>
-<div class="btn" onclick="setLang('pl')">Polski</div>
-</div>
+<div id="pop" onclick="if(event.target.id==='pop')closePop()">
+  <div class="card" id="popc"></div>
 </div>
 
 <script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
+/* ================= STATE ================= */
+let s = JSON.parse(localStorage.getItem('cp_save')) || {
+  energy:0,total:0,rank:0,
+  ships:{},impl:{},crew:{},
+  maxShips:3,
+  lang:null
+};
 
-/* ===== SAVE ===== */
-let s = JSON.parse(localStorage.cp_save || "{}");
-Object.assign(s,{
-energy:s.energy||0,
-tap:1,
-pph:s.pph||0,
-ships:s.ships||{},
-implants:s.implants||{},
-equipped:s.equipped||{},
-crew:s.crew||{},
-shipLimit:s.shipLimit||3,
-lang:s.lang||null
-});
-
-/* ===== DATA ===== */
+const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord"];
 const SHIPS={
-reaper:{name:"Void Reaper",img:"/assets/ships/reaper.png",inc:50},
-corsair:{name:"Neon Corsair",img:"/assets/ships/corsair.png",inc:30}
+  void_reaper:{name:"Void Reaper",img:"assets/ships/void_reaper.png"},
+  neon_corsair:{name:"Neon Corsair",img:"assets/ships/neon_corsair.png"},
+  punk_hauler:{name:"Punk Hauler",img:"assets/ships/punk_hauler.png"},
+  scrap_fighter:{name:"Scrap Fighter",img:"assets/ships/scrap_fighter.png"},
+  rusty_drone:{name:"Rusty Drone",img:"assets/ships/rusty_drone.png"}
 };
-const IMPLANTS={
-neuro:{name:"Neuro Implant",img:"/assets/implants/neuro.png",tap:2},
-glitch:{name:"Glitch Chip",img:"/assets/implants/glitch.png",tap:1.5}
-};
-const CREW={
-bot:{name:"Auto Bot",inc:10}
-};
-
-/* ===== LANGUAGE ===== */
-if(!s.lang) langModal.style.display="flex";
-
-/* ===== TAP ===== */
-reactor.onclick=()=>{
-s.energy+=s.tap;
-save();ui();
+const IMPL={
+  neuro:{name:"Neo-Neuron",img:"assets/implants/neuro.png"},
+  glitch:{name:"Glitch Arm",img:"assets/implants/glitch.png"},
+  eye:{name:"Cyber Eye",img:"assets/implants/eye.png"},
+  chip:{name:"Rust Chip",img:"assets/implants/chip.png"},
+  base:{name:"Base Implant",img:"assets/implants/base.png"}
 };
 
-/* ===== UI ===== */
+/* ================= CORE ================= */
+function save(){localStorage.setItem('cp_save',JSON.stringify(s))}
 function ui(){
-energy.innerText=Math.floor(s.energy)+" PUNK";
-inc.innerText=s.pph+" / сек";
+  energy.innerText=Math.floor(s.energy)+" PUNK";
+  rank.innerText=RANKS[s.rank]||RANKS.at(-1);
 }
-ui();
+function tap(e){
+  s.energy+=3;s.total+=3;
+  if(s.total>1000)s.rank=1;
+  if(s.total>10000)s.rank=2;
+  if(s.total>100000)s.rank=3;
 
-/* ===== MODAL ===== */
-function show(html){
-box.innerHTML=html+`<div class="btn close" onclick="closeModal()">Закрыть</div>`;
-modal.style.display="block";
+  const f=document.createElement('div');
+  f.className='float';f.innerText='+3';
+  f.style.left=e.clientX+'px';f.style.top=e.clientY+'px';
+  document.body.appendChild(f);
+  f.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-80px)',opacity:0}],{duration:800});
+  setTimeout(()=>f.remove(),800);
+  ui();save();
 }
-function closeModal(){modal.style.display="none"}
 
-/* ===== FLEET ===== */
+/* ================= POPUPS ================= */
+function pop(h){popc.innerHTML=h;pop.style.display='flex'}
+function closePop(){pop.style.display='none'}
+
 function openFleet(){
-let total = Object.values(s.ships).reduce((a,b)=>a+b,0);
-let html=`<h2>Флот</h2><div>Лимит: ${total}/${s.shipLimit}</div>`;
-for(let k in SHIPS){
-html+=`
-<div class="item">
-<img src="${SHIPS[k].img}">
-<div>${SHIPS[k].name}<br>+${SHIPS[k].inc}/сек</div>
-<div class="btn" onclick="buyShip('${k}')">Купить</div>
-</div>`;
+  let h='<h2>ФЛОТ</h2>';
+  Object.keys(SHIPS).forEach(k=>{
+    if(s.ships[k])return;
+    if(Object.keys(s.ships).length>=s.maxShips)return;
+    h+=`<div class="item">
+      <img src="${SHIPS[k].img}">
+      <div>
+        <b>${SHIPS[k].name}</b><br>
+        <button onclick="buyShip('${k}')">Купить</button>
+      </div></div>`;
+  });
+  pop(h);
 }
-show(html);
-}
-function buyShip(id){
-let total=Object.values(s.ships).reduce((a,b)=>a+b,0);
-if(total>=s.shipLimit) return alert("Лимит кораблей");
-s.ships[id]=(s.ships[id]||0)+1;
-s.pph+=SHIPS[id].inc;
-save();openFleet();ui();
-}
+function buyShip(k){s.ships[k]=1;save();openFleet()}
 
-/* ===== IMPLANTS ===== */
 function openImplants(){
-let html="<h2>Импланты</h2>";
-for(let k in IMPLANTS){
-let owned=s.implants[k];
-let eq=s.equipped[k];
-html+=`
-<div class="item">
-<img src="${IMPLANTS[k].img}">
-<div>${IMPLANTS[k].name}<br>x${IMPLANTS[k].tap}</div>
-${!owned?
-`<div class="btn" onclick="buyImpl('${k}')">Купить</div>`:
-`<div class="btn" onclick="toggleImpl('${k}')">${eq?"Снять":"Экипировать"}</div>`}
-</div>`;
+  let h='<h2>ИМПЛАНТЫ</h2>';
+  Object.keys(IMPL).forEach(k=>{
+    if(s.impl[k])return;
+    h+=`<div class="item">
+      <img src="${IMPL[k].img}">
+      <div><b>${IMPL[k].name}</b><br>
+      <button onclick="buyImpl('${k}')">Купить</button></div></div>`;
+  });
+  pop(h);
 }
-show(html);
-}
-function buyImpl(id){
-s.implants[id]=true;
-save();openImplants();
-}
-function toggleImpl(id){
-if(s.equipped[id]){
-s.tap/=IMPLANTS[id].tap;
-delete s.equipped[id];
-}else{
-s.tap*=IMPLANTS[id].tap;
-s.equipped[id]=true;
-}
-save();openImplants();ui();
-}
+function buyImpl(k){s.impl[k]=1;save();openImplants()}
 
-/* ===== CREW ===== */
-function openCrew(){
-let html="<h2>Экипаж</h2>";
-for(let k in CREW){
-let hired=s.crew[k];
-html+=`
-<div class="item">
-<div>${CREW[k].name}<br>+${CREW[k].inc}/сек</div>
-<div class="btn" onclick="toggleCrew('${k}')">${hired?"Уволить":"Нанять"}</div>
-</div>`;
-}
-show(html);
-}
-function toggleCrew(id){
-if(s.crew[id]){
-s.pph-=CREW[id].inc;
-delete s.crew[id];
-}else{
-s.pph+=CREW[id].inc;
-s.crew[id]=true;
-}
-save();openCrew();ui();
-}
-
-/* ===== PROFILE ===== */
 function openProfile(){
-let html="<h2>Профиль</h2>";
-html+=`<div>Лимит кораблей: ${s.shipLimit}</div><hr>`;
-html+="<b>Корабли:</b>";
-for(let k in s.ships) html+=`<div>${SHIPS[k].name} x${s.ships[k]}</div>`;
-html+="<hr><b>Импланты:</b>";
-for(let k in s.implants) html+=`<div>${IMPLANTS[k].name}</div>`;
-show(html);
+  let h='<h2>ПРОФИЛЬ</h2><h3>Корабли</h3>';
+  Object.keys(s.ships).forEach(k=>h+=`<div>${SHIPS[k].name}</div>`);
+  h+='<h3>Импланты</h3>';
+  Object.keys(s.impl).forEach(k=>h+=`<div>${IMPL[k].name}</div>`);
+  pop(h);
 }
 
-/* ===== SETTINGS ===== */
+function openCrew(){pop('<h2>ЭКИПАЖ</h2><p>Будет расширено</p>')}
+function openRaid(){pop('<h2>РЕЙД</h2><p>В разработке</p>')}
+function openMarket(){pop('<h2>МАГАЗИН</h2><p>В разработке</p>')}
+
 function openSettings(){
-show(`
-<h2>Настройки</h2>
-<div class="btn" onclick="setLang('ru')">RU</div>
-<div class="btn" onclick="setLang('en')">EN</div>
-<div class="btn" onclick="setLang('pl')">PL</div>
-<div class="btn" onclick="upgradeLimit()">+ Лимит кораблей</div>
-`);
+  pop(`<h2>НАСТРОЙКИ</h2>
+  <button onclick="setLang('ru')">Русский</button>
+  <button onclick="setLang('en')">English</button>
+  <button onclick="setLang('pl')">Polski</button>`);
 }
-function upgradeLimit(){
-if(s.shipLimit<9) s.shipLimit+=3;
-save();ui();
-}
-function setLang(l){
-s.lang=l;
-langModal.style.display="none";
-save();
+function setLang(l){s.lang=l;save();closePop()}
+
+function setTheme(t){
+  document.body.className='theme-'+t;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
 }
 
-/* ===== SAVE ===== */
-function save(){
-localStorage.cp_save=JSON.stringify(s);
-}
+/* INIT */
+ui();
 </script>
 </body>
 </html>
