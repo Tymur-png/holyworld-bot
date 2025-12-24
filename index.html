@@ -51,9 +51,9 @@ body{
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
 }
-#reactor img{width:85%}
+#reactor img{width:90%}
 
-/* Floating */
+/* Floating text */
 .float{
   position:absolute;
   color:var(--n2);
@@ -82,7 +82,7 @@ body{
 /* Popup */
 #pop{
   position:fixed;inset:0;
-  background:rgba(0,0,0,.8);
+  background:rgba(0,0,0,.85);
   display:none;
   align-items:center;justify-content:center;
   z-index:100;
@@ -100,6 +100,14 @@ body{
   border-radius:14px;
   padding:12px;
   margin-bottom:10px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.item img{
+  width:64px;
+  height:64px;
+  object-fit:contain;
 }
 h2{text-align:center;color:var(--n1);margin-bottom:10px}
 .small{font-size:13px;opacity:.7}
@@ -155,30 +163,27 @@ let s = JSON.parse(localStorage.getItem("cp_save")) || {
   implants:{},
   crew:{},
   maxShips:3,
-  lang:null,
+  lang:"ru",
   last:Date.now()
 };
 
 const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
 
-/* ===== SAVE / OFFLINE ===== */
-function save(){localStorage.setItem("cp_save",JSON.stringify(s))}
+/* ===== OFFLINE ===== */
 let diff=(Date.now()-s.last)/1000;
 s.energy+=s.pass*diff;
 s.last=Date.now();
 
 /* ===== UI ===== */
-const energyEl=document.getElementById("energy");
-const rankEl=document.getElementById("rank");
-const incEl=document.getElementById("inc");
 function ui(){
-  energyEl.textContent=Math.floor(s.energy)+" PUNK";
-  incEl.textContent=s.pass.toFixed(1)+" /сек";
-  rankEl.textContent=RANKS[s.rank];
+  energy.textContent=Math.floor(s.energy)+" PUNK";
+  inc.textContent=s.pass.toFixed(1)+" /сек";
+  rank.textContent=RANKS[s.rank];
 }
+function save(){localStorage.setItem("cp_save",JSON.stringify(s))}
 
 /* ===== TAP ===== */
-document.getElementById("reactor").onclick=e=>{
+reactor.onclick=e=>{
   s.energy+=1;
   s.total+=1;
   if(s.total>1000)s.rank=1;
@@ -186,13 +191,13 @@ document.getElementById("reactor").onclick=e=>{
   if(s.total>50000)s.rank=3;
   if(s.total>200000)s.rank=4;
 
-  const f=document.createElement("div");
+  let f=document.createElement("div");
   f.className="float";
   f.textContent="+1";
   f.style.left=e.clientX+"px";
   f.style.top=e.clientY+"px";
   document.body.appendChild(f);
-  f.animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(-100px)",opacity:0}],{duration:900});
+  f.animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(-120px)",opacity:0}],{duration:900});
   setTimeout(()=>f.remove(),900);
 
   ui();save();
@@ -202,13 +207,19 @@ document.getElementById("reactor").onclick=e=>{
 function show(html){card.innerHTML=html;pop.style.display="flex"}
 function closePop(){pop.style.display="none"}
 
-/* ===== SECTIONS ===== */
+/* ===== FLEET ===== */
 function openFleet(){
   let h="<h2>ФЛОТ</h2>";
   for(let i=1;i<=10;i++){
     if(!s.ships[i]){
-      h+=`<div class="item">Корабль #${i}<br>
-      <button onclick="buyShip(${i})">Купить</button></div>`;
+      h+=`
+      <div class="item">
+        <img src="assets/ships/ship${i}.png">
+        <div>
+          Корабль #${i}<br>
+          <button onclick="buyShip(${i})">Купить</button>
+        </div>
+      </div>`;
     }
   }
   show(h);
@@ -223,12 +234,26 @@ function buyShip(i){
   save();openFleet();
 }
 
+/* ===== IMPLANTS ===== */
 function openImplants(){
+  let list=[
+    ["neuro","Нео-Нейрон"],
+    ["glitch","Глитч-Протез"],
+    ["eye","Кибер-Глаз"],
+    ["chip","Ржавый Чип"],
+    ["base","Базовый Имплант"]
+  ];
   let h="<h2>ИМПЛАНТЫ</h2>";
-  ["neuro","glitch","eye","chip"].forEach(k=>{
-    if(!s.implants[k]){
-      h+=`<div class="item">${k}<br>
-      <button onclick="buyImpl('${k}')">Купить</button></div>`;
+  list.forEach(i=>{
+    if(!s.implants[i[0]]){
+      h+=`
+      <div class="item">
+        <img src="assets/implants/${i[0]}.png">
+        <div>
+          ${i[1]}<br>
+          <button onclick="buyImpl('${i[0]}')">Купить</button>
+        </div>
+      </div>`;
     }
   });
   show(h);
@@ -239,24 +264,29 @@ function buyImpl(k){
   save();openImplants();
 }
 
-function openCrew(){show("<h2>ЭКИПАЖ</h2><p>Бонусы скоро</p>")}
+/* ===== OTHER ===== */
+function openCrew(){
+  show(`<h2>ЭКИПАЖ</h2>
+  <div class="item"><img src="assets/crew/captain.png">Капитан Космо</div>
+  <div class="item"><img src="assets/crew/hacker.png">Лиса-Хакер</div>
+  <div class="item"><img src="assets/crew/bot.png">ГигаПанк-Бот</div>`);
+}
 function openRaid(){show("<h2>РЕЙД</h2><p>Скоро</p>")}
 function openMarket(){show("<h2>МАГАЗИН</h2><p>Усиления</p>")}
-
 function openProfile(){
-  let h="<h2>ПРОФИЛЬ</h2>";
-  h+="<b>Корабли:</b><br>"+Object.keys(s.ships).join(", ")+"<br><br>";
-  h+="<b>Импланты:</b><br>"+Object.keys(s.implants).join(", ");
+  let h="<h2>ПРОФИЛЬ</h2><b>Корабли:</b><br>";
+  Object.keys(s.ships).forEach(i=>{
+    h+=`<img src="assets/ships/ship${i}.png" width="48"> `;
+  });
+  h+="<br><br><b>Импланты:</b><br>";
+  Object.keys(s.implants).forEach(i=>{
+    h+=`<img src="assets/implants/${i}.png" width="48"> `;
+  });
   show(h);
 }
-
 function openSettings(){
-  show(`<h2>ЯЗЫК</h2>
-  <button onclick="setLang('ru')">Русский</button>
-  <button onclick="setLang('en')">English</button>
-  <button onclick="setLang('pl')">Polski</button>`);
+  show("<h2>НАСТРОЙКИ</h2><p>Язык скоро</p>");
 }
-function setLang(l){s.lang=l;save();closePop()}
 
 ui();
 setInterval(()=>{s.energy+=s.pass/10;ui();save()},1000);
