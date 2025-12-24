@@ -7,47 +7,87 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-:root{--bg:#0a001a;--n1:#ff00ff;--n2:#00ffff;--panel:rgba(255,255,255,.06);--glow:0 0 30px}
+:root{
+  --bg:#0a001a;
+  --n1:#ff00ff;
+  --n2:#00ffff;
+  --panel:rgba(255,255,255,0.06);
+  --glow:0 0 35px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
   background:radial-gradient(circle at 30% 20%,#1a0033,var(--bg));
-  color:#fff;font-family:Arial,system-ui;overflow:hidden
+  font-family:Inter,system-ui,Arial;
+  color:#fff;
+  overflow:hidden;
 }
-
 #app{height:100%;position:relative}
 
 /* HUD */
-#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:10}
-.badge{background:var(--panel);padding:6px 10px;border-radius:12px;font-weight:700}
+#hud{
+  position:absolute;top:10px;left:10px;right:10px;
+  display:flex;justify-content:space-between;z-index:10
+}
+.badge{
+  background:var(--panel);
+  padding:6px 12px;
+  border-radius:14px;
+  font-weight:700;
+  backdrop-filter:blur(6px);
+}
 #energy{text-shadow:var(--glow) var(--n1)}
 #rank{font-size:12px;opacity:.7}
 
 /* Reactor */
-#center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#center{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center
+}
 #reactor{
-  width:280px;height:280px;border-radius:24px;
+  width:300px;height:300px;border-radius:26px;
   background:rgba(255,255,255,.05);
+  border:2px solid rgba(255,255,255,.05);
   box-shadow:var(--glow) var(--n1);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer
+  cursor:pointer;
+  transition:.12s;
 }
-#reactor img{width:80%;filter:drop-shadow(var(--glow) var(--n1))}
+#reactor:active{transform:scale(.97)}
+#reactor img{
+  width:80%;
+  filter:drop-shadow(var(--glow) var(--n1))
+}
 
-/* Floating text */
-.float{position:absolute;color:var(--n2);font-size:24px;pointer-events:none}
+/* Floating numbers */
+.float{
+  position:absolute;
+  color:var(--n2);
+  font-size:26px;
+  font-weight:700;
+  pointer-events:none;
+  text-shadow:var(--glow) var(--n1)
+}
 
 /* Bottom bar */
-#bottom{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,var(--bg))}
-#bar{display:flex;gap:8px;overflow-x:auto}
+#bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:10px;
+  background:linear-gradient(transparent,var(--bg))
+}
+#bar{
+  display:flex;gap:8px;overflow-x:auto
+}
 .btn{
   background:var(--panel);
   border:1px solid rgba(255,255,255,.1);
-  padding:8px 12px;
-  border-radius:14px;
+  padding:10px 14px;
+  border-radius:16px;
   display:flex;align-items:center;gap:6px;
+  font-weight:700;
   cursor:pointer;
-  white-space:nowrap
+  white-space:nowrap;
+  backdrop-filter:blur(6px)
 }
 .btn img{width:18px;height:18px}
 
@@ -57,18 +97,27 @@ body{
   display:none;
   align-items:center;justify-content:center;
   background:rgba(0,0,0,.75);
-  z-index:99
+  z-index:100
 }
 #card{
   background:#0a001a;
   padding:16px;
-  border-radius:16px;
+  border-radius:18px;
   max-width:92%;
   max-height:92%;
-  overflow:auto
+  overflow:auto;
+  border:1px solid rgba(255,255,255,.08)
 }
-.item{display:flex;gap:12px;margin-bottom:10px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px}
-.item img{width:60px;height:60px;object-fit:contain}
+.item{
+  display:flex;gap:12px;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08)
+}
+.item img{width:64px;height:64px;object-fit:contain}
+h2{text-align:center;color:var(--n1);margin-bottom:12px}
+.small{opacity:.7;font-size:13px}
 </style>
 </head>
 
@@ -108,14 +157,14 @@ body{
 <script>
 Telegram.WebApp.ready();
 
-/* ========= STATE ========= */
+/* ===== STATE ===== */
 let s = JSON.parse(localStorage.getItem('cp_save')) || {
   energy:0,total:0,rank:0,
   ships:{},impl:{},
   maxShips:3
 };
 
-const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord"];
+const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
 
 const SHIPS={
   void:{name:"Void Reaper",img:"assets/ships/void_reaper.png"},
@@ -129,10 +178,11 @@ const IMPL={
   eye:{name:"Cyber Eye",img:"assets/implants/eye.png"}
 };
 
-/* ========= CORE ========= */
 const energyEl=document.getElementById('energy');
 const rankEl=document.getElementById('rank');
 const reactor=document.getElementById('reactor');
+const pop=document.getElementById('pop');
+const card=document.getElementById('card');
 
 function save(){localStorage.setItem('cp_save',JSON.stringify(s))}
 function ui(){
@@ -140,11 +190,13 @@ function ui(){
   rankEl.textContent=RANKS[s.rank]||RANKS.at(-1);
 }
 
+/* ===== TAP ===== */
 reactor.onclick=(e)=>{
   s.energy+=1;s.total+=1;
   if(s.total>1000)s.rank=1;
   if(s.total>5000)s.rank=2;
   if(s.total>20000)s.rank=3;
+  if(s.total>80000)s.rank=4;
 
   const f=document.createElement('div');
   f.className='float';
@@ -152,62 +204,80 @@ reactor.onclick=(e)=>{
   f.style.left=e.clientX+'px';
   f.style.top=e.clientY+'px';
   document.body.appendChild(f);
-  f.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-80px)',opacity:0}],{duration:700});
-  setTimeout(()=>f.remove(),700);
+  f.animate(
+    [{transform:'translateY(0)',opacity:1},
+     {transform:'translateY(-90px)',opacity:0}],
+    {duration:800,easing:'ease-out'}
+  );
+  setTimeout(()=>f.remove(),800);
 
   ui();save();
 };
 
-/* ========= POPUPS ========= */
-const pop=document.getElementById('pop');
-const card=document.getElementById('card');
+/* ===== POPUP ===== */
+function show(html){card.innerHTML=html;pop.style.display='flex'}
+function closePop(){pop.style.display='none'}
 
-window.closePop=()=>pop.style.display='none';
-function show(html){card.innerHTML=html;pop.style.display='flex';}
-
-/* ========= BUTTONS (FIXED) ========= */
+/* ===== SHOPS ===== */
 window.openFleet=()=>{
   let h='<h2>ФЛОТ</h2>';
-  Object.keys(SHIPS).forEach(k=>{
-    if(s.ships[k])return;
-    if(Object.keys(s.ships).length>=s.maxShips)return;
+  const owned=Object.keys(s.ships).length;
+  h+=`<div class="small">Корабли: ${owned}/${s.maxShips}</div><br>`;
+  for(const k in SHIPS){
+    if(s.ships[k])continue;
+    if(owned>=s.maxShips)break;
     h+=`<div class="item">
       <img src="${SHIPS[k].img}">
-      <div><b>${SHIPS[k].name}</b><br>
-      <button onclick="buyShip('${k}')">Купить</button></div>
+      <div>
+        <b>${SHIPS[k].name}</b>
+        <div class="small">Пассивный доход</div>
+        <button onclick="buyShip('${k}')">Купить</button>
+      </div>
     </div>`;
-  });
+  }
   show(h);
 };
 
-window.buyShip=(k)=>{s.ships[k]=1;save();openFleet();};
+window.buyShip=(k)=>{
+  s.ships[k]=true;
+  save();openFleet();
+};
 
 window.openImplants=()=>{
   let h='<h2>ИМПЛАНТЫ</h2>';
-  Object.keys(IMPL).forEach(k=>{
-    if(s.impl[k])return;
+  for(const k in IMPL){
+    if(s.impl[k])continue;
     h+=`<div class="item">
       <img src="${IMPL[k].img}">
-      <div><b>${IMPL[k].name}</b><br>
-      <button onclick="buyImpl('${k}')">Купить</button></div>
+      <div>
+        <b>${IMPL[k].name}</b>
+        <div class="small">Авто-экипируется</div>
+        <button onclick="buyImpl('${k}')">Купить</button>
+      </div>
     </div>`;
-  });
+  }
   show(h);
 };
 
-window.buyImpl=(k)=>{s.impl[k]=1;save();openImplants();};
+window.buyImpl=(k)=>{
+  s.impl[k]=true;
+  save();openImplants();
+};
 
 window.openProfile=()=>{
-  let h='<h2>ПРОФИЛЬ</h2><h3>Корабли</h3>';
-  Object.keys(s.ships).forEach(k=>h+=`<div>${SHIPS[k].name}</div>`);
-  h+='<h3>Импланты</h3>';
-  Object.keys(s.impl).forEach(k=>h+=`<div>${IMPL[k].name}</div>`);
+  let h='<h2>ПРОФИЛЬ</h2>';
+  h+='<b>Корабли:</b><br>';
+  for(const k in s.ships)h+=`• ${SHIPS[k].name}<br>`;
+  if(!Object.keys(s.ships).length)h+='<i>Нет</i><br>';
+  h+='<br><b>Импланты:</b><br>';
+  for(const k in s.impl)h+=`• ${IMPL[k].name}<br>`;
+  if(!Object.keys(s.impl).length)h+='<i>Нет</i>';
   show(h);
 };
 
-window.openCrew=()=>show('<h2>ЭКИПАЖ</h2><p>Скоро</p>');
-window.openRaid=()=>show('<h2>РЕЙД</h2><p>В разработке</p>');
-window.openMarket=()=>show('<h2>МАГАЗИН</h2><p>В разработке</p>');
+window.openCrew=()=>show('<h2>ЭКИПАЖ</h2><p>Будет добавлен в обновлении</p>');
+window.openRaid=()=>show('<h2>РЕЙД</h2><p>Скоро</p>');
+window.openMarket=()=>show('<h2>МАГАЗИН</h2><p>TON / NFT в следующей версии</p>');
 
 ui();
 </script>
