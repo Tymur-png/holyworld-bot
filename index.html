@@ -9,108 +9,180 @@
 <style>
 :root{
   --bg:#0a001a;
-  --n1:#ff00ff;
-  --n2:#00ffff;
-  --panel:rgba(255,255,255,0.06);
-  --glow:0 0 35px;
+  --accent1:#ff00ff;
+  --accent2:#00ffff;
+  --accent3:#ff00aa;
+  --panel:rgba(30,10,50,0.4);
+  --panel-dark:rgba(15,5,30,0.6);
+  --glow1:0 0 30px rgba(255,0,255,0.6);
+  --glow2:0 0 30px rgba(0,255,255,0.6);
+  --text:#e0e0ff;
+  --text-dim:#8888cc;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  background:radial-gradient(circle at top,#1a0033,var(--bg));
-  font-family:Arial,Helvetica,sans-serif;
-  color:#fff;
+  background:radial-gradient(circle at top,#2a0055,#0a001a);
+  font-family:'Segoe UI',Arial,sans-serif;
+  color:var(--text);
   overflow:hidden;
+  height:100vh;
 }
 #app{height:100vh;position:relative}
 
 /* HUD */
 #hud{
-  position:absolute;top:10px;left:10px;right:10px;
-  display:flex;justify-content:space-between;z-index:10
+  position:absolute;top:12px;left:12px;right:12px;
+  display:flex;justify-content:space-between;align-items:flex-start;z-index:10;
+  pointer-events:none;
 }
 .badge{
   background:var(--panel);
-  padding:6px 12px;
-  border-radius:14px;
-  backdrop-filter:blur(6px);
-  font-weight:bold;
+  padding:10px 16px;
+  border-radius:20px;
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.1);
+  font-weight:700;
+  font-size:18px;
+  box-shadow:var(--glow1);
+  pointer-events:auto;
 }
-#energy{text-shadow:var(--glow) var(--n1)}
-#rank{font-size:12px;opacity:.7}
+#punk-badge{box-shadow:var(--glow1);}
+#energy-badge{box-shadow:var(--glow2);font-size:15px;}
+#rank{
+  font-size:14px;
+  opacity:0.8;
+  margin-top:4px;
+  text-align:center;
+}
 
 /* Reactor */
 #center{
   position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center
+  display:flex;align-items:center;justify-content:center;
 }
 #reactor{
-  width:320px;height:320px;
-  border-radius:28px;
-  background:rgba(255,255,255,.05);
-  box-shadow:var(--glow) var(--n1);
+  width:340px;height:340px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--panel),transparent);
+  box-shadow:var(--glow1), var(--glow2);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
+  transition:transform 0.1s;
+  border:2px solid rgba(255,0,255,0.3);
 }
-#reactor img{width:90%}
+#reactor:active{transform:scale(0.95);}
+#reactor img{width:92%;border-radius:50%;}
 
 /* Floating text */
 .float{
   position:absolute;
-  color:var(--n2);
-  font-size:26px;
-  font-weight:bold;
+  font-size:32px;
+  font-weight:900;
   pointer-events:none;
+  text-shadow:0 0 15px var(--accent2);
+  background:linear-gradient(transparent,var(--accent2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:floatUp 1.2s ease-out forwards;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0);opacity:1}
+  100%{transform:translateY(-140px);opacity:0}
 }
 
-/* Bottom bar */
+/* Bottom navigation */
 #bottom{
   position:absolute;bottom:0;left:0;right:0;
-  padding:10px;
+  padding:12px;
   background:linear-gradient(transparent,var(--bg));
+  z-index:10;
 }
-#bar{display:flex;gap:8px;overflow-x:auto}
+#bar{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding-bottom:8px;
+}
 .btn{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.15);
-  padding:10px 14px;
-  border-radius:16px;
-  font-weight:bold;
+  min-width:100px;
+  background:var(--panel-dark);
+  border:1px solid rgba(255,255,255,0.15);
+  padding:12px 16px;
+  border-radius:20px;
+  font-weight:700;
+  font-size:14px;
   cursor:pointer;
-  white-space:nowrap;
+  transition:all 0.2s;
+  text-align:center;
+  box-shadow:var(--glow1);
+}
+.btn:active{
+  transform:scale(0.95);
+  box-shadow:0 0 20px var(--accent1);
 }
 
 /* Popup */
 #pop{
   position:fixed;inset:0;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,0.9);
   display:none;
   align-items:center;justify-content:center;
   z-index:100;
+  backdrop-filter:blur(8px);
 }
 #card{
-  background:#0a001a;
-  padding:18px;
-  border-radius:18px;
+  background:var(--panel-dark);
+  border:2px solid var(--accent1);
+  padding:24px;
+  border-radius:24px;
   max-width:92%;
   max-height:92%;
-  overflow:auto;
+  overflow-y:auto;
+  box-shadow:0 0 60px rgba(255,0,255,0.4);
+}
+h2{
+  text-align:center;
+  font-size:28px;
+  margin-bottom:20px;
+  background:linear-gradient(to right,var(--accent1),var(--accent2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .item{
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:10px;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
   display:flex;
-  gap:12px;
+  gap:16px;
   align-items:center;
+  transition:transform 0.2s;
 }
+.item:hover{transform:scale(1.02);}
 .item img{
-  width:64px;
-  height:64px;
+  width:80px;height:80px;
   object-fit:contain;
+  border-radius:12px;
+  border:1px solid var(--accent2);
 }
-h2{text-align:center;color:var(--n1);margin-bottom:10px}
-.small{font-size:13px;opacity:.7}
+.item-info{flex:1}
+.item-name{font-weight:700;font-size:18px;margin-bottom:6px}
+.item-desc{font-size:14px;opacity:0.8;line-height:1.4}
+.buy-btn{
+  background:linear-gradient(var(--accent1),var(--accent3));
+  color:white;
+  border:none;
+  padding:10px 20px;
+  border-radius:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+.buy-btn:disabled{
+  background:#333;
+  opacity:0.5;
+  cursor:not-allowed;
+}
 </style>
 </head>
 
@@ -119,177 +191,281 @@ h2{text-align:center;color:var(--n1);margin-bottom:10px}
 
 <div id="hud">
   <div>
-    <div id="energy" class="badge">0 PUNK</div>
+    <div id="punk-badge" class="badge">0 PUNK</div>
     <div id="rank">Street Rat</div>
-    <div id="inc" class="small">0 /сек</div>
   </div>
+  <div id="energy-badge" class="badge">0.0 /сек</div>
 </div>
 
 <div id="center">
   <div id="reactor">
-    <img src="assets/reactor/reactor.gif">
+    <img src="assets/reactor/reactor.gif" alt="Reactor">
   </div>
 </div>
 
 <div id="bottom">
   <div id="bar">
-    <div class="btn" onclick="openFleet()">ФЛОТ</div>
-    <div class="btn" onclick="openCrew()">ЭКИПАЖ</div>
-    <div class="btn" onclick="openImplants()">ИМПЛАНТЫ</div>
-    <div class="btn" onclick="openRaid()">РЕЙД</div>
-    <div class="btn" onclick="openMarket()">МАГАЗИН</div>
-    <div class="btn" onclick="openProfile()">ПРОФИЛЬ</div>
+    <div class="btn" onclick="openFleet()">🚀 ФЛОТ</div>
+    <div class="btn" onclick="openCrew()">👥 ЭКИПАЖ</div>
+    <div class="btn" onclick="openImplants()">🧠 ИМПЛАНТЫ</div>
+    <div class="btn" onclick="openRaid()">⚔️ РЕЙД</div>
+    <div class="btn" onclick="openMarket()">🛒 МАГАЗИН</div>
+    <div class="btn" onclick="openProfile()">👤 ПРОФИЛЬ</div>
     <div class="btn" onclick="openSettings()">⚙️</div>
   </div>
 </div>
 
 </div>
 
-<div id="pop" onclick="if(event.target.id==='pop')closePop()">
+<div id="pop" onclick="if(event.target===this)closePop()">
   <div id="card"></div>
 </div>
 
 <script>
 Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
 /* ===== DATA ===== */
-let s = JSON.parse(localStorage.getItem("cp_save")) || {
-  energy:0,
-  punk:0,
-  total:0,
-  pass:0,
-  rank:0,
-  ships:{},
-  implants:{},
-  crew:{},
-  maxShips:3,
-  lang:"ru",
-  last:Date.now()
+const RANKS = [
+  "Street Rat",
+  "Neon Scavenger",
+  "Void Pirate",
+  "Cyber Overlord",
+  "Galaxy Baron"
+];
+
+const SHIPS = [
+  {id:1, name:"Rusty Drone", desc:"Списанный дрон корпорации", cost:100, income:5},
+  {id:2, name:"Scrap Fighter", desc:"Собран из обломков", cost:500, income:20},
+  {id:3, name:"Punk Hauler", desc:"Контрабандистский транспорт", cost:2000, income:80},
+  {id:4, name:"Neon Corsair", desc:"Корабль пиратской элиты", cost:10000, income:300},
+  {id:5, name:"Void Reaper", desc:"Запрещённый класс. Легенда", cost:50000, income:1000},
+  {id:6, name:"Glitch Phantom", desc:"Невидимый для радаров", cost:150000, income:2500},
+  {id:7, name:"Nova Destroyer", desc:"Бывший флагман NovaCore", cost:500000, income:8000},
+  {id:8, name:"Black Hole Raider", desc:"Поглощает энергию врагов", cost:2000000, income:25000},
+  {id:9, name:"Quantum Leviathan", desc:"Разрывает пространство", cost:10000000, income:100000},
+  {id:10,name:"Punk Sovereign", desc:"Трон галактики", cost:50000000, income:500000}
+];
+
+const IMPLANTS = [
+  {key:"base", name:"Базовый Имплант", desc:"Первый шаг любого панка", cost:50, income:2},
+  {key:"chip", name:"Ржавый Чип", desc:"Работает плохо. Но работает.", cost:300, income:10},
+  {key:"eye", name:"Кибер-Глаз", desc:"Видит слабые места и шансы", cost:1500, income:40},
+  {key:"glitch", name:"Глитч-Протез", desc:"Нестабильные усиления и криты", cost:8000, income:150},
+  {key:"neuro", name:"Нео-Нейрон", desc:"Думаешь быстрее, чем мир реагирует", cost:40000, income:600}
+];
+
+let save = JSON.parse(localStorage.getItem("cosmopunk_save")) || {
+  punk: 0,
+  totalPunk: 0,
+  passiveIncome: 0,
+  rank: 0,
+  ships: {},
+  implants: {},
+  maxShips: 5,
+  lastUpdate: Date.now()
 };
 
-const RANKS=["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
-
-/* ===== OFFLINE ===== */
-let diff=(Date.now()-s.last)/1000;
-s.energy+=s.pass*diff;
-s.last=Date.now();
-
-/* ===== UI ===== */
-function ui(){
-  energy.textContent=Math.floor(s.energy)+" PUNK";
-  inc.textContent=s.pass.toFixed(1)+" /сек";
-  rank.textContent=RANKS[s.rank];
+/* ===== OFFLINE PROGRESS ===== */
+function calculateOffline() {
+  const now = Date.now();
+  const diffSec = (now - save.lastUpdate) / 1000;
+  const earned = save.passiveIncome * diffSec;
+  save.punk += earned;
+  save.totalPunk += earned;
+  save.lastUpdate = now;
 }
-function save(){localStorage.setItem("cp_save",JSON.stringify(s))}
+calculateOffline();
 
-/* ===== TAP ===== */
-reactor.onclick=e=>{
-  s.energy+=1;
-  s.total+=1;
-  if(s.total>1000)s.rank=1;
-  if(s.total>10000)s.rank=2;
-  if(s.total>50000)s.rank=3;
-  if(s.total>200000)s.rank=4;
+/* ===== UI ELEMENTS ===== */
+const punkEl = document.getElementById("punk-badge");
+const energyEl = document.getElementById("energy-badge");
+const rankEl = document.getElementById("rank");
+const reactor = document.getElementById("reactor");
+const pop = document.getElementById("pop");
+const card = document.getElementById("card");
 
-  let f=document.createElement("div");
-  f.className="float";
-  f.textContent="+1";
-  f.style.left=e.clientX+"px";
-  f.style.top=e.clientY+"px";
-  document.body.appendChild(f);
-  f.animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(-120px)",opacity:0}],{duration:900});
-  setTimeout(()=>f.remove(),900);
+/* ===== UPDATE UI ===== */
+function updateUI() {
+  punkEl.textContent = Math.floor(save.punk).toLocaleString() + " PUNK";
+  energyEl.textContent = save.passiveIncome.toFixed(1) + " /сек";
+  rankEl.textContent = RANKS[save.rank];
 
-  ui();save();
-};
-
-/* ===== POPUP ===== */
-function show(html){card.innerHTML=html;pop.style.display="flex"}
-function closePop(){pop.style.display="none"}
-
-/* ===== FLEET ===== */
-function openFleet(){
-  let h="<h2>ФЛОТ</h2>";
-  for(let i=1;i<=10;i++){
-    if(!s.ships[i]){
-      h+=`
-      <div class="item">
-        <img src="assets/ships/ship${i}.png">
-        <div>
-          Корабль #${i}<br>
-          <button onclick="buyShip(${i})">Купить</button>
-        </div>
-      </div>`;
+  // Rank progression
+  const rankThresholds = [0, 1000, 10000, 50000, 200000, 1000000];
+  for (let i = rankThresholds.length - 1; i >= 0; i--) {
+    if (save.totalPunk >= rankThresholds[i]) {
+      save.rank = i;
+      break;
     }
   }
-  show(h);
 }
-function buyShip(i){
-  if(Object.keys(s.ships).length>=s.maxShips){
-    alert("Лимит кораблей");
-    return;
-  }
-  s.ships[i]=true;
-  s.pass+=5;
-  save();openFleet();
+
+/* ===== SAVE ===== */
+function saveGame() {
+  save.lastUpdate = Date.now();
+  localStorage.setItem("cosmopunk_save", JSON.stringify(save));
+}
+
+/* ===== TAP ===== */
+reactor.onclick = e => {
+  save.punk += 1;
+  save.totalPunk += 1;
+
+  // Floating +1
+  const float = document.createElement("div");
+  float.className = "float";
+  float.textContent = "+1";
+  float.style.left = (e.clientX - 20) + "px";
+  float.style.top = (e.clientY - 30) + "px";
+  document.body.appendChild(float);
+  setTimeout(() => float.remove(), 1200);
+
+  updateUI();
+  saveGame();
+};
+
+/* ===== POPUP SYSTEM ===== */
+function showPopup(html) {
+  card.innerHTML = html;
+  pop.style.display = "flex";
+}
+function closePop() {
+  pop.style.display = "none";
+}
+
+/* ===== FLEET ===== */
+function openFleet() {
+  let html = `<h2>🚀 ФЛОТ</h2>`;
+  SHIPS.forEach(ship => {
+    const owned = save.ships[ship.id];
+    if (owned) {
+      html += `<div class="item">
+        <img src="assets/ships/ship${ship.id}.png">
+        <div class="item-info">
+          <div class="item-name">${ship.name}</div>
+          <div class="item-desc">+${ship.income} /сек \( {owned > 1 ? `(x \){owned})` : ""}</div>
+        </div>
+      </div>`;
+    } else {
+      const canBuy = save.punk >= ship.cost;
+      html += `<div class="item">
+        <img src="assets/ships/ship${ship.id}.png">
+        <div class="item-info">
+          <div class="item-name">${ship.name}</div>
+          <div class="item-desc">${ship.desc}<br>Стоимость: \( {ship.cost.toLocaleString()} PUNK<br>Доход: + \){ship.income} /сек</div>
+        </div>
+        <button class="buy-btn" \( {!canBuy ? "disabled" : ""} onclick="buyShip( \){ship.id})">КУПИТЬ</button>
+      </div>`;
+    }
+  });
+  showPopup(html);
+}
+function buyShip(id) {
+  const ship = SHIPS.find(s => s.id === id);
+  if (save.punk < ship.cost) return;
+  save.punk -= ship.cost;
+  save.ships[id] = (save.ships[id] || 0) + 1;
+  save.passiveIncome += ship.income;
+  updateUI();
+  saveGame();
+  openFleet();
 }
 
 /* ===== IMPLANTS ===== */
-function openImplants(){
-  let list=[
-    ["neuro","Нео-Нейрон"],
-    ["glitch","Глитч-Протез"],
-    ["eye","Кибер-Глаз"],
-    ["chip","Ржавый Чип"],
-    ["base","Базовый Имплант"]
-  ];
-  let h="<h2>ИМПЛАНТЫ</h2>";
-  list.forEach(i=>{
-    if(!s.implants[i[0]]){
-      h+=`
-      <div class="item">
-        <img src="assets/implants/${i[0]}.png">
-        <div>
-          ${i[1]}<br>
-          <button onclick="buyImpl('${i[0]}')">Купить</button>
+function openImplants() {
+  let html = `<h2>🧠 ИМПЛАНТЫ</h2>`;
+  IMPLANTS.forEach(imp => {
+    const owned = save.implants[imp.key];
+    if (owned) {
+      html += `<div class="item">
+        <img src="assets/implants/${imp.key}.png">
+        <div class="item-info">
+          <div class="item-name">${imp.name}</div>
+          <div class="item-desc">Установлен</div>
         </div>
+      </div>`;
+    } else {
+      const canBuy = save.punk >= imp.cost;
+      html += `<div class="item">
+        <img src="assets/implants/${imp.key}.png">
+        <div class="item-info">
+          <div class="item-name">${imp.name}</div>
+          <div class="item-desc">${imp.desc}<br>Стоимость: \( {imp.cost.toLocaleString()} PUNK<br>Доход: + \){imp.income} /сек</div>
+        </div>
+        <button class="buy-btn" \( {!canBuy ? "disabled" : ""} onclick="buyImplant(' \){imp.key}')">КУПИТЬ</button>
       </div>`;
     }
   });
-  show(h);
+  showPopup(html);
 }
-function buyImpl(k){
-  s.implants[k]=true;
-  s.pass+=2;
-  save();openImplants();
-}
-
-/* ===== OTHER ===== */
-function openCrew(){
-  show(`<h2>ЭКИПАЖ</h2>
-  <div class="item"><img src="assets/crew/captain.png">Капитан Космо</div>
-  <div class="item"><img src="assets/crew/hacker.png">Лиса-Хакер</div>
-  <div class="item"><img src="assets/crew/bot.png">ГигаПанк-Бот</div>`);
-}
-function openRaid(){show("<h2>РЕЙД</h2><p>Скоро</p>")}
-function openMarket(){show("<h2>МАГАЗИН</h2><p>Усиления</p>")}
-function openProfile(){
-  let h="<h2>ПРОФИЛЬ</h2><b>Корабли:</b><br>";
-  Object.keys(s.ships).forEach(i=>{
-    h+=`<img src="assets/ships/ship${i}.png" width="48"> `;
-  });
-  h+="<br><br><b>Импланты:</b><br>";
-  Object.keys(s.implants).forEach(i=>{
-    h+=`<img src="assets/implants/${i}.png" width="48"> `;
-  });
-  show(h);
-}
-function openSettings(){
-  show("<h2>НАСТРОЙКИ</h2><p>Язык скоро</p>");
+function buyImplant(key) {
+  const imp = IMPLANTS.find(i => i.key === key);
+  if (save.punk < imp.cost) return;
+  save.punk -= imp.cost;
+  save.implants[key] = true;
+  save.passiveIncome += imp.income;
+  updateUI();
+  saveGame();
+  openImplants();
 }
 
-ui();
-setInterval(()=>{s.energy+=s.pass/10;ui();save()},1000);
+/* ===== OTHER SECTIONS ===== */
+function openCrew() {
+  showPopup(`<h2>👥 ЭКИПАЖ</h2>
+    <div class="item">
+      <img src="assets/crew/captain.png">
+      <div class="item-info">
+        <div class="item-name">Капитан Космо</div>
+        <div class="item-desc">Легендарный стратег. Бывший адмирал NovaCore.</div>
+      </div>
+    </div>
+    <div class="item">
+      <img src="assets/crew/hacker.png">
+      <div class="item-info">
+        <div class="item-name">Лиса-Хакер</div>
+        <div class="item-desc">Цифровой призрак. Взламывает всё.</div>
+      </div>
+    </div>
+    <div class="item">
+      <img src="assets/crew/bot.png">
+      <div class="item-info">
+        <div class="item-name">ГигаПанк-Бот</div>
+        <div class="item-desc">Автономный юнит. Добывает энергию без остановки.</div>
+      </div>
+    </div>`);
+}
+
+function openRaid() { showPopup("<h2>⚔️ РЕЙД</h2><p>Глобальные события и награды — скоро</p>"); }
+function openMarket() { showPopup("<h2>🛒 МАГАЗИН</h2><p>Усиления и бусты — скоро</p>"); }
+function openSettings() { showPopup("<h2>⚙️ НАСТРОЙКИ</h2><p>Язык, звук и другие опции — скоро</p>"); }
+
+function openProfile() {
+  let html = `<h2>👤 ПРОФИЛЬ COSMOPUNK</h2>
+    <p><strong>Ранг:</strong> ${RANKS[save.rank]}</p>
+    <p><strong>Всего добыто PUNK:</strong> ${Math.floor(save.totalPunk).toLocaleString()}</p>
+    <h3 style="margin:20px 0 10px">🚀 Флот</h3>`;
+  Object.keys(save.ships).forEach(id => {
+    const count = save.ships[id];
+    html += `<img src="assets/ships/ship${id}.png" width="64" style="margin:4px"> `;
+    if (count > 1) html += `<sup>x${count}</sup> `;
+  });
+  html += `<h3 style="margin:20px 0 10px">🧠 Импланты</h3>`;
+  Object.keys(save.implants).forEach(key => {
+    html += `<img src="assets/implants/${key}.png" width="64" style="margin:4px"> `;
+  });
+  showPopup(html);
+}
+
+/* ===== PASSIVE INCOME LOOP ===== */
+setInterval(() => {
+  save.punk += save.passiveIncome / 10;
+  save.totalPunk += save.passiveIncome / 10;
+  updateUI();
+  saveGame();
+}, 100);
+
+updateUI();
 </script>
 </body>
 </html>
