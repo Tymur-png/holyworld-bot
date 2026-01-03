@@ -2,429 +2,485 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Terminal V5</title>
+    <title>CosmoPunk: Syndicate</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #050505;
-            --term-green: #0f0;
-            --term-pink: #ff00ff;
-            --term-blue: #00ffff;
-            --glass: rgba(0, 20, 0, 0.85);
-            --scanline: rgba(0, 0, 0, 0.5);
-        }
-
-        @font-face {
-            font-family: 'Pixel';
-            src: url('https://fonts.cdnfonts.com/s/19934/VCR_OSD_MONO_1.001.woff') format('woff');
+            --bg: #0b0014;
+            --accent: #d300d3; /* Неоновый фиолетовый */
+            --cyan: #00f7ff;    /* Неоновый голубой */
+            --yellow: #f7ff00;  /* Кислотный желтый */
+            --glass: rgba(30, 0, 40, 0.6);
+            --border: rgba(255, 255, 255, 0.15);
+            --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            background-color: var(--bg);
-            color: var(--term-green);
-            font-family: 'Pixel', 'Courier New', monospace;
+            background: var(--bg);
+            /* Красивый сложный градиент */
+            background-image: 
+                radial-gradient(circle at 50% 10%, rgba(211, 0, 211, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(0, 247, 255, 0.15) 0%, transparent 50%);
+            color: #fff;
+            font-family: var(--font);
             height: 100vh;
             overflow: hidden;
             user-select: none;
-            text-shadow: 0 0 5px var(--term-green);
         }
 
-        /* --- CRT EFFECT --- */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 999;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+        #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; position: relative; }
+
+        /* --- HUD (Верхняя панель) --- */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; margin-bottom: 20px; }
+        
+        .stats-box {
+            background: var(--glass);
+            padding: 10px 18px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            min-width: 100px;
+        }
+        
+        #energy { font-size: 24px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 10px rgba(0, 247, 255, 0.5); }
+        .sub-text { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+        
+        #rank { font-size: 13px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- REACTOR (Центр) --- */
+        #center { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        
+        .reactor-wrap { 
+            position: relative; width: 260px; height: 260px; 
+            display: flex; justify-content: center; align-items: center; 
+            transition: transform 0.1s;
+        }
+        .reactor-wrap:active { transform: scale(0.95); }
+
+        .reactor-glow {
+            position: absolute; inset: -20px; border-radius: 50%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.3; animation: pulse 3s infinite;
+        }
+        
+        /* Круглые декоративные кольца */
+        .ring {
+            position: absolute; inset: 0; border: 1px solid var(--cyan); border-radius: 50%;
+            opacity: 0.2; animation: spin 10s linear infinite;
+        }
+        .ring:nth-child(2) { inset: 20px; border-color: var(--accent); animation-direction: reverse; animation-duration: 7s; }
+
+        #reactor-img { 
+            width: 85%; height: 85%; object-fit: contain; z-index: 2;
+            filter: drop-shadow(0 0 20px rgba(211, 0, 211, 0.6));
         }
 
-        #app { display: flex; flex-direction: column; height: 100vh; padding: 15px; position: relative; z-index: 10; }
+        @keyframes pulse { 0% {opacity:0.2; transform:scale(1);} 50% {opacity:0.4; transform:scale(1.1);} 100% {opacity:0.2; transform:scale(1);} }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
 
-        /* --- UI COMPONENTS --- */
-        .hud-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 2px solid var(--term-green); padding-bottom: 5px; }
-        
-        .stat-val { font-size: 24px; color: var(--term-blue); text-shadow: 0 0 10px var(--term-blue); }
-        .stat-label { font-size: 10px; opacity: 0.7; }
-
-        /* REACTOR */
-        #center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        
-        .reactor-btn {
-            width: 200px; height: 200px;
-            border: 4px solid var(--term-pink);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #300 0%, #000 70%);
-            box-shadow: 0 0 30px var(--term-pink);
-            position: relative;
-            transition: transform 0.05s;
+        /* --- BOTTOM NAV (Нижняя панель) --- */
+        .nav-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            padding-top: 10px;
         }
-        .reactor-btn:active { transform: scale(0.95); }
-        
-        .core-text { font-size: 10px; position: absolute; bottom: -30px; color: var(--term-pink); animation: blink 1s infinite; }
-
-        /* NAV */
-        .nav-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: auto; }
         .nav-btn {
-            background: #001100; border: 1px solid var(--term-green);
-            color: var(--term-green); padding: 12px 2px;
-            font-family: inherit; font-size: 10px; cursor: pointer;
-            text-transform: uppercase;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 14px;
+            height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: bold; color: #ccc; cursor: pointer;
+            backdrop-filter: blur(5px); transition: 0.2s;
         }
-        .nav-btn:active { background: var(--term-green); color: #000; }
+        .nav-btn span { font-size: 18px; margin-bottom: 2px; }
+        .nav-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        /* --- MINIGAME HACK --- */
-        #hack-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+        /* --- POPUPS (Окна) --- */
+        #pop {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; align-items: flex-end; /* Выезжает снизу */
+            animation: fadeIn 0.2s;
         }
-        .hack-track {
-            width: 80%; height: 40px; border: 2px solid #555;
-            position: relative; border-radius: 20px; overflow: hidden; background: #222;
+        .card {
+            background: #1a0b2e; 
+            border-top: 2px solid var(--accent);
+            border-radius: 24px 24px 0 0; 
+            width: 100%; max-height: 85vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .hack-zone {
-            position: absolute; top: 0; bottom: 0; background: var(--term-pink);
-            width: 30px; left: 50%; opacity: 0.8;
-        }
-        .hack-cursor {
-            position: absolute; top: -5px; bottom: -5px; width: 4px; background: #fff;
-            left: 0; box-shadow: 0 0 10px #fff;
-        }
-        .hack-btn {
-            margin-top: 30px; width: 120px; height: 120px; border-radius: 50%;
-            background: var(--term-green); border: none; font-weight: bold; font-size: 20px;
-            box-shadow: 0 0 20px var(--term-green); color: #000;
-        }
-
-        /* --- POPUPS --- */
-        #modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
-            display: none; padding: 20px; flex-direction: column;
-        }
-        .modal-win {
-            border: 2px solid var(--term-green); background: #001000;
-            flex: 1; overflow-y: auto; padding: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-            position: relative;
-        }
-        .item-row {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px dashed #333; padding: 10px 0;
-        }
-        .buy-btn {
-            background: transparent; border: 1px solid var(--term-blue); color: var(--term-blue);
-            padding: 5px 10px; font-family: inherit; cursor: pointer;
-        }
-        .close-x {
-            position: absolute; top: 10px; right: 10px; font-size: 24px; color: red; cursor: pointer; border: 1px solid red; padding: 0 5px;
+        .card-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .card-body { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        .close-btn {
+            margin: 10px 20px 20px; background: #333; border: none; color: #fff;
+            padding: 14px; border-radius: 16px; font-weight: bold; font-size: 14px;
         }
 
-        /* FX */
-        .float-txt { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1s forwards; }
-        @keyframes floatUp { to { transform: translateY(-100px); opacity: 0; } }
-        @keyframes blink { 50% { opacity: 0; } }
+        /* --- LIST ITEMS --- */
+        .list-item {
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; border-radius: 16px; margin-bottom: 10px;
+        }
+        .list-item img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; background: rgba(0,0,0,0.2); }
+        .list-info { flex: 1; }
+        .list-info h4 { color: #fff; font-size: 15px; margin-bottom: 4px; }
+        .list-info p { color: #888; font-size: 12px; }
+        
+        .action-btn {
+            background: var(--cyan); color: #05000a; border: none;
+            padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 800;
+        }
+        .action-btn:disabled { background: #333; color: #555; }
+        .action-btn.claim { background: var(--yellow); }
 
-        /* PRESTIGE BUTTON */
-        .prestige-btn { background: #300; border: 1px solid red; color: red; width: 100%; padding: 10px; margin-top: 20px; font-weight: bold; }
+        /* --- FX --- */
+        .float-txt {
+            position: absolute; font-weight: 900; font-size: 28px; pointer-events: none; z-index: 50;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="hud-row">
-        <div>
-            <div class="stat-label">ENERGY (PUNK)</div>
-            <div class="stat-val" id="energy">0</div>
+    <div class="header">
+        <div class="stats-box">
+            <div id="energy">0</div>
+            <div class="sub-text" id="inc">+0 / сек</div>
         </div>
-        <div style="text-align: right">
-            <div class="stat-label">NEURO-CHIPS</div>
-            <div class="stat-val" style="color:var(--term-pink)" id="chips">0</div>
+        <div style="text-align: right;">
+            <div class="stats-box" style="border-color: var(--accent);">
+                <div id="rank">Street Rat</div>
+                <div class="sub-text" id="lvl">LVL 1</div>
+            </div>
         </div>
-    </div>
-    
-    <div style="font-size: 12px; text-align: center; margin-bottom: 10px;">
-        INCOME: <span id="inc">0</span>/sec | MULT: x<span id="mult">1.0</span>
     </div>
 
     <div id="center">
-        <div class="reactor-btn" id="tap-btn">
-            <div style="font-size: 40px;">⚡</div>
+        <div class="reactor-wrap" id="tap-area">
+            <div class="reactor-glow"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
-        <div class="core-text">SYSTEM READY</div>
     </div>
 
-    <div class="nav-bar">
-        <button class="nav-btn" onclick="openShop()">UPGRADE</button>
-        <button class="nav-btn" onclick="startHackGame()">HACK</button>
-        <button class="nav-btn" onclick="openReboot()">REBOOT</button>
-        <button class="nav-btn" onclick="resetSave()">RESET</button>
+    <div class="nav-grid">
+        <div class="nav-btn" onclick="openShop('ships')"><span>🚀</span>Флот</div>
+        <div class="nav-btn" onclick="openCrew()"><span>👥</span>Экипаж</div>
+        <div class="nav-btn" onclick="openQuests()"><span>📜</span>Задания</div>
+        <div class="nav-btn" onclick="openSettings()"><span>⚙️</span>Опции</div>
     </div>
 </div>
 
-<div id="modal">
-    <div class="modal-win" id="modal-content"></div>
-</div>
-
-<div id="hack-overlay">
-    <h2 style="color:white; margin-bottom:20px">SECURITY BREACH</h2>
-    <div class="hack-track">
-        <div class="hack-zone" id="h-zone"></div>
-        <div class="hack-cursor" id="h-cursor"></div>
+<div id="pop" onclick="if(event.target.id==='pop') closePop()">
+    <div class="card">
+        <div class="card-header"><h3 id="pop-title">TITLE</h3></div>
+        <div class="card-body" id="pop-body"></div>
+        <button class="close-btn" onclick="closePop()">ЗАКРЫТЬ</button>
     </div>
-    <div style="color:#aaa; font-size:12px; margin-top:10px">STOP IN PINK ZONE</div>
-    <button class="hack-btn" id="h-btn">STOP</button>
 </div>
 
 <script>
+    /* --- SYSTEM SETUP --- */
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.headerColor = '#000000';
-
-    // --- AUDIO ENGINE (SYNTH) ---
-    const AudioEngine = {
-        ctx: null,
-        init: function() {
-            if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        },
-        play: function(type) {
-            if(!this.ctx) return;
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            
-            const now = this.ctx.currentTime;
-            if(type === 'tap') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'coin') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            }
-        }
-    };
-
-    // --- STATE ---
-    let s = JSON.parse(localStorage.getItem("cp_v5")) || {
-        energy: 0,
-        chips: 0, // Prestige Currency
-        upgrades: { gpu: 0, net: 0, bot: 0 },
-        lastHack: 0
-    };
-
+    tg.headerColor = '#0b0014';
+    
     // Config
-    const ITEMS = {
-        gpu: { n: "GPU Miner", base: 50, inc: 1 },
-        net: { n: "Botnet Node", base: 250, inc: 5 },
-        bot: { n: "AI Core", base: 1000, inc: 25 }
+    const SAVE_KEY = 'cp_save_modern_v4';
+    const RANKS = ["Street Rat", "Scavenger", "Cyber Punk", "Net Runner", "Void Lord"];
+
+    // Default State
+    let s = JSON.parse(localStorage.getItem(SAVE_KEY)) || {
+        energy: 0,
+        total: 0,
+        level: 1,
+        ships: {},
+        crew: { hacker: 0, bot: 0 },
+        quests: { q1: false, q2: false, q3: false },
+        settings: { sound: true, vibro: true },
+        lastLogin: 0,
+        lastSave: Date.now()
     };
 
     // --- GAME LOOP ---
     setInterval(() => {
-        let mult = 1 + (s.chips * 0.1); // Each chip adds 10% bonus
-        let passive = 0;
-        passive += s.upgrades.gpu * ITEMS.gpu.inc;
-        passive += s.upgrades.net * ITEMS.net.inc;
-        passive += s.upgrades.bot * ITEMS.bot.inc;
-        
+        // Passive Income
+        let passive = calculatePassive();
         if(passive > 0) {
-            s.energy += (passive * mult) / 10;
+            s.energy += passive / 10;
+            s.total += passive / 10;
         }
         updateUI();
     }, 100);
 
-    setInterval(() => { localStorage.setItem("cp_v5", JSON.stringify(s)); }, 2000);
+    setInterval(saveGame, 5000); // Auto-save
 
-    // --- ACTIONS ---
-    const tapBtn = document.getElementById('tap-btn');
-    tapBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault(); 
-        handleTap(e.touches[0].clientX, e.touches[0].clientY);
-    });
-    tapBtn.addEventListener('mousedown', (e) => handleTap(e.clientX, e.clientY));
+    // Check Daily Bonus
+    checkDaily();
 
-    function handleTap(x, y) {
-        AudioEngine.init();
-        AudioEngine.play('tap');
-        tg.HapticFeedback.impactOccurred('medium');
+    // --- LOGIC ---
 
-        let mult = 1 + (s.chips * 0.1);
-        let gain = 1 * mult;
+    function calculatePassive() {
+        let income = 0;
+        // Ships Logic
+        if(s.ships['s1']) income += s.ships['s1'] * 1;
+        if(s.ships['s2']) income += s.ships['s2'] * 5;
+        // Bot Logic
+        if(s.crew['bot']) income += s.crew['bot'] * 20; 
+        return income;
+    }
+
+    function tap(e) {
+        e.preventDefault();
+        let touch = e.touches ? e.touches[0] : e;
         
+        // Crit Logic (Hacker)
+        let isCrit = false;
+        let gain = 1;
+        
+        // Hacker gives 5% chance per level to crit x10
+        let critChance = s.crew['hacker'] * 0.05; 
+        if (Math.random() < critChance) {
+            isCrit = true;
+            gain = 10;
+            if(s.settings.vibro) tg.HapticFeedback.notificationOccurred('warning');
+        } else {
+            if(s.settings.vibro) tg.HapticFeedback.impactOccurred('light');
+        }
+
         s.energy += gain;
+        s.total += gain;
         
-        // FX
-        const el = document.createElement('div');
-        el.className = 'float-txt';
-        el.style.left = (x - 10) + 'px'; el.style.top = (y - 20) + 'px';
-        el.innerText = `+${Math.floor(gain)}`;
-        el.style.color = '#fff';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-        
+        checkQuests();
+        createParticle(touch.clientX, touch.clientY, gain, isCrit);
         updateUI();
     }
 
-    // --- UI ---
+    // --- UI RENDERING ---
+
     function updateUI() {
         document.getElementById('energy').innerText = Math.floor(s.energy).toLocaleString();
-        document.getElementById('chips').innerText = s.chips;
+        document.getElementById('inc').innerText = `+${calculatePassive().toFixed(1)} / сек`;
         
-        let mult = 1 + (s.chips * 0.1);
-        let passive = (s.upgrades.gpu * 1) + (s.upgrades.net * 5) + (s.upgrades.bot * 25);
+        // Rank Logic
+        let rIndex = Math.min(Math.floor(s.total / 10000), RANKS.length - 1);
+        document.getElementById('rank').innerText = RANKS[rIndex];
+        document.getElementById('lvl').innerText = `LVL ${s.crew['bot'] + s.crew['hacker'] + 1}`;
+    }
+
+    function createParticle(x, y, val, isCrit) {
+        const el = document.createElement('div');
+        el.className = 'float-txt';
+        el.style.color = isCrit ? 'var(--yellow)' : 'var(--cyan)';
+        el.innerText = `+${val}`;
+        el.style.left = (x - 20) + 'px';
+        el.style.top = (y - 50) + 'px';
+        if(isCrit) el.style.fontSize = '40px';
         
-        document.getElementById('inc').innerText = (passive * mult).toFixed(1);
-        document.getElementById('mult').innerText = mult.toFixed(1);
+        document.body.appendChild(el);
+
+        let destX = (Math.random() - 0.5) * 80;
+        el.animate([
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${destX}px, -120px) scale(${isCrit?1.3:1.1})`, opacity: 0 }
+        ], { duration: 800, easing: 'cubic-bezier(0,0,0.2,1)' });
+
+        setTimeout(() => el.remove(), 800);
     }
 
     // --- MENUS ---
-    function openShop() {
-        const m = document.getElementById('modal');
-        const c = document.getElementById('modal-content');
-        m.style.display = 'flex';
+
+    function openShop(type) {
+        const title = document.getElementById('pop-title');
+        const body = document.getElementById('pop-body');
+        document.getElementById('pop').style.display = 'flex';
         
-        let html = `<div class="close-x" onclick="document.getElementById('modal').style.display='none'">X</div>
-        <h2>SYSTEM UPGRADE</h2><br>`;
+        title.innerText = "АНГАР ФЛОТА";
         
-        for(let key in ITEMS) {
-            let item = ITEMS[key];
-            let lvl = s.upgrades[key];
-            let cost = Math.floor(item.base * Math.pow(1.5, lvl));
-            
-            html += `
-            <div class="item-row">
-                <div>
-                    <div style="color:var(--term-blue)">${item.n} [Lvl ${lvl}]</div>
-                    <div style="font-size:10px; opacity:0.7">+${item.inc} EPS</div>
+        const items = [
+            { id: 's1', name: 'Scout Drone', cost: 100, inc: 1, img: 'ship1' },
+            { id: 's2', name: 'Battle Cruiser', cost: 500, inc: 5, img: 'ship2' }
+        ];
+
+        body.innerHTML = items.map(i => {
+            let count = s.ships[i.id] || 0;
+            let price = Math.floor(i.cost * Math.pow(1.3, count));
+            return `
+            <div class="list-item">
+                <img src="assets/ships/${i.img}.png" onerror="this.src='https://via.placeholder.com/48/00ffff?text=S'">
+                <div class="list-info">
+                    <h4>${i.name}</h4>
+                    <p>Доход: +${i.inc}/сек | У тебя: ${count}</p>
                 </div>
-                <button class="buy-btn" onclick="buy('${key}', ${cost})">${cost}</button>
+                <button class="action-btn" onclick="buyShip('${i.id}', ${price})">${price}</button>
             </div>`;
-        }
-        c.innerHTML = html;
+        }).join('');
     }
 
-    function buy(key, cost) {
-        if(s.energy >= cost) {
-            s.energy -= cost;
-            s.upgrades[key]++;
-            AudioEngine.play('coin');
-            openShop();
-            updateUI();
-        } else {
-            AudioEngine.play('error');
-            tg.HapticFeedback.notificationOccurred('error');
+    function buyShip(id, price) {
+        if(s.energy >= price) {
+            s.energy -= price;
+            s.ships[id] = (s.ships[id] || 0) + 1;
+            saveGame();
+            openShop('ships'); // Redraw
+            tg.HapticFeedback.selectionChanged();
         }
     }
 
-    function openReboot() {
-        const m = document.getElementById('modal');
-        const c = document.getElementById('modal-content');
-        m.style.display = 'flex';
+    function openCrew() {
+        const title = document.getElementById('pop-title');
+        const body = document.getElementById('pop-body');
+        document.getElementById('pop').style.display = 'flex';
+        title.innerText = "ЭКИПАЖ";
+
+        // Hacker Cost
+        let hLvl = s.crew.hacker;
+        let hCost = Math.floor(1000 * Math.pow(2, hLvl));
         
-        // Calculate potential chips: 1 Chip for every 5000 energy earned (rough logic for demo)
-        // Better: Based on CURRENT energy to force reset
-        let potential = Math.floor(s.energy / 5000);
-        
-        c.innerHTML = `
-            <div class="close-x" onclick="document.getElementById('modal').style.display='none'">X</div>
-            <h2 style="color:red">SYSTEM REBOOT</h2>
-            <p style="margin:10px 0; font-size:12px">Перезагрузка сотрет всю энергию и апгрейды.</p>
-            <p>Ты получишь: <b style="color:var(--term-pink)">${potential} Neuro-Chips</b></p>
-            <p style="font-size:10px">Каждый чип дает +10% ко всему доходу.</p>
-            
-            <button class="prestige-btn" onclick="doReboot(${potential})">PERFORM REBOOT</button>
+        // Bot Cost
+        let bLvl = s.crew.bot;
+        let bCost = Math.floor(2000 * Math.pow(1.5, bLvl));
+
+        body.innerHTML = `
+            <div class="list-item">
+                <img src="assets/crew/hacker.png" onerror="this.src='https://via.placeholder.com/48/d300d3?text=H'">
+                <div class="list-info">
+                    <h4>Лиса-Хакер (LVL ${hLvl})</h4>
+                    <p>Шанс крита (x10) +5%</p>
+                </div>
+                <button class="action-btn" onclick="upgradeCrew('hacker', ${hCost})">${hCost}</button>
+            </div>
+            <div class="list-item">
+                <img src="assets/crew/bot.png" onerror="this.src='https://via.placeholder.com/48/f7ff00?text=B'">
+                <div class="list-info">
+                    <h4>Авто-Бот (LVL ${bLvl})</h4>
+                    <p>Добывает +20/сек</p>
+                </div>
+                <button class="action-btn" onclick="upgradeCrew('bot', ${bCost})">${bCost}</button>
+            </div>
         `;
     }
 
-    function doReboot(amount) {
-        if(amount < 1) return alert("Недостаточно энергии для генерации чипа (нужно 5000)");
-        if(confirm("ПОДТВЕРДИТЬ ПЕРЕЗАГРУЗКУ?")) {
-            s.chips += amount;
-            s.energy = 0;
-            s.upgrades = { gpu: 0, net: 0, bot: 0 };
-            localStorage.setItem("cp_v5", JSON.stringify(s));
+    function upgradeCrew(role, price) {
+        if(s.energy >= price) {
+            s.energy -= price;
+            s.crew[role]++;
+            saveGame();
+            openCrew();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }
+
+    function openQuests() {
+        document.getElementById('pop').style.display = 'flex';
+        document.getElementById('pop-title').innerText = "ЗАДАНИЯ";
+        const body = document.getElementById('pop-body');
+
+        const qData = [
+            { id: 'q1', txt: 'Накопить 1000 энергии', reward: 500, done: s.total >= 1000 },
+            { id: 'q2', txt: 'Купить 5 Дронов', reward: 1000, done: (s.ships['s1']||0) >= 5 },
+            { id: 'q3', txt: 'Нанять Хакера', reward: 2000, done: s.crew['hacker'] > 0 }
+        ];
+
+        body.innerHTML = qData.map(q => {
+            let isClaimed = s.quests[q.id];
+            let btn = '';
+            
+            if(isClaimed) btn = `<button class="action-btn" disabled>✓</button>`;
+            else if(q.done) btn = `<button class="action-btn claim" onclick="claimQuest('${q.id}', ${q.reward})">ЗАБРАТЬ</button>`;
+            else btn = `<button class="action-btn" disabled>🔒</button>`;
+
+            return `
+            <div class="list-item">
+                <div class="list-info">
+                    <h4>${q.txt}</h4>
+                    <p style="color:var(--yellow)">Награда: ${q.reward} PUNK</p>
+                </div>
+                ${btn}
+            </div>`;
+        }).join('');
+    }
+
+    function claimQuest(qid, reward) {
+        s.quests[qid] = true;
+        s.energy += reward;
+        tg.HapticFeedback.notificationOccurred('success');
+        saveGame();
+        openQuests();
+    }
+
+    function openSettings() {
+        document.getElementById('pop').style.display = 'flex';
+        document.getElementById('pop-title').innerText = "НАСТРОЙКИ";
+        const body = document.getElementById('pop-body');
+
+        body.innerHTML = `
+            <div class="list-item" onclick="toggleSet('sound')">
+                <div class="list-info"><h4>Звуковые эффекты</h4></div>
+                <div style="color:var(--cyan)">${s.settings.sound ? 'ВКЛ' : 'ВЫКЛ'}</div>
+            </div>
+            <div class="list-item" onclick="toggleSet('vibro')">
+                <div class="list-info"><h4>Вибрация (Haptic)</h4></div>
+                <div style="color:var(--cyan)">${s.settings.vibro ? 'ВКЛ' : 'ВЫКЛ'}</div>
+            </div>
+            <div class="list-item" style="border-color:rgba(255,0,0,0.3)" onclick="resetGame()">
+                <div class="list-info"><h4 style="color:#ff4444">Сброс прогресса</h4><p>Начать игру заново</p></div>
+            </div>
+        `;
+    }
+
+    function toggleSet(key) {
+        s.settings[key] = !s.settings[key];
+        saveGame();
+        openSettings();
+    }
+
+    // --- UTILS ---
+    function checkDaily() {
+        const today = new Date().toDateString();
+        if(s.lastLogin !== today) {
+            s.lastLogin = today;
+            s.energy += 500;
+            saveGame();
+            setTimeout(() => alert("🎁 ЕЖЕДНЕВНЫЙ БОНУС: +500 PUNK"), 1000);
+        }
+    }
+    
+    function checkQuests() {
+        // Проверка квестов в фоновом режиме
+    }
+
+    function saveGame() {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    }
+    
+    function resetGame() {
+        if(confirm("Вы уверены? Это удалит весь прогресс.")) {
+            localStorage.removeItem(SAVE_KEY);
             location.reload();
         }
     }
 
-    // --- HACK MINIGAME ---
-    let hackAnim;
-    let hackDir = 1;
-    let hackPos = 0;
-    
-    function startHackGame() {
-        if(s.energy < 100 && s.chips === 0) {
-             alert("Требуется 100 PUNK для входа в сеть!"); return;
-        }
-        
-        document.getElementById('hack-overlay').style.display = 'flex';
-        // Random zone position (20-80%)
-        let zoneLeft = 20 + Math.random() * 60;
-        document.getElementById('h-zone').style.left = zoneLeft + "%";
-        
-        hackPos = 0;
-        hackDir = 1.5; // Speed
-        
-        function loop() {
-            hackPos += hackDir;
-            if(hackPos > 100 || hackPos < 0) hackDir *= -1;
-            document.getElementById('h-cursor').style.left = hackPos + "%";
-            hackAnim = requestAnimationFrame(loop);
-        }
-        loop();
-        
-        // Setup button
-        const btn = document.getElementById('h-btn');
-        btn.onclick = () => {
-            cancelAnimationFrame(hackAnim);
-            let zLeft = parseFloat(document.getElementById('h-zone').style.left);
-            // Zone width is approx 10% in CSS logic implicitly (30px on mobile is roughly 8-10%)
-            // Let's use simpler math: check overlapping ranges
-            // We convert % to approximate collision
-            
-            if(Math.abs(hackPos - zLeft) < 10) {
-                // WIN
-                let reward = 500 * (1 + s.chips);
-                s.energy += reward;
-                alert(`ВЗЛОМ УСПЕШЕН! +${reward} PUNK`);
-                AudioEngine.play('coin');
-                tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                // LOSE
-                s.energy = Math.max(0, s.energy - 100);
-                alert("ОШИБКА! СИСТЕМА ОБНАРУЖИЛА ВАС. -100 PUNK");
-                AudioEngine.play('error');
-                tg.HapticFeedback.notificationOccurred('error');
-            }
-            document.getElementById('hack-overlay').style.display = 'none';
-        };
-    }
+    function closePop() { document.getElementById('pop').style.display = 'none'; }
 
-    function resetSave() {
-        localStorage.removeItem("cp_v5");
-        location.reload();
-    }
+    // Bind Tap
+    document.getElementById('tap-area').addEventListener('touchstart', tap);
+    document.getElementById('tap-area').addEventListener('mousedown', tap);
+
+    // Initial UI Update
+    updateUI();
+
 </script>
 </body>
 </html>
