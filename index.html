@@ -2,16 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Energy War</title>
+    <title>CosmoPunk: Syndicate</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #05000a;
-            --accent: #ff00ff;
-            --cyan: #00ffff;
-            --glass: rgba(255, 255, 255, 0.07);
-            --border: rgba(255, 255, 255, 0.15);
+            --bg: #0b0014;
+            --accent: #d300d3; /* Magenta */
+            --cyan: #00f7ff;    /* Cyan */
+            --yellow: #f7ff00;  /* Acid Yellow */
+            --glass: rgba(20, 0, 30, 0.6);
+            --border: rgba(0, 247, 255, 0.3);
             --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -20,8 +21,9 @@
         body {
             background: var(--bg);
             background-image: 
-                radial-gradient(circle at 50% 20%, #1a0033 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, #001122 0%, transparent 30%);
+                linear-gradient(0deg, transparent 24%, rgba(0, 247, 255, .05) 25%, rgba(0, 247, 255, .05) 26%, transparent 27%, transparent 74%, rgba(0, 247, 255, .05) 75%, rgba(0, 247, 255, .05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 247, 255, .05) 25%, rgba(0, 247, 255, .05) 26%, transparent 27%, transparent 74%, rgba(0, 247, 255, .05) 75%, rgba(0, 247, 255, .05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
             color: #fff;
             font-family: var(--font);
             height: 100vh;
@@ -29,394 +31,431 @@
             user-select: none;
         }
 
-        #app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 20px;
-        }
+        #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; position: relative; }
 
         /* --- HUD --- */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            z-index: 10;
-        }
-
-        .stats-block {
+        .header { display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; }
+        .stats-box {
             background: var(--glass);
-            padding: 12px 20px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        #energy {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--cyan);
-            text-shadow: 0 0 15px var(--cyan);
-        }
-
-        .rank-box { text-align: right; }
-        #rank { color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
-        
-        .progress-container {
-            width: 100px;
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        #rank-bar { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
-
-        /* --- Reactor --- */
-        #center {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .reactor-core {
-            width: 260px;
-            height: 260px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s active;
-        }
-
-        .reactor-core:active { transform: scale(0.95); }
-
-        .ring {
-            position: absolute;
-            inset: 0;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            opacity: 0.3;
-            animation: pulse 2s infinite;
-        }
-
-        #reactor-img {
-            width: 80%;
-            z-index: 2;
-            filter: drop-shadow(0 0 20px var(--accent));
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.3); opacity: 0; }
-        }
-
-        /* --- Bottom Menu --- */
-        .bottom-nav {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            padding-bottom: 10px;
-        }
-
-        .nav-btn {
-            background: var(--glass);
+            padding: 8px 16px;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 12px 5px;
-            text-align: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: #ccc;
-            transition: 0.2s;
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.2);
+            backdrop-filter: blur(5px);
         }
+        #energy { font-size: 26px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+        #rank { font-size: 12px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
-        .nav-btn:active { background: var(--accent); color: white; }
+        /* --- REACTOR --- */
+        #center { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        
+        .reactor-wrap { position: relative; width: 240px; height: 240px; display: flex; justify-content: center; align-items: center; }
+        .reactor-glow {
+            position: absolute; inset: -20px; border-radius: 50%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.2; animation: pulse 3s infinite;
+        }
+        #reactor-img { 
+            width: 100%; height: 100%; object-fit: contain; 
+            filter: drop-shadow(0 0 15px var(--accent));
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #reactor-img:active { transform: scale(0.9); }
 
-        /* --- Popups --- */
+        @keyframes pulse { 0% {opacity:0.2; transform:scale(1);} 50% {opacity:0.4; transform:scale(1.1);} 100% {opacity:0.2; transform:scale(1);} }
+
+        /* --- BOTTOM NAV --- */
+        .nav-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-btn {
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+            border: 1px solid var(--border); border-radius: 12px;
+            height: 44px; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: bold; color: var(--cyan); cursor: pointer;
+        }
+        .nav-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        /* --- POPUPS --- */
         #pop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            flex-direction: column;
-            z-index: 100;
-            padding: 20px;
-            animation: fadeIn 0.3s;
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; animation: popIn 0.2s ease-out;
         }
-
-        .pop-content {
-            background: #110022;
-            border: 1px solid var(--accent);
-            border-radius: 24px;
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
+        .card {
+            background: #150020; border: 1px solid var(--accent);
+            border-radius: 20px; width: 100%; max-height: 80vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 30px rgba(211, 0, 211, 0.3);
         }
-
+        .card-header { padding: 15px; background: rgba(255,255,255,0.05); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .card-body { padding: 15px; overflow-y: auto; }
+        .card-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; }
+        
         .close-btn {
-            align-self: center;
-            margin-top: 15px;
-            background: var(--accent);
-            border: none;
-            color: white;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-weight: bold;
+            background: transparent; border: 1px solid var(--accent); color: var(--accent);
+            padding: 8px 24px; border-radius: 20px; font-weight: bold;
         }
 
-        .shop-item {
-            display: flex;
-            align-items: center;
-            background: var(--glass);
-            margin-bottom: 12px;
-            padding: 12px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
+        /* --- LIST ITEMS --- */
+        .list-item {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 12px; margin-bottom: 8px;
         }
-
-        .shop-item img { width: 50px; height: 50px; margin-right: 15px; }
-        .shop-info { flex: 1; }
-        .shop-info h4 { font-size: 16px; color: var(--cyan); }
-        .shop-info p { font-size: 12px; opacity: 0.7; }
-        .buy-btn {
-            background: #222;
-            border: 1px solid var(--cyan);
-            color: var(--cyan);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+        .list-item img { width: 48px; height: 48px; object-fit: contain; }
+        .list-info { flex: 1; }
+        .list-info h4 { color: #fff; font-size: 14px; margin-bottom: 4px; }
+        .list-info p { color: #aaa; font-size: 11px; }
+        .action-btn {
+            background: var(--cyan); color: #000; border: none;
+            padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
         }
-        .buy-btn:disabled { opacity: 0.3; border-color: gray; color: gray; }
+        .action-btn:disabled { background: #333; color: #666; }
+        .action-btn.claim { background: var(--yellow); }
 
-        /* --- Animations --- */
-        .float-text {
-            position: absolute;
-            color: var(--cyan);
-            font-weight: 900;
-            font-size: 28px;
-            pointer-events: none;
-            z-index: 50;
-            text-shadow: 0 0 10px var(--cyan);
+        /* --- FX --- */
+        .float-txt {
+            position: absolute; font-weight: 900; font-size: 24px; pointer-events: none; z-index: 50;
+            text-shadow: 0 0 5px currentColor;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .crit { color: var(--yellow); font-size: 32px; }
+        
+        @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div class="header">
-        <div class="stats-block">
+        <div class="stats-box">
             <div id="energy">0</div>
-            <div style="font-size: 10px; color: #aaa;">PUNK ENERGY</div>
-            <div id="inc" style="font-size: 11px; color: var(--cyan);">+0/s</div>
+            <div id="inc" style="font-size: 11px; opacity:0.8">+0 / сек</div>
         </div>
-        <div class="rank-box">
-            <div id="rank">Street Rat</div>
-            <div class="progress-container"><div id="rank-bar"></div></div>
+        <div style="text-align: right;">
+            <div class="stats-box" style="border-color: var(--accent);">
+                <div id="rank">Street Rat</div>
+                <div id="lvl" style="font-size: 11px; opacity:0.8">LVL 1</div>
+            </div>
         </div>
     </div>
 
     <div id="center">
-        <div class="reactor-core" id="tap-zone">
-            <div class="ring"></div>
-            <div class="ring" style="animation-delay: 0.5s"></div>
-            <img src="assets/reactor/reactor.gif" id="reactor-img" alt="Reactor">
+        <div class="reactor-wrap" id="tap-area">
+            <div class="reactor-glow"></div>
+            <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-btn" onclick="openShop('ships')">ФЛОТ</div>
-        <div class="nav-btn" onclick="openShop('implants')">ИМПЛАНТЫ</div>
-        <div class="nav-btn" onclick="openCrew()">ЭКИПАЖ</div>
-        <div class="nav-btn" onclick="openPop('Raid')">РЕЙДЫ</div>
-        <div class="nav-btn" onclick="openPop('Profile')">ПРОФИЛЬ</div>
-        <div class="nav-btn" onclick="openPop('Market')">РЫНОК</div>
-        <div class="nav-btn" onclick="openPop('Settings')">ОПЦИИ</div>
-        <div class="nav-btn" onclick="resetGame()" style="color: #ff4444;">RESET</div>
+    <div class="nav-grid">
+        <div class="nav-btn" onclick="openShop('ships')">🚀 ФЛОТ</div>
+        <div class="nav-btn" onclick="openCrew()">👥 ЭКИПАЖ</div>
+        <div class="nav-btn" onclick="openQuests()">📜 ЗАДАНИЯ</div>
+        <div class="nav-btn" onclick="openSettings()">⚙️ ОПЦИИ</div>
     </div>
 </div>
 
 <div id="pop">
-    <div class="pop-content" id="card"></div>
-    <button class="close-btn" onclick="closePop()">ЗАКРЫТЬ</button>
+    <div class="card">
+        <div class="card-header"><h3 id="pop-title">TITLE</h3></div>
+        <div class="card-body" id="pop-body"></div>
+        <div class="card-footer"><button class="close-btn" onclick="closePop()">ЗАКРЫТЬ</button></div>
+    </div>
 </div>
 
 <script>
+    /* --- SYSTEM SETUP --- */
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.backgroundColor = '#05000a';
+    tg.headerColor = '#0b0014';
+    
+    // Config
+    const SAVE_KEY = 'cp_save_v4';
+    const RANKS = ["Street Rat", "Scavenger", "Cyber Punk", "Net Runner", "Void Lord"];
 
-    let s = JSON.parse(localStorage.getItem("cp_save_v2")) || {
+    // Default State
+    let s = JSON.parse(localStorage.getItem(SAVE_KEY)) || {
         energy: 0,
         total: 0,
-        pass: 0,
-        rankIdx: 0,
+        level: 1,
         ships: {},
-        implants: {},
-        last: Date.now()
+        crew: { hacker: 0, bot: 0 },
+        quests: { q1: false, q2: false, q3: false },
+        settings: { sound: true, vibro: true },
+        lastLogin: 0,
+        lastSave: Date.now()
     };
 
-    const RANKS = [
-        { name: "Street Rat", goal: 1000 },
-        { name: "Neon Scavenger", goal: 10000 },
-        { name: "Void Pirate", goal: 50000 },
-        { name: "Cyber Overlord", goal: 200000 },
-        { name: "Galaxy Baron", goal: Infinity }
-    ];
-
-    const DATA = {
-        ships: [
-            { id: 's1', name: "Rusty Drone", price: 50, inc: 1, img: "ship1" },
-            { id: 's2', name: "Scrap Fighter", price: 250, inc: 5, img: "ship2" },
-            { id: 's3', name: "Punk Hauler", price: 1000, inc: 15, img: "ship3" }
-        ],
-        implants: [
-            { id: 'i1', name: "Base Chip", price: 100, inc: 2, img: "base" },
-            { id: 'i2', name: "Neuro Link", price: 800, inc: 10, img: "neuro" }
-        ]
-    };
-
-    // --- Core Logic ---
-    function updateUI() {
-        document.getElementById('energy').textContent = Math.floor(s.energy).toLocaleString();
-        document.getElementById('inc').textContent = `+${s.pass.toFixed(1)}/сек`;
-        
-        const rank = RANKS[s.rankIdx];
-        document.getElementById('rank').textContent = rank.name;
-        
-        const prevGoal = s.rankIdx > 0 ? RANKS[s.rankIdx-1].goal : 0;
-        const progress = ((s.total - prevGoal) / (rank.goal - prevGoal)) * 100;
-        document.getElementById('rank-bar').style.width = Math.min(progress, 100) + "%";
-
-        if (s.total >= rank.goal && s.rankIdx < RANKS.length - 1) {
-            s.rankIdx++;
-            tg.HapticFeedback.notificationOccurred('success');
+    // --- GAME LOOP ---
+    setInterval(() => {
+        // Passive Income (Ships + Bots)
+        let passive = calculatePassive();
+        if(passive > 0) {
+            s.energy += passive / 10;
+            s.total += passive / 10;
         }
-    }
-
-    function save() {
-        s.last = Date.now();
-        localStorage.setItem("cp_save_v2", JSON.stringify(s));
-    }
-
-    // --- Tapping ---
-    document.getElementById('tap-zone').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        
-        s.energy += 1;
-        s.total += 1;
-        
-        createFloatText(touch.clientX, touch.clientY);
-        tg.HapticFeedback.impactOccurred('medium');
         updateUI();
-    });
+    }, 100);
 
-    function createFloatText(x, y) {
+    setInterval(saveGame, 5000); // Auto-save
+
+    // Check Daily Bonus
+    checkDaily();
+
+    // --- LOGIC ---
+
+    function calculatePassive() {
+        let income = 0;
+        // Ships Logic
+        if(s.ships['s1']) income += s.ships['s1'] * 1;
+        if(s.ships['s2']) income += s.ships['s2'] * 5;
+        // Bot Logic
+        if(s.crew['bot']) income += s.crew['bot'] * 20; // Bot is powerful
+        return income;
+    }
+
+    function tap(e) {
+        e.preventDefault();
+        let touch = e.touches ? e.touches[0] : e;
+        
+        // Crit Logic (Hacker)
+        let isCrit = false;
+        let gain = 1;
+        
+        // Hacker gives 5% chance per level to crit x10
+        let critChance = s.crew['hacker'] * 0.05; 
+        if (Math.random() < critChance) {
+            isCrit = true;
+            gain = 10;
+            if(s.settings.vibro) tg.HapticFeedback.notificationOccurred('warning');
+        } else {
+            if(s.settings.vibro) tg.HapticFeedback.impactOccurred('light');
+        }
+
+        s.energy += gain;
+        s.total += gain;
+        
+        checkQuests();
+        createParticle(touch.clientX, touch.clientY, gain, isCrit);
+        updateUI();
+    }
+
+    // --- UI RENDERING ---
+
+    function updateUI() {
+        document.getElementById('energy').innerText = Math.floor(s.energy).toLocaleString();
+        document.getElementById('inc').innerText = `+${calculatePassive().toFixed(1)} / сек`;
+        
+        // Rank Logic
+        let rIndex = Math.min(Math.floor(s.total / 10000), RANKS.length - 1);
+        document.getElementById('rank').innerText = RANKS[rIndex];
+        document.getElementById('lvl').innerText = `LVL ${s.crew['bot'] + s.crew['hacker'] + 1}`;
+    }
+
+    function createParticle(x, y, val, isCrit) {
         const el = document.createElement('div');
-        el.className = 'float-text';
-        el.textContent = '+1';
-        el.style.left = `${x - 20}px`;
-        el.style.top = `${y - 40}px`;
+        el.className = isCrit ? 'float-txt crit' : 'float-txt';
+        el.style.color = isCrit ? 'var(--yellow)' : 'var(--cyan)';
+        el.innerText = `+${val}`;
+        el.style.left = (x - 20) + 'px';
+        el.style.top = (y - 40) + 'px';
         document.body.appendChild(el);
 
-        const randX = (Math.random() - 0.5) * 100;
+        let destX = (Math.random() - 0.5) * 60;
         el.animate([
-            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-            { transform: `translate(${randX}px, -150px) scale(1.5)`, opacity: 0 }
-        ], { duration: 800, easing: 'ease-out' });
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${destX}px, -100px) scale(${isCrit?1.5:1.2})`, opacity: 0 }
+        ], { duration: 800, easing: 'cubic-bezier(0,0,0.2,1)' });
 
         setTimeout(() => el.remove(), 800);
     }
 
-    // --- Shop System ---
-    function openShop(type) {
-        let html = `<h2>${type === 'ships' ? 'АНГАР ФЛОТА' : 'КИБЕР-ИМПЛАНТЫ'}</h2><br>`;
-        DATA[type].forEach(item => {
-            const count = s[type][item.id] || 0;
-            const currentPrice = Math.floor(item.price * Math.pow(1.5, count));
-            const canBuy = s.energy >= currentPrice;
+    // --- MENUS ---
 
-            html += `
-                <div class="shop-item">
-                    <img src="assets/${type}/${item.img}.png" onerror="this.src='https://via.placeholder.com/50/ff00ff?text=ITEM'">
-                    <div class="shop-info">
-                        <h4>${item.name}</h4>
-                        <p>Доход: +${item.inc}/сек | У вас: ${count}</p>
-                        <p style="color:var(--cyan)">Цена: ${currentPrice} PUNK</p>
-                    </div>
-                    <button class="buy-btn" ${canBuy ? '' : 'disabled'} 
-                        onclick="buyItem('${type}', '${item.id}', ${currentPrice}, ${item.inc})">
-                        КУПИТЬ
-                    </button>
-                </div>`;
-        });
-        showPop(html);
+    function openShop(type) {
+        const title = document.getElementById('pop-title');
+        const body = document.getElementById('pop-body');
+        document.getElementById('pop').style.display = 'flex';
+        
+        title.innerText = "АНГАР ФЛОТА";
+        
+        const items = [
+            { id: 's1', name: 'Scout Drone', cost: 100, inc: 1, img: 'ship1' },
+            { id: 's2', name: 'Battle Cruiser', cost: 500, inc: 5, img: 'ship2' }
+        ];
+
+        body.innerHTML = items.map(i => {
+            let count = s.ships[i.id] || 0;
+            let price = Math.floor(i.cost * Math.pow(1.3, count));
+            return `
+            <div class="list-item">
+                <img src="assets/ships/${i.img}.png" onerror="this.src='https://via.placeholder.com/48/00ffff?text=S'">
+                <div class="list-info">
+                    <h4>${i.name}</h4>
+                    <p>Доход: +${i.inc}/сек | У тебя: ${count}</p>
+                </div>
+                <button class="action-btn" onclick="buyShip('${i.id}', ${price})">${price}</button>
+            </div>`;
+        }).join('');
     }
 
-    function buyItem(type, id, price, inc) {
-        if (s.energy >= price) {
+    function buyShip(id, price) {
+        if(s.energy >= price) {
             s.energy -= price;
-            s.pass += inc;
-            s.ships[id] = (s.ships[id] || 0) + 1; // Упростил для примера
-            tg.HapticFeedback.impactOccurred('heavy');
-            save();
-            openShop(type);
-            updateUI();
+            s.ships[id] = (s.ships[id] || 0) + 1;
+            saveGame();
+            openShop('ships'); // Redraw
+            tg.HapticFeedback.selectionChanged();
         }
     }
 
     function openCrew() {
-        let h = `<h2>ЭКИПАЖ</h2><br>
-            <div class="shop-item">
-                <img src="assets/crew/captain.png" onerror="this.src='https://via.placeholder.com/50/ff00ff?text=CAP'">
-                <div class="shop-info"><h4>Капитан Космо</h4><p>Увеличивает весь доход на 10% (Скоро)</p></div>
-            </div>
-            <div class="shop-item">
-                <img src="assets/crew/hacker.png" onerror="this.src='https://via.placeholder.com/50/00ffff?text=FOX'">
-                <div class="shop-info"><h4>Лиса-Хакер</h4><p>Шанс критического тапа x5 (Скоро)</p></div>
-            </div>`;
-        showPop(h);
-    }
-
-    function showPop(html) {
-        document.getElementById('card').innerHTML = html;
+        const title = document.getElementById('pop-title');
+        const body = document.getElementById('pop-body');
         document.getElementById('pop').style.display = 'flex';
+        title.innerText = "ЭКИПАЖ";
+
+        // Hacker Cost
+        let hLvl = s.crew.hacker;
+        let hCost = Math.floor(1000 * Math.pow(2, hLvl));
+        
+        // Bot Cost
+        let bLvl = s.crew.bot;
+        let bCost = Math.floor(2000 * Math.pow(1.5, bLvl));
+
+        body.innerHTML = `
+            <div class="list-item">
+                <img src="assets/crew/hacker.png" onerror="this.src='https://via.placeholder.com/48/d300d3?text=H'">
+                <div class="list-info">
+                    <h4>Лиса-Хакер (LVL ${hLvl})</h4>
+                    <p>Шанс крита (x10) +5%</p>
+                </div>
+                <button class="action-btn" onclick="upgradeCrew('hacker', ${hCost})">${hCost}</button>
+            </div>
+            <div class="list-item">
+                <img src="assets/crew/bot.png" onerror="this.src='https://via.placeholder.com/48/f7ff00?text=B'">
+                <div class="list-info">
+                    <h4>Авто-Бот (LVL ${bLvl})</h4>
+                    <p>Добывает +20/сек</p>
+                </div>
+                <button class="action-btn" onclick="upgradeCrew('bot', ${bCost})">${bCost}</button>
+            </div>
+        `;
     }
 
-    function closePop() {
-        document.getElementById('pop').style.display = 'none';
+    function upgradeCrew(role, price) {
+        if(s.energy >= price) {
+            s.energy -= price;
+            s.crew[role]++;
+            saveGame();
+            openCrew();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
+    function openQuests() {
+        document.getElementById('pop').style.display = 'flex';
+        document.getElementById('pop-title').innerText = "ЗАДАНИЯ";
+        const body = document.getElementById('pop-body');
+
+        const qData = [
+            { id: 'q1', txt: 'Накопить 1000 энергии', reward: 500, done: s.total >= 1000 },
+            { id: 'q2', txt: 'Купить 5 Дронов', reward: 1000, done: (s.ships['s1']||0) >= 5 },
+            { id: 'q3', txt: 'Нанять Хакера', reward: 2000, done: s.crew['hacker'] > 0 }
+        ];
+
+        body.innerHTML = qData.map(q => {
+            let isClaimed = s.quests[q.id];
+            let btn = '';
+            
+            if(isClaimed) btn = `<button class="action-btn" disabled>✓</button>`;
+            else if(q.done) btn = `<button class="action-btn claim" onclick="claimQuest('${q.id}', ${q.reward})">ЗАБРАТЬ</button>`;
+            else btn = `<button class="action-btn" disabled>🔒</button>`;
+
+            return `
+            <div class="list-item">
+                <div class="list-info">
+                    <h4>${q.txt}</h4>
+                    <p style="color:var(--yellow)">Награда: ${q.reward} PUNK</p>
+                </div>
+                ${btn}
+            </div>`;
+        }).join('');
+    }
+
+    function claimQuest(qid, reward) {
+        s.quests[qid] = true;
+        s.energy += reward;
+        tg.HapticFeedback.notificationOccurred('success');
+        saveGame();
+        openQuests();
+        alert(`Получено ${reward} энергии!`);
+    }
+
+    function openSettings() {
+        document.getElementById('pop').style.display = 'flex';
+        document.getElementById('pop-title').innerText = "СИСТЕМА";
+        const body = document.getElementById('pop-body');
+
+        body.innerHTML = `
+            <div class="list-item" onclick="toggleSet('sound')">
+                <div class="list-info"><h4>Звуки</h4></div>
+                <div style="color:var(--cyan)">${s.settings.sound ? 'ВКЛ' : 'ВЫКЛ'}</div>
+            </div>
+            <div class="list-item" onclick="toggleSet('vibro')">
+                <div class="list-info"><h4>Вибрация</h4></div>
+                <div style="color:var(--cyan)">${s.settings.vibro ? 'ВКЛ' : 'ВЫКЛ'}</div>
+            </div>
+            <div class="list-item" style="border-color:red" onclick="resetGame()">
+                <div class="list-info"><h4 style="color:red">СБРОС ПРОГРЕССА</h4></div>
+            </div>
+        `;
+    }
+
+    function toggleSet(key) {
+        s.settings[key] = !s.settings[key];
+        saveGame();
+        openSettings();
+    }
+
+    // --- UTILS ---
+    function checkDaily() {
+        const today = new Date().toDateString();
+        if(s.lastLogin !== today) {
+            s.lastLogin = today;
+            s.energy += 500;
+            saveGame();
+            setTimeout(() => alert("📅 ЕЖЕДНЕВНЫЙ БОНУС: +500 PUNK"), 1000);
+        }
+    }
+    
+    function checkQuests() {
+        // Run quietly to allow UI to show 'Claim' later
+    }
+
+    function saveGame() {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    }
+    
     function resetGame() {
-        if(confirm("Сбросить весь прогресс?")) {
-            localStorage.removeItem("cp_save_v2");
+        if(confirm("Точно удалить весь прогресс?")) {
+            localStorage.removeItem(SAVE_KEY);
             location.reload();
         }
     }
 
-    // --- Init ---
-    // Offline income
-    const now = Date.now();
-    const offlineTime = (now - s.last) / 1000;
-    if (offlineTime > 10) {
-        const mined = s.pass * offlineTime;
-        s.energy += mined;
-        alert(`Пока тебя не было, флот добыл: ${Math.floor(mined)} PUNK`);
-    }
+    function closePop() { document.getElementById('pop').style.display = 'none'; }
 
-    setInterval(() => {
-        s.energy += s.pass / 10;
-        updateUI();
-        if (Math.random() > 0.9) save(); // Автосохранение раз в секунду с шансом
-    }, 100);
+    // Bind Tap
+    document.getElementById('tap-area').addEventListener('touchstart', tap);
+    document.getElementById('tap-area').addEventListener('mousedown', tap);
 
+    // Initial UI Update
     updateUI();
+
 </script>
 </body>
 </html>
