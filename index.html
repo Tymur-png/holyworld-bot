@@ -2,16 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Syndicate</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <title>CosmoPunk: Syndicate v2.0</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg: #0b0014;
-            --accent: #d300d3; /* Неоновый фиолетовый */
-            --cyan: #00f7ff;    /* Неоновый голубой */
-            --yellow: #f7ff00;  /* Кислотный желтый */
-            --glass: rgba(30, 0, 40, 0.6);
+            --accent: #d300d3;
+            --cyan: #00f7ff;
+            --yellow: #f7ff00;
+            --glass: rgba(20, 10, 30, 0.7);
             --border: rgba(255, 255, 255, 0.15);
             --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
@@ -20,21 +20,22 @@
         
         body {
             background: var(--bg);
-            /* Красивый сложный градиент */
             background-image: 
-                radial-gradient(circle at 50% 10%, rgba(211, 0, 211, 0.2) 0%, transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(0, 247, 255, 0.15) 0%, transparent 50%);
+                radial-gradient(circle at 50% 10%, rgba(211, 0, 211, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(0, 247, 255, 0.15) 0%, transparent 50%),
+                linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 100%);
             color: #fff;
             font-family: var(--font);
             height: 100vh;
             overflow: hidden;
             user-select: none;
+            touch-action: manipulation;
         }
 
-        #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; position: relative; }
+        #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; position: relative; z-index: 1; }
 
-        /* --- HUD (Верхняя панель) --- */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; margin-bottom: 20px; }
+        /* --- HUD --- */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         
         .stats-box {
             background: var(--glass);
@@ -42,111 +43,158 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             backdrop-filter: blur(12px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             min-width: 100px;
-        }
-        
-        #energy { font-size: 24px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 10px rgba(0, 247, 255, 0.5); }
-        .sub-text { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
-        
-        #rank { font-size: 13px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* --- REACTOR (Центр) --- */
-        #center { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
-        
-        .reactor-wrap { 
-            position: relative; width: 260px; height: 260px; 
-            display: flex; justify-content: center; align-items: center; 
             transition: transform 0.1s;
         }
-        .reactor-wrap:active { transform: scale(0.95); }
+        
+        #energy { font-size: 26px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 15px rgba(0, 247, 255, 0.6); }
+        .sub-text { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; font-weight: 600; text-transform: uppercase; }
+        #rank { font-size: 13px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- REACTOR & TURBO --- */
+        #center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; perspective: 1000px; }
+        
+        .reactor-wrap { 
+            position: relative; width: 280px; height: 280px; 
+            display: flex; justify-content: center; align-items: center; 
+            transition: transform 0.1s cubic-bezier(0.1, 0.9, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .reactor-wrap:active { transform: scale(0.96) !important; }
 
         .reactor-glow {
-            position: absolute; inset: -20px; border-radius: 50%;
+            position: absolute; inset: -30px; border-radius: 50%;
             background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            opacity: 0.3; animation: pulse 3s infinite;
+            opacity: 0.4; animation: pulse 3s infinite; pointer-events: none;
         }
         
-        /* Круглые декоративные кольца */
         .ring {
-            position: absolute; inset: 0; border: 1px solid var(--cyan); border-radius: 50%;
-            opacity: 0.2; animation: spin 10s linear infinite;
+            position: absolute; inset: 0; border: 2px solid var(--cyan); border-radius: 50%;
+            opacity: 0.3; animation: spin 10s linear infinite; box-shadow: 0 0 10px var(--cyan);
+            pointer-events: none;
         }
-        .ring:nth-child(2) { inset: 20px; border-color: var(--accent); animation-direction: reverse; animation-duration: 7s; }
+        .ring:nth-child(2) { inset: 25px; border-color: var(--accent); animation-direction: reverse; animation-duration: 7s; box-shadow: 0 0 10px var(--accent); }
 
         #reactor-img { 
-            width: 85%; height: 85%; object-fit: contain; z-index: 2;
-            filter: drop-shadow(0 0 20px rgba(211, 0, 211, 0.6));
+            width: 80%; height: 80%; object-fit: contain; z-index: 2;
+            filter: drop-shadow(0 0 30px rgba(211, 0, 211, 0.5));
+            pointer-events: none;
         }
 
-        @keyframes pulse { 0% {opacity:0.2; transform:scale(1);} 50% {opacity:0.4; transform:scale(1.1);} 100% {opacity:0.2; transform:scale(1);} }
-        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        /* Turbo Button */
+        #turbo-btn {
+            margin-top: 20px;
+            background: linear-gradient(45deg, #ff9100, #ff004c);
+            border: none; padding: 10px 24px; border-radius: 20px;
+            color: white; font-weight: 900; font-size: 14px; text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5);
+            opacity: 0.5; filter: grayscale(1); pointer-events: none;
+            transition: 0.3s;
+        }
+        #turbo-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: shake 2s infinite; cursor: pointer; }
 
-        /* --- BOTTOM NAV (Нижняя панель) --- */
+        /* --- NAV --- */
         .nav-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            padding-top: 10px;
+            padding-top: 10px; padding-bottom: 10px;
         }
         .nav-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border); border-radius: 14px;
-            height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold; color: #ccc; cursor: pointer;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border); border-radius: 16px;
+            height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: bold; color: #aaa; cursor: pointer;
             backdrop-filter: blur(5px); transition: 0.2s;
         }
-        .nav-btn span { font-size: 18px; margin-bottom: 2px; }
-        .nav-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .nav-btn span { font-size: 20px; margin-bottom: 4px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        .nav-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(2px); }
 
-        /* --- POPUPS (Окна) --- */
+        /* --- POPUPS --- */
         #pop {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            display: none; align-items: flex-end; /* Выезжает снизу */
-            animation: fadeIn 0.2s;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: none; align-items: flex-end; 
+            opacity: 0; transition: opacity 0.3s;
         }
+        #pop.open { opacity: 1; }
+        
         .card {
-            background: #1a0b2e; 
+            background: #150524; 
             border-top: 2px solid var(--accent);
-            border-radius: 24px 24px 0 0; 
+            border-radius: 30px 30px 0 0; 
             width: 100%; max-height: 85vh;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 -10px 40px rgba(211, 0, 211, 0.2);
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .card-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #pop.open .card { transform: translateY(0); }
+
+        .card-header { 
+            padding: 20px; text-align: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #fff;
+        }
         .card-body { padding: 20px; overflow-y: auto; flex: 1; }
         
         .close-btn {
-            margin: 10px 20px 20px; background: #333; border: none; color: #fff;
-            padding: 14px; border-radius: 16px; font-weight: bold; font-size: 14px;
+            margin: 10px 20px 25px; background: rgba(255,255,255,0.1); border: none; color: #fff;
+            padding: 16px; border-radius: 18px; font-weight: bold; font-size: 14px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
+        .close-btn:active { background: rgba(255,255,255,0.2); }
 
         /* --- LIST ITEMS --- */
         .list-item {
             display: flex; align-items: center; gap: 15px;
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px; border-radius: 16px; margin-bottom: 10px;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+            padding: 14px; border-radius: 20px; margin-bottom: 12px;
+            transition: 0.2s;
         }
-        .list-item img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; background: rgba(0,0,0,0.2); }
+        .list-item:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+        .list-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 12px; background: rgba(0,0,0,0.3); padding: 5px; }
         .list-info { flex: 1; }
-        .list-info h4 { color: #fff; font-size: 15px; margin-bottom: 4px; }
-        .list-info p { color: #888; font-size: 12px; }
+        .list-info h4 { color: #fff; font-size: 15px; margin-bottom: 4px; font-weight: 700; }
+        .list-info p { color: #999; font-size: 12px; }
         
         .action-btn {
             background: var(--cyan); color: #05000a; border: none;
-            padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 800;
+            padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 900;
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
         }
-        .action-btn:disabled { background: #333; color: #555; }
-        .action-btn.claim { background: var(--yellow); }
+        .action-btn:disabled { background: #333; color: #666; box-shadow: none; }
+        .action-btn.claim { background: var(--yellow); box-shadow: 0 0 15px rgba(247, 255, 0, 0.4); }
+
+        /* --- AFK POPUP --- */
+        #afk-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center;
+        }
+        .afk-modal {
+            background: linear-gradient(135deg, #1e0030, #0b0014);
+            border: 2px solid var(--cyan); border-radius: 24px;
+            padding: 30px; text-align: center; width: 80%;
+            box-shadow: 0 0 50px rgba(0, 247, 255, 0.2);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
         /* --- FX --- */
         .float-txt {
             position: absolute; font-weight: 900; font-size: 28px; pointer-events: none; z-index: 50;
-            text-shadow: 0 0 10px currentColor;
+            text-shadow: 0 0 10px currentColor; font-family: 'Courier New', monospace;
         }
         
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        input.code-input {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--accent);
+            padding: 15px; border-radius: 12px; color: #fff; font-size: 16px; margin-bottom: 10px;
+            text-align: center; outline: none;
+        }
+
+        @keyframes pulse { 0% {opacity:0.2; transform:scale(1);} 50% {opacity:0.5; transform:scale(1.1);} 100% {opacity:0.2; transform:scale(1);} }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        @keyframes shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-3deg)} 75%{transform:rotate(3deg)} }
+        @keyframes popIn { from{transform:scale(0.5); opacity:0} to{transform:scale(1); opacity:1} }
     </style>
 </head>
 <body>
@@ -159,8 +207,8 @@
         </div>
         <div style="text-align: right;">
             <div class="stats-box" style="border-color: var(--accent);">
-                <div id="rank">Street Rat</div>
-                <div class="sub-text" id="lvl">LVL 1</div>
+                <div id="rank">Новичок</div>
+                <div class="sub-text" id="lvl">УРОВЕНЬ 1</div>
             </div>
         </div>
     </div>
@@ -172,158 +220,291 @@
             <div class="ring"></div>
             <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
+        <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO MODE</button>
     </div>
 
     <div class="nav-grid">
-        <div class="nav-btn" onclick="openShop('ships')"><span>🚀</span>Флот</div>
+        <div class="nav-btn" onclick="openShop()"><span>🚀</span>Флот</div>
         <div class="nav-btn" onclick="openCrew()"><span>👥</span>Экипаж</div>
         <div class="nav-btn" onclick="openQuests()"><span>📜</span>Задания</div>
-        <div class="nav-btn" onclick="openSettings()"><span>⚙️</span>Опции</div>
+        <div class="nav-btn" onclick="openSettings()"><span>⚙️</span>Меню</div>
     </div>
 </div>
 
 <div id="pop" onclick="if(event.target.id==='pop') closePop()">
     <div class="card">
-        <div class="card-header"><h3 id="pop-title">TITLE</h3></div>
+        <div class="card-header"><span id="pop-title">TITLE</span></div>
         <div class="card-body" id="pop-body"></div>
         <button class="close-btn" onclick="closePop()">ЗАКРЫТЬ</button>
     </div>
 </div>
 
+<div id="afk-overlay">
+    <div class="afk-modal">
+        <h2 style="color:var(--cyan); margin-bottom:10px;">С возвращением!</h2>
+        <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Твой синдикат работал пока тебя не было.</p>
+        <h1 id="afk-amount" style="font-size:36px; margin-bottom:20px;">+0</h1>
+        <button class="action-btn claim" style="width:100%; padding:15px;" onclick="closeAfk()">ЗАБРАТЬ</button>
+    </div>
+</div>
+
 <script>
-    /* --- SYSTEM SETUP --- */
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.headerColor = '#0b0014';
+    tg.enableClosingConfirmation();
     
     // Config
-    const SAVE_KEY = 'cp_save_modern_v4';
-    const RANKS = ["Street Rat", "Scavenger", "Cyber Punk", "Net Runner", "Void Lord"];
-
-    // Default State
+    const SAVE_KEY = 'cp_syndicate_v2';
+    const RANKS = ["Новичок", "Бродяга", "Киберпанк", "Нетраннер", "Владыка Пустоты", "Легенда"];
+    
+    // State
     let s = JSON.parse(localStorage.getItem(SAVE_KEY)) || {
         energy: 0,
         total: 0,
-        level: 1,
+        startTime: Date.now(),
         ships: {},
         crew: { hacker: 0, bot: 0 },
         quests: { q1: false, q2: false, q3: false },
+        codes: [],
         settings: { sound: true, vibro: true },
-        lastLogin: 0,
-        lastSave: Date.now()
+        lastSave: Date.now(),
+        turboReady: 0 // timestamp when ready
     };
 
-    // --- GAME LOOP ---
-    setInterval(() => {
-        // Passive Income
-        let passive = calculatePassive();
-        if(passive > 0) {
-            s.energy += passive / 10;
-            s.total += passive / 10;
-        }
+    // Runtime vars
+    let turboActive = false;
+    let turboMultiplier = 1;
+
+    // --- INIT ---
+    processOffline();
+    requestAnimationFrame(loop);
+    setInterval(saveGame, 3000);
+    setInterval(checkTurbo, 1000);
+
+    // 3D Tilt Effect
+    const reactor = document.querySelector('.reactor-wrap');
+    document.addEventListener('mousemove', (e) => {
+        if(!reactor) return;
+        const x = (window.innerWidth / 2 - e.clientX) / 25;
+        const y = (window.innerHeight / 2 - e.clientY) / 25;
+        reactor.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+    });
+    // Reset tilt on leave
+    document.addEventListener('mouseleave', () => {
+        reactor.style.transform = `rotateY(0) rotateX(0)`;
+    });
+
+    // --- CORE LOGIC ---
+
+    function loop() {
+        // Passive Income (called ~60 times per second via requestAnimationFrame is too fast, handle logic separately)
         updateUI();
+        requestAnimationFrame(loop);
+    }
+
+    // Passive ticker separate from render
+    setInterval(() => {
+        let passive = calculatePassive();
+        if (turboActive) passive *= 2;
+        
+        if(passive > 0) {
+            let gain = passive / 10; // per 100ms
+            addEnergy(gain);
+        }
     }, 100);
 
-    setInterval(saveGame, 5000); // Auto-save
-
-    // Check Daily Bonus
-    checkDaily();
-
-    // --- LOGIC ---
+    function addEnergy(amount) {
+        s.energy += amount;
+        s.total += amount;
+    }
 
     function calculatePassive() {
         let income = 0;
-        // Ships Logic
-        if(s.ships['s1']) income += s.ships['s1'] * 1;
-        if(s.ships['s2']) income += s.ships['s2'] * 5;
-        // Bot Logic
-        if(s.crew['bot']) income += s.crew['bot'] * 20; 
+        if(s.ships['s1']) income += s.ships['s1'] * 1.5;
+        if(s.ships['s2']) income += s.ships['s2'] * 8;
+        if(s.ships['s3']) income += s.ships['s3'] * 25;
+        if(s.crew['bot']) income += s.crew['bot'] * 25; 
         return income;
     }
 
     function tap(e) {
-        e.preventDefault();
-        let touch = e.touches ? e.touches[0] : e;
+        e.preventDefault(); // Stop zoom
+        // Handles multi-touch
+        let touches = e.changedTouches || [e];
         
-        // Crit Logic (Hacker)
-        let isCrit = false;
-        let gain = 1;
-        
-        // Hacker gives 5% chance per level to crit x10
-        let critChance = s.crew['hacker'] * 0.05; 
-        if (Math.random() < critChance) {
-            isCrit = true;
-            gain = 10;
-            if(s.settings.vibro) tg.HapticFeedback.notificationOccurred('warning');
-        } else {
-            if(s.settings.vibro) tg.HapticFeedback.impactOccurred('light');
-        }
+        for (let i = 0; i < touches.length; i++) {
+            let touch = touches[i];
+            
+            let base = 1 + (s.crew['hacker'] || 0); // Base click strength
+            let isCrit = false;
+            
+            // Crit chance
+            if (Math.random() < (s.crew['hacker'] * 0.05)) {
+                isCrit = true;
+                base *= 5;
+                if(s.settings.vibro) tg.HapticFeedback.notificationOccurred('warning');
+            } else {
+                if(s.settings.vibro) tg.HapticFeedback.impactOccurred('light');
+            }
 
-        s.energy += gain;
-        s.total += gain;
+            if(turboActive) base *= 2;
+
+            addEnergy(base);
+            createParticle(touch.clientX, touch.clientY, Math.floor(base), isCrit);
+        }
         
         checkQuests();
-        createParticle(touch.clientX, touch.clientY, gain, isCrit);
-        updateUI();
+        
+        // Visual Shrink
+        const r = document.getElementById('tap-area');
+        r.style.transform = 'scale(0.95)';
+        setTimeout(() => r.style.transform = 'scale(1)', 50);
+    }
+
+    // --- OFFLINE EARNINGS ---
+    function processOffline() {
+        let now = Date.now();
+        let seconds = (now - s.lastSave) / 1000;
+        if(seconds > 60) {
+            let income = calculatePassive();
+            let totalOffline = Math.floor(income * seconds);
+            
+            if(totalOffline > 100) {
+                document.getElementById('afk-amount').innerText = `+${totalOffline.toLocaleString()}`;
+                document.getElementById('afk-overlay').style.display = 'flex';
+                // Don't add yet, wait for claim
+                window.pendingAfk = totalOffline;
+            }
+        }
+        s.lastSave = now;
+    }
+
+    function closeAfk() {
+        if(window.pendingAfk) {
+            addEnergy(window.pendingAfk);
+            tg.HapticFeedback.notificationOccurred('success');
+            window.pendingAfk = 0;
+        }
+        document.getElementById('afk-overlay').style.display = 'none';
+    }
+
+    // --- TURBO SYSTEM ---
+    function checkTurbo() {
+        let btn = document.getElementById('turbo-btn');
+        let now = Date.now();
+        if(now > s.turboReady && !turboActive) {
+            btn.classList.add('ready');
+            btn.innerText = "⚡ TURBO READY";
+        } else if (turboActive) {
+            btn.classList.remove('ready');
+            btn.innerText = "🔥 ACTIVE 🔥";
+        } else {
+            let left = Math.ceil((s.turboReady - now)/1000);
+            btn.classList.remove('ready');
+            btn.innerText = `⏳ ${left}s`;
+        }
+    }
+
+    function activateTurbo() {
+        let now = Date.now();
+        if(now > s.turboReady && !turboActive) {
+            turboActive = true;
+            tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(() => {
+                turboActive = false;
+                s.turboReady = Date.now() + 60000; // 1 min cooldown
+                saveGame();
+            }, 10000); // 10 sec duration
+        }
     }
 
     // --- UI RENDERING ---
 
     function updateUI() {
         document.getElementById('energy').innerText = Math.floor(s.energy).toLocaleString();
-        document.getElementById('inc').innerText = `+${calculatePassive().toFixed(1)} / сек`;
         
-        // Rank Logic
+        let pas = calculatePassive();
+        if(turboActive) pas *= 2;
+        
+        document.getElementById('inc').innerText = `+${pas.toFixed(1)} / сек`;
+        
         let rIndex = Math.min(Math.floor(s.total / 10000), RANKS.length - 1);
         document.getElementById('rank').innerText = RANKS[rIndex];
-        document.getElementById('lvl').innerText = `LVL ${s.crew['bot'] + s.crew['hacker'] + 1}`;
+        
+        // Crew Level sum
+        let lvl = 1 + (s.crew['hacker']||0) + (s.crew['bot']||0);
+        document.getElementById('lvl').innerText = `УРОВЕНЬ ${lvl}`;
     }
 
     function createParticle(x, y, val, isCrit) {
         const el = document.createElement('div');
         el.className = 'float-txt';
-        el.style.color = isCrit ? 'var(--yellow)' : 'var(--cyan)';
+        el.style.color = isCrit ? '#ff004c' : (turboActive ? '#ff9100' : 'var(--cyan)');
         el.innerText = `+${val}`;
         el.style.left = (x - 20) + 'px';
         el.style.top = (y - 50) + 'px';
-        if(isCrit) el.style.fontSize = '40px';
+        if(isCrit) el.style.fontSize = '36px';
         
         document.body.appendChild(el);
 
-        let destX = (Math.random() - 0.5) * 80;
-        el.animate([
+        let destX = (Math.random() - 0.5) * 100;
+        let rot = (Math.random() - 0.5) * 30;
+        
+        const anim = el.animate([
             { transform: 'translate(0,0) scale(1)', opacity: 1 },
-            { transform: `translate(${destX}px, -120px) scale(${isCrit?1.3:1.1})`, opacity: 0 }
-        ], { duration: 800, easing: 'cubic-bezier(0,0,0.2,1)' });
+            { transform: `translate(${destX}px, -150px) rotate(${rot}deg) scale(${isCrit?1.5:1})`, opacity: 0 }
+        ], { duration: 1000, easing: 'cubic-bezier(0,0,0.2,1)' });
 
-        setTimeout(() => el.remove(), 800);
+        anim.onfinish = () => el.remove();
     }
 
     // --- MENUS ---
 
-    function openShop(type) {
-        const title = document.getElementById('pop-title');
+    function openPop(title) {
+        document.getElementById('pop-title').innerText = title;
+        const pop = document.getElementById('pop');
+        pop.style.display = 'flex';
+        // force reflow
+        void pop.offsetWidth; 
+        pop.classList.add('open');
+    }
+
+    function closePop() {
+        const pop = document.getElementById('pop');
+        pop.classList.remove('open');
+        setTimeout(() => pop.style.display = 'none', 300);
+    }
+
+    function openShop() {
+        openPop("АНГАР ФЛОТА");
         const body = document.getElementById('pop-body');
-        document.getElementById('pop').style.display = 'flex';
-        
-        title.innerText = "АНГАР ФЛОТА";
         
         const items = [
-            { id: 's1', name: 'Scout Drone', cost: 100, inc: 1, img: 'ship1' },
-            { id: 's2', name: 'Battle Cruiser', cost: 500, inc: 5, img: 'ship2' }
+            { id: 's1', name: 'Дрон-разведчик', cost: 150, inc: 1.5, img: 'https://cdn-icons-png.flaticon.com/512/3104/3104332.png' },
+            { id: 's2', name: 'Истребитель', cost: 1200, inc: 8, img: 'https://cdn-icons-png.flaticon.com/512/10603/10603099.png' },
+            { id: 's3', name: 'Фрегат', cost: 5000, inc: 25, img: 'https://cdn-icons-png.flaticon.com/512/5267/5267554.png' }
         ];
 
-        body.innerHTML = items.map(i => {
-            let count = s.ships[i.id] || 0;
-            let price = Math.floor(i.cost * Math.pow(1.3, count));
+        renderList(body, items, s.ships, buyShip);
+    }
+
+    function renderList(container, items, stateObj, callback) {
+        container.innerHTML = items.map(i => {
+            let count = stateObj[i.id] || 0;
+            let price = Math.floor(i.cost * Math.pow(1.25, count));
+            let canBuy = s.energy >= price;
+            
             return `
             <div class="list-item">
-                <img src="assets/ships/${i.img}.png" onerror="this.src='https://via.placeholder.com/48/00ffff?text=S'">
+                <img src="${i.img}">
                 <div class="list-info">
-                    <h4>${i.name}</h4>
-                    <p>Доход: +${i.inc}/сек | У тебя: ${count}</p>
+                    <h4>${i.name} <span style="color:#666; font-size:11px;">x${count}</span></h4>
+                    <p style="color:var(--cyan)">+${i.inc}/сек</p>
                 </div>
-                <button class="action-btn" onclick="buyShip('${i.id}', ${price})">${price}</button>
+                <button class="action-btn" ${canBuy?'':'disabled'} 
+                    onclick="${callback.name}('${i.id}', ${price})">
+                    ${formatNum(price)}
+                </button>
             </div>`;
         }).join('');
     }
@@ -332,153 +513,168 @@
         if(s.energy >= price) {
             s.energy -= price;
             s.ships[id] = (s.ships[id] || 0) + 1;
-            saveGame();
-            openShop('ships'); // Redraw
             tg.HapticFeedback.selectionChanged();
+            saveGame();
+            openShop(); // Redraw
         }
     }
 
     function openCrew() {
-        const title = document.getElementById('pop-title');
+        openPop("КИБЕР-ЭКИПАЖ");
         const body = document.getElementById('pop-body');
-        document.getElementById('pop').style.display = 'flex';
-        title.innerText = "ЭКИПАЖ";
 
-        // Hacker Cost
         let hLvl = s.crew.hacker;
-        let hCost = Math.floor(1000 * Math.pow(2, hLvl));
+        let hCost = Math.floor(1000 * Math.pow(1.6, hLvl));
         
-        // Bot Cost
         let bLvl = s.crew.bot;
-        let bCost = Math.floor(2000 * Math.pow(1.5, bLvl));
+        let bCost = Math.floor(2000 * Math.pow(1.4, bLvl));
 
         body.innerHTML = `
             <div class="list-item">
-                <img src="assets/crew/hacker.png" onerror="this.src='https://via.placeholder.com/48/d300d3?text=H'">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
                 <div class="list-info">
-                    <h4>Лиса-Хакер (LVL ${hLvl})</h4>
-                    <p>Шанс крита (x10) +5%</p>
+                    <h4>Лиса-Хакер <span style="color:#d300d3">LVL ${hLvl}</span></h4>
+                    <p>Клик +1, Шанс крита +5%</p>
                 </div>
-                <button class="action-btn" onclick="upgradeCrew('hacker', ${hCost})">${hCost}</button>
+                <button class="action-btn" ${s.energy>=hCost?'':'disabled'} onclick="upCrew('hacker', ${hCost})">${formatNum(hCost)}</button>
             </div>
             <div class="list-item">
-                <img src="assets/crew/bot.png" onerror="this.src='https://via.placeholder.com/48/f7ff00?text=B'">
+                <img src="https://cdn-icons-png.flaticon.com/512/1785/1785908.png">
                 <div class="list-info">
-                    <h4>Авто-Бот (LVL ${bLvl})</h4>
-                    <p>Добывает +20/сек</p>
+                    <h4>Авто-Бот <span style="color:#f7ff00">LVL ${bLvl}</span></h4>
+                    <p>Добыча +25/сек</p>
                 </div>
-                <button class="action-btn" onclick="upgradeCrew('bot', ${bCost})">${bCost}</button>
+                <button class="action-btn" ${s.energy>=bCost?'':'disabled'} onclick="upCrew('bot', ${bCost})">${formatNum(bCost)}</button>
             </div>
         `;
     }
 
-    function upgradeCrew(role, price) {
+    function upCrew(role, price) {
         if(s.energy >= price) {
             s.energy -= price;
             s.crew[role]++;
+            tg.HapticFeedback.notificationOccurred('success');
             saveGame();
             openCrew();
-            tg.HapticFeedback.notificationOccurred('success');
         }
     }
 
     function openQuests() {
-        document.getElementById('pop').style.display = 'flex';
-        document.getElementById('pop-title').innerText = "ЗАДАНИЯ";
+        openPop("КОНТРАКТЫ");
         const body = document.getElementById('pop-body');
 
         const qData = [
-            { id: 'q1', txt: 'Накопить 1000 энергии', reward: 500, done: s.total >= 1000 },
-            { id: 'q2', txt: 'Купить 5 Дронов', reward: 1000, done: (s.ships['s1']||0) >= 5 },
-            { id: 'q3', txt: 'Нанять Хакера', reward: 2000, done: s.crew['hacker'] > 0 }
+            { id: 'q1', txt: 'Собрать 2,000 PUNK', reward: 1000, done: s.total >= 2000 },
+            { id: 'q2', txt: 'Нанять 5 Дронов', reward: 2500, done: (s.ships['s1']||0) >= 5 },
+            { id: 'q3', txt: 'Активировать Turbo', reward: 5000, done: s.turboReady > 0 }, // Simple check if turbo ever used
+            { id: 'q4', txt: 'Достичь 5 уровня', reward: 10000, done: (s.crew['bot']+s.crew['hacker']) >= 4 }
         ];
 
         body.innerHTML = qData.map(q => {
             let isClaimed = s.quests[q.id];
             let btn = '';
             
-            if(isClaimed) btn = `<button class="action-btn" disabled>✓</button>`;
-            else if(q.done) btn = `<button class="action-btn claim" onclick="claimQuest('${q.id}', ${q.reward})">ЗАБРАТЬ</button>`;
+            if(isClaimed) btn = `<button class="action-btn" disabled style="background:#333">✓</button>`;
+            else if(q.done) btn = `<button class="action-btn claim" onclick="claimQ('${q.id}', ${q.reward})">ЗАБРАТЬ</button>`;
             else btn = `<button class="action-btn" disabled>🔒</button>`;
 
             return `
             <div class="list-item">
                 <div class="list-info">
                     <h4>${q.txt}</h4>
-                    <p style="color:var(--yellow)">Награда: ${q.reward} PUNK</p>
+                    <p style="color:var(--yellow)">+${formatNum(q.reward)}</p>
                 </div>
                 ${btn}
             </div>`;
         }).join('');
     }
 
-    function claimQuest(qid, reward) {
-        s.quests[qid] = true;
-        s.energy += reward;
+    function claimQ(id, reward) {
+        s.quests[id] = true;
+        addEnergy(reward);
         tg.HapticFeedback.notificationOccurred('success');
+        createParticle(window.innerWidth/2, window.innerHeight/2, reward, true);
         saveGame();
         openQuests();
     }
 
     function openSettings() {
-        document.getElementById('pop').style.display = 'flex';
-        document.getElementById('pop-title').innerText = "НАСТРОЙКИ";
+        openPop("МЕНЮ СИНДИКАТА");
         const body = document.getElementById('pop-body');
 
         body.innerHTML = `
+            <div style="padding:10px;">
+                <h4 style="margin-bottom:10px;">Секретный код</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="promo-in" class="code-input" placeholder="Введите код...">
+                    <button class="action-btn" onclick="checkCode()">OK</button>
+                </div>
+            </div>
+            <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
             <div class="list-item" onclick="toggleSet('sound')">
-                <div class="list-info"><h4>Звуковые эффекты</h4></div>
+                <div class="list-info"><h4>Звук</h4></div>
                 <div style="color:var(--cyan)">${s.settings.sound ? 'ВКЛ' : 'ВЫКЛ'}</div>
             </div>
             <div class="list-item" onclick="toggleSet('vibro')">
-                <div class="list-info"><h4>Вибрация (Haptic)</h4></div>
+                <div class="list-info"><h4>Вибрация</h4></div>
                 <div style="color:var(--cyan)">${s.settings.vibro ? 'ВКЛ' : 'ВЫКЛ'}</div>
             </div>
-            <div class="list-item" style="border-color:rgba(255,0,0,0.3)" onclick="resetGame()">
-                <div class="list-info"><h4 style="color:#ff4444">Сброс прогресса</h4><p>Начать игру заново</p></div>
+            <div class="list-item" style="border-color:rgba(255,50,50,0.3)" onclick="resetGame()">
+                <div class="list-info"><h4 style="color:#ff5555">WIPE DATA</h4><p>Сброс прогресса</p></div>
             </div>
         `;
     }
 
-    function toggleSet(key) {
-        s.settings[key] = !s.settings[key];
-        saveGame();
-        openSettings();
+    function checkCode() {
+        const val = document.getElementById('promo-in').value.toUpperCase().trim();
+        const codes = {
+            'START': 5000,
+            'COSMO': 10000,
+            'ADMIN': 50000
+        };
+
+        if(codes[val] && !s.codes.includes(val)) {
+            s.codes.push(val);
+            addEnergy(codes[val]);
+            alert(`Код принят! +${codes[val]} PUNK`);
+            saveGame();
+            openSettings();
+        } else if (s.codes.includes(val)) {
+            alert('Код уже использован!');
+        } else {
+            alert('Неверный код');
+        }
     }
 
     // --- UTILS ---
-    function checkDaily() {
-        const today = new Date().toDateString();
-        if(s.lastLogin !== today) {
-            s.lastLogin = today;
-            s.energy += 500;
-            saveGame();
-            setTimeout(() => alert("🎁 ЕЖЕДНЕВНЫЙ БОНУС: +500 PUNK"), 1000);
-        }
-    }
+    function toggleSet(k) { s.settings[k] = !s.settings[k]; saveGame(); openSettings(); }
     
-    function checkQuests() {
-        // Проверка квестов в фоновом режиме
-    }
-
     function saveGame() {
+        s.lastSave = Date.now();
         localStorage.setItem(SAVE_KEY, JSON.stringify(s));
     }
     
     function resetGame() {
-        if(confirm("Вы уверены? Это удалит весь прогресс.")) {
+        if(confirm("Удалить весь прогресс?")) {
             localStorage.removeItem(SAVE_KEY);
             location.reload();
         }
     }
+    
+    function checkQuests() { /* Checked in openQuests mostly, can add realtime alerts here */ }
 
-    function closePop() { document.getElementById('pop').style.display = 'none'; }
+    function formatNum(num) {
+        if(num >= 1000000) return (num/1000000).toFixed(1) + 'M';
+        if(num >= 1000) return (num/1000).toFixed(1) + 'k';
+        return num;
+    }
 
-    // Bind Tap
-    document.getElementById('tap-area').addEventListener('touchstart', tap);
-    document.getElementById('tap-area').addEventListener('mousedown', tap);
+    // Input bindings
+    const tapZone = document.getElementById('tap-area');
+    tapZone.addEventListener('touchstart', tap, {passive: false});
+    tapZone.addEventListener('mousedown', tap);
 
-    // Initial UI Update
+    // Initial
     updateUI();
 
 </script>
