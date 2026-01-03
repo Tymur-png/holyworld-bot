@@ -12,12 +12,12 @@
   --accent1:#ff00ff;
   --accent2:#00ffff;
   --accent3:#ff00aa;
-  --panel:rgba(30,10,50,0.4);
-  --panel-dark:rgba(15,5,30,0.6);
-  --glow1:0 0 30px rgba(255,0,255,0.6);
-  --glow2:0 0 30px rgba(0,255,255,0.6);
+  --panel:rgba(30,10,50,0.45);
+  --panel-dark:rgba(15,5,30,0.7);
+  --glow1:0 0 40px rgba(255,0,255,0.5);
+  --glow2:0 0 40px rgba(0,255,255,0.5);
   --text:#e0e0ff;
-  --text-dim:#8888cc;
+  --text-dim:#a0a0ee;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -37,21 +37,21 @@ body{
 }
 .badge{
   background:var(--panel);
-  padding:10px 16px;
+  padding:10px 18px;
   border-radius:20px;
   backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.12);
   font-weight:700;
   font-size:18px;
   box-shadow:var(--glow1);
   pointer-events:auto;
 }
 #punk-badge{box-shadow:var(--glow1);}
-#energy-badge{box-shadow:var(--glow2);font-size:15px;}
+#income-badge{box-shadow:var(--glow2);font-size:15px;}
 #rank{
   font-size:14px;
-  opacity:0.8;
-  margin-top:4px;
+  opacity:0.85;
+  margin-top:6px;
   text-align:center;
 }
 
@@ -63,34 +63,42 @@ body{
 #reactor{
   width:340px;height:340px;
   border-radius:50%;
-  background:radial-gradient(circle,var(--panel),transparent);
+  background:radial-gradient(circle,var(--panel-dark),transparent);
   box-shadow:var(--glow1), var(--glow2);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
-  transition:transform 0.1s;
-  border:2px solid rgba(255,0,255,0.3);
+  transition:transform 0.15s;
+  border:3px solid rgba(255,0,255,0.35);
 }
-#reactor:active{transform:scale(0.95);}
-#reactor img{width:92%;border-radius:50%;}
+#reactor:active{transform:scale(0.93);}
+#reactor.tap{animation:pulse 0.4s ease-out;}
+@keyframes pulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.12);}
+  100%{transform:scale(1);}
+}
+#reactor img{width:94%;border-radius:50%;}
 
-/* Floating text */
+/* Floating */
 .float{
   position:absolute;
-  font-size:32px;
+  font-size:34px;
   font-weight:900;
   pointer-events:none;
-  text-shadow:0 0 15px var(--accent2);
-  background:linear-gradient(transparent,var(--accent2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  animation:floatUp 1.2s ease-out forwards;
+  text-shadow:0 0 20px var(--accent2);
+  animation:floatUp 1.4s ease-out forwards;
+}
+.float.crit{
+  color:#ff00ff;
+  font-size:48px;
+  text-shadow:0 0 30px #ff00ff;
 }
 @keyframes floatUp{
-  0%{transform:translateY(0);opacity:1}
-  100%{transform:translateY(-140px);opacity:0}
+  0%{transform:translateY(0) scale(1);opacity:1}
+  100%{transform:translateY(-160px) scale(1.3);opacity:0}
 }
 
-/* Bottom navigation */
+/* Bottom bar */
 #bottom{
   position:absolute;bottom:0;left:0;right:0;
   padding:12px;
@@ -99,89 +107,92 @@ body{
 }
 #bar{
   display:flex;
-  gap:10px;
+  gap:12px;
   overflow-x:auto;
   padding-bottom:8px;
 }
 .btn{
   min-width:100px;
   background:var(--panel-dark);
-  border:1px solid rgba(255,255,255,0.15);
-  padding:12px 16px;
-  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.18);
+  padding:14px 18px;
+  border-radius:22px;
   font-weight:700;
-  font-size:14px;
+  font-size:15px;
   cursor:pointer;
-  transition:all 0.2s;
+  transition:all 0.25s;
   text-align:center;
   box-shadow:var(--glow1);
 }
 .btn:active{
-  transform:scale(0.95);
-  box-shadow:0 0 20px var(--accent1);
+  transform:scale(0.94);
+  box-shadow:0 0 25px var(--accent1);
 }
 
 /* Popup */
 #pop{
   position:fixed;inset:0;
-  background:rgba(0,0,0,0.9);
+  background:rgba(0,0,0,0.92);
   display:none;
   align-items:center;justify-content:center;
   z-index:100;
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(10px);
 }
 #card{
   background:var(--panel-dark);
   border:2px solid var(--accent1);
-  padding:24px;
-  border-radius:24px;
-  max-width:92%;
-  max-height:92%;
+  padding:28px;
+  border-radius:28px;
+  max-width:94%;
+  max-height:94%;
   overflow-y:auto;
-  box-shadow:0 0 60px rgba(255,0,255,0.4);
+  box-shadow:0 0 80px rgba(255,0,255,0.5);
 }
 h2{
   text-align:center;
-  font-size:28px;
-  margin-bottom:20px;
+  font-size:30px;
+  margin-bottom:24px;
   background:linear-gradient(to right,var(--accent1),var(--accent2));
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
 .item{
   background:var(--panel);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:14px;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:16px;
   display:flex;
-  gap:16px;
+  gap:18px;
   align-items:center;
-  transition:transform 0.2s;
+  transition:transform 0.25s, box-shadow 0.25s;
 }
-.item:hover{transform:scale(1.02);}
+.item:hover{transform:scale(1.03); box-shadow:var(--glow1);}
 .item img{
-  width:80px;height:80px;
+  width:84px;height:84px;
   object-fit:contain;
-  border-radius:12px;
-  border:1px solid var(--accent2);
+  border-radius:14px;
+  border:2px solid var(--accent2);
 }
 .item-info{flex:1}
-.item-name{font-weight:700;font-size:18px;margin-bottom:6px}
-.item-desc{font-size:14px;opacity:0.8;line-height:1.4}
+.item-name{font-weight:700;font-size:19px;margin-bottom:8px;color:var(--accent1)}
+.item-desc{font-size:14px;opacity:0.88;line-height:1.5}
 .buy-btn{
-  background:linear-gradient(var(--accent1),var(--accent3));
+  background:linear-gradient(135deg,var(--accent1),var(--accent3));
   color:white;
   border:none;
-  padding:10px 20px;
-  border-radius:16px;
+  padding:12px 24px;
+  border-radius:18px;
   font-weight:700;
+  font-size:15px;
   cursor:pointer;
+  box-shadow:0 0 20px rgba(255,0,255,0.4);
 }
 .buy-btn:disabled{
-  background:#333;
+  background:#444;
   opacity:0.5;
   cursor:not-allowed;
+  box-shadow:none;
 }
 </style>
 </head>
@@ -194,7 +205,7 @@ h2{
     <div id="punk-badge" class="badge">0 PUNK</div>
     <div id="rank">Street Rat</div>
   </div>
-  <div id="energy-badge" class="badge">0.0 /сек</div>
+  <div id="income-badge" class="badge">0.0 /сек</div>
 </div>
 
 <div id="center">
@@ -225,48 +236,76 @@ h2{
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-/* ===== DATA ===== */
-const RANKS = [
-  "Street Rat",
-  "Neon Scavenger",
-  "Void Pirate",
-  "Cyber Overlord",
-  "Galaxy Baron"
-];
+const RANKS = ["Street Rat","Neon Scavenger","Void Pirate","Cyber Overlord","Galaxy Baron"];
 
 const SHIPS = [
-  {id:1, name:"Rusty Drone", desc:"Списанный дрон корпорации", cost:100, income:5},
-  {id:2, name:"Scrap Fighter", desc:"Собран из обломков", cost:500, income:20},
-  {id:3, name:"Punk Hauler", desc:"Контрабандистский транспорт", cost:2000, income:80},
-  {id:4, name:"Neon Corsair", desc:"Корабль пиратской элиты", cost:10000, income:300},
-  {id:5, name:"Void Reaper", desc:"Запрещённый класс. Легенда", cost:50000, income:1000},
-  {id:6, name:"Glitch Phantom", desc:"Невидимый для радаров", cost:150000, income:2500},
-  {id:7, name:"Nova Destroyer", desc:"Бывший флагман NovaCore", cost:500000, income:8000},
-  {id:8, name:"Black Hole Raider", desc:"Поглощает энергию врагов", cost:2000000, income:25000},
-  {id:9, name:"Quantum Leviathan", desc:"Разрывает пространство", cost:10000000, income:100000},
-  {id:10,name:"Punk Sovereign", desc:"Трон галактики", cost:50000000, income:500000}
+  {id:1,name:"Rusty Drone",desc:"Списанный дрон корпорации",cost:100,income:5},
+  {id:2,name:"Scrap Fighter",desc:"Собран из обломков",cost:500,income:20},
+  {id:3,name:"Punk Hauler",desc:"Контрабандистский транспорт",cost:2000,income:80},
+  {id:4,name:"Neon Corsair",desc:"Корабль пиратской элиты",cost:10000,income:300},
+  {id:5,name:"Void Reaper",desc:"Запрещённый класс. Легенда",cost:50000,income:1000},
+  {id:6,name:"Glitch Phantom",desc:"Невидимый для радаров",cost:150000,income:2500},
+  {id:7,name:"Nova Destroyer",desc:"Бывший флагман NovaCore",cost:500000,income:8000},
+  {id:8,name:"Black Hole Raider",desc:"Поглощает энергию врагов",cost:2000000,income:25000},
+  {id:9,name:"Quantum Leviathan",desc:"Разрывает пространство",cost:10000000,income:100000},
+  {id:10,name:"Punk Sovereign",desc:"Трон галактики",cost:50000000,income:500000}
 ];
 
 const IMPLANTS = [
-  {key:"base", name:"Базовый Имплант", desc:"Первый шаг любого панка", cost:50, income:2},
-  {key:"chip", name:"Ржавый Чип", desc:"Работает плохо. Но работает.", cost:300, income:10},
-  {key:"eye", name:"Кибер-Глаз", desc:"Видит слабые места и шансы", cost:1500, income:40},
-  {key:"glitch", name:"Глитч-Протез", desc:"Нестабильные усиления и криты", cost:8000, income:150},
-  {key:"neuro", name:"Нео-Нейрон", desc:"Думаешь быстрее, чем мир реагирует", cost:40000, income:600}
+  {key:"base",name:"Базовый Имплант",desc:"Первый шаг любого панка. Каждая легенда начинается с дешёвого апгрейда.",cost:50,income:2},
+  {key:"chip",name:"Ржавый Чип",desc:"Дешёвый, старый, опасный. Но иногда именно он даёт неожиданные преимущества.",cost:300,income:10},
+  {key:"eye",name:"Кибер-Глаз",desc:"Военный имплант разведки. Видит слабые места, скрытые сигналы и шансы.",cost:1500,income:40},
+  {key:"glitch",name:"Глитч-Протез",desc:"Создан хакерами подполья. Даёт нестабильные усиления, криты и сбои в системе противника.",cost:8000,income:150},
+  {key:"neuro",name:"Нео-Нейрон",desc:"Происхождение: лаборатории NeonCorp. Ускоряет мышление до уровня ИИ.",cost:40000,income:600}
+];
+
+const CREW = [
+  {key:"captain",name:"Капитан Космо",desc:"Легендарный стратег. Усиливает доход всего флота на 50%. «Галактика — это шахматная доска.»",cost:20000},
+  {key:"hacker",name:"Лиса-Хакер",desc:"Цифровой призрак. Даёт 15% шанс критического тапа (x2 PUNK). «Если система говорит “нет” — значит, ты задаешь правильный вопрос.»",cost:50000},
+  {key:"bot",name:"ГигаПанк-Бот",desc:"Автономный юнит. Автоматически тапает 2 раза в секунду. «Цель обновлена: поддерживать CosmoPunk.»",cost:150000}
 ];
 
 let save = JSON.parse(localStorage.getItem("cosmopunk_save")) || {
-  punk: 0,
-  totalPunk: 0,
-  passiveIncome: 0,
-  rank: 0,
-  ships: {},
-  implants: {},
-  maxShips: 5,
-  lastUpdate: Date.now()
+  punk:0,
+  totalPunk:0,
+  passiveIncome:0,
+  rank:0,
+  ships:{},
+  implants:{},
+  crew:{},
+  lastUpdate:Date.now()
 };
 
-/* ===== OFFLINE PROGRESS ===== */
+save.ships = save.ships || {};
+save.implants = save.implants || {};
+save.crew = save.crew || {};
+
+// Элементы UI
+const punkEl = document.getElementById("punk-badge");
+const incomeEl = document.getElementById("income-badge");
+const rankEl = document.getElementById("rank");
+const reactor = document.getElementById("reactor");
+const pop = document.getElementById("pop");
+const card = document.getElementById("card");
+
+// Расчёт пассивного дохода с учётом экипажа
+function calculatePassive() {
+  let shipIncome = 0;
+  SHIPS.forEach(ship => {
+    const count = save.ships[ship.id] || 0;
+    shipIncome += ship.income * count;
+  });
+
+  let implantIncome = 0;
+  IMPLANTS.forEach(imp => {
+    if (save.implants[imp.key]) implantIncome += imp.income;
+  });
+
+  let mult = save.crew["captain"] ? 1.5 : 1;
+  save.passiveIncome = shipIncome * mult + implantIncome;
+}
+
+// Оффлайн-прогресс
 function calculateOffline() {
   const now = Date.now();
   const diffSec = (now - save.lastUpdate) / 1000;
@@ -276,56 +315,83 @@ function calculateOffline() {
   save.lastUpdate = now;
 }
 calculateOffline();
+calculatePassive();
 
-/* ===== UI ELEMENTS ===== */
-const punkEl = document.getElementById("punk-badge");
-const energyEl = document.getElementById("energy-badge");
-const rankEl = document.getElementById("rank");
-const reactor = document.getElementById("reactor");
-const pop = document.getElementById("pop");
-const card = document.getElementById("card");
-
-/* ===== UPDATE UI ===== */
+// Обновление интерфейса
 function updateUI() {
   punkEl.textContent = Math.floor(save.punk).toLocaleString() + " PUNK";
-  energyEl.textContent = save.passiveIncome.toFixed(1) + " /сек";
-  rankEl.textContent = RANKS[save.rank];
-
-  // Rank progression
-  const rankThresholds = [0, 1000, 10000, 50000, 200000, 1000000];
-  for (let i = rankThresholds.length - 1; i >= 0; i--) {
-    if (save.totalPunk >= rankThresholds[i]) {
+  incomeEl.textContent = save.passiveIncome.toFixed(1) + " /сек";
+  
+  // Прогресс рангов
+  const thresholds = [0, 1000, 10000, 50000, 200000, 1000000000];
+  save.rank = 0;
+  for (let i = thresholds.length - 1; i >= 0; i--) {
+    if (save.totalPunk >= thresholds[i]) {
       save.rank = i;
       break;
     }
   }
+  rankEl.textContent = RANKS[save.rank];
 }
 
-/* ===== SAVE ===== */
+// Сохранение
 function saveGame() {
   save.lastUpdate = Date.now();
   localStorage.setItem("cosmopunk_save", JSON.stringify(save));
 }
 
-/* ===== TAP ===== */
+// Тап по реактору
 reactor.onclick = e => {
-  save.punk += 1;
-  save.totalPunk += 1;
+  let amount = 1;
+  let crit = false;
 
-  // Floating +1
+  if (save.crew["hacker"] && Math.random() < 0.15) {
+    amount = 2;
+    crit = true;
+  }
+
+  save.punk += amount;
+  save.totalPunk += amount;
+
+  // Плавающий текст
   const float = document.createElement("div");
-  float.className = "float";
-  float.textContent = "+1";
-  float.style.left = (e.clientX - 20) + "px";
-  float.style.top = (e.clientY - 30) + "px";
+  float.className = "float" + (crit ? " crit" : "");
+  float.textContent = "+" + amount;
+  float.style.left = (e.clientX - 30) + "px";
+  float.style.top = (e.clientY - 40) + "px";
   document.body.appendChild(float);
-  setTimeout(() => float.remove(), 1200);
+  setTimeout(() => float.remove(), 1400);
+
+  // Анимация и вибрация
+  reactor.classList.add("tap");
+  setTimeout(() => reactor.classList.remove("tap"), 400);
+  if (Telegram.WebApp.HapticFeedback) {
+    Telegram.WebApp.HapticFeedback.impactOccurred(crit ? "heavy" : "medium");
+  }
 
   updateUI();
   saveGame();
 };
 
-/* ===== POPUP SYSTEM ===== */
+// Пассивный доход
+setInterval(() => {
+  save.punk += save.passiveIncome / 10;
+  save.totalPunk += save.passiveIncome / 10;
+  updateUI();
+  saveGame();
+}, 100);
+
+// Автотап от бота
+setInterval(() => {
+  if (save.crew["bot"]) {
+    save.punk += 2;
+    save.totalPunk += 2;
+    updateUI();
+    saveGame();
+  }
+}, 1000);
+
+// Попап
 function showPopup(html) {
   card.innerHTML = html;
   pop.style.display = "flex";
@@ -334,17 +400,18 @@ function closePop() {
   pop.style.display = "none";
 }
 
-/* ===== FLEET ===== */
+/* ===== ФЛОТ ===== */
 function openFleet() {
   let html = `<h2>🚀 ФЛОТ</h2>`;
   SHIPS.forEach(ship => {
-    const owned = save.ships[ship.id];
-    if (owned) {
+    const count = save.ships[ship.id] || 0;
+    if (count > 0) {
+      const totalIncome = ship.income * count * (save.crew["captain"] ? 1.5 : 1);
       html += `<div class="item">
         <img src="assets/ships/ship${ship.id}.png">
         <div class="item-info">
           <div class="item-name">${ship.name}</div>
-          <div class="item-desc">+${ship.income} /сек \( {owned > 1 ? `(x \){owned})` : ""}</div>
+          <div class="item-desc">+${totalIncome.toFixed(1)} /сек \( {count > 1 ? `(x \){count})` : ""}</div>
         </div>
       </div>`;
     } else {
@@ -366,23 +433,22 @@ function buyShip(id) {
   if (save.punk < ship.cost) return;
   save.punk -= ship.cost;
   save.ships[id] = (save.ships[id] || 0) + 1;
-  save.passiveIncome += ship.income;
+  calculatePassive();
   updateUI();
   saveGame();
   openFleet();
 }
 
-/* ===== IMPLANTS ===== */
+/* ===== ИМПЛАНТЫ ===== */
 function openImplants() {
   let html = `<h2>🧠 ИМПЛАНТЫ</h2>`;
   IMPLANTS.forEach(imp => {
-    const owned = save.implants[imp.key];
-    if (owned) {
+    if (save.implants[imp.key]) {
       html += `<div class="item">
         <img src="assets/implants/${imp.key}.png">
         <div class="item-info">
           <div class="item-name">${imp.name}</div>
-          <div class="item-desc">Установлен</div>
+          <div class="item-desc">Установлен (+${imp.income} /сек)</div>
         </div>
       </div>`;
     } else {
@@ -404,66 +470,74 @@ function buyImplant(key) {
   if (save.punk < imp.cost) return;
   save.punk -= imp.cost;
   save.implants[key] = true;
-  save.passiveIncome += imp.income;
+  calculatePassive();
   updateUI();
   saveGame();
   openImplants();
 }
 
-/* ===== OTHER SECTIONS ===== */
+/* ===== ЭКИПАЖ ===== */
 function openCrew() {
-  showPopup(`<h2>👥 ЭКИПАЖ</h2>
-    <div class="item">
-      <img src="assets/crew/captain.png">
-      <div class="item-info">
-        <div class="item-name">Капитан Космо</div>
-        <div class="item-desc">Легендарный стратег. Бывший адмирал NovaCore.</div>
-      </div>
-    </div>
-    <div class="item">
-      <img src="assets/crew/hacker.png">
-      <div class="item-info">
-        <div class="item-name">Лиса-Хакер</div>
-        <div class="item-desc">Цифровой призрак. Взламывает всё.</div>
-      </div>
-    </div>
-    <div class="item">
-      <img src="assets/crew/bot.png">
-      <div class="item-info">
-        <div class="item-name">ГигаПанк-Бот</div>
-        <div class="item-desc">Автономный юнит. Добывает энергию без остановки.</div>
-      </div>
-    </div>`);
+  let html = `<h2>👥 ЭКИПАЖ</h2>`;
+  CREW.forEach(member => {
+    if (save.crew[member.key]) {
+      html += `<div class="item">
+        <img src="assets/crew/${member.key}.png">
+        <div class="item-info">
+          <div class="item-name">${member.name}</div>
+          <div class="item-desc">Нанят<br>Эффект активен</div>
+        </div>
+      </div>`;
+    } else {
+      const canBuy = save.punk >= member.cost;
+      html += `<div class="item">
+        <img src="assets/crew/${member.key}.png">
+        <div class="item-info">
+          <div class="item-name">${member.name}</div>
+          <div class="item-desc">${member.desc}<br>Стоимость: ${member.cost.toLocaleString()} PUNK</div>
+        </div>
+        <button class="buy-btn" \( {!canBuy ? "disabled" : ""} onclick="buyCrew(' \){member.key}')">НАНЯТЬ</button>
+      </div>`;
+    }
+  });
+  showPopup(html);
+}
+function buyCrew(key) {
+  const member = CREW.find(m => m.key === key);
+  if (save.punk < member.cost) return;
+  save.punk -= member.cost;
+  save.crew[key] = true;
+  calculatePassive();
+  updateUI();
+  saveGame();
+  openCrew();
 }
 
-function openRaid() { showPopup("<h2>⚔️ РЕЙД</h2><p>Глобальные события и награды — скоро</p>"); }
-function openMarket() { showPopup("<h2>🛒 МАГАЗИН</h2><p>Усиления и бусты — скоро</p>"); }
-function openSettings() { showPopup("<h2>⚙️ НАСТРОЙКИ</h2><p>Язык, звук и другие опции — скоро</p>"); }
+/* ===== ОСТАЛЬНЫЕ РАЗДЕЛЫ ===== */
+function openRaid() { showPopup("<h2>⚔️ РЕЙД</h2><p>Глобальные события против мегакорпораций.<br>В разработке — скоро будет полноценный режим с наградами.</p>"); }
+function openMarket() { showPopup("<h2>🛒 МАГАЗИН</h2><p>Бустеры, усиления и премиум-апгрейды.<br>Скоро появятся временные и постоянные улучшения.</p>"); }
+function openSettings() { showPopup("<h2>⚙️ НАСТРОЙКИ</h2><p>Язык, звук, уведомления — в разработке.</p>"); }
 
 function openProfile() {
   let html = `<h2>👤 ПРОФИЛЬ COSMOPUNK</h2>
     <p><strong>Ранг:</strong> ${RANKS[save.rank]}</p>
-    <p><strong>Всего добыто PUNK:</strong> ${Math.floor(save.totalPunk).toLocaleString()}</p>
-    <h3 style="margin:20px 0 10px">🚀 Флот</h3>`;
+    <p><strong>Всего добыто:</strong> ${Math.floor(save.totalPunk).toLocaleString()} PUNK</p>
+    <h3 style="margin:24px 0 12px;color:var(--accent1)">🚀 Флот</h3>`;
   Object.keys(save.ships).forEach(id => {
     const count = save.ships[id];
-    html += `<img src="assets/ships/ship${id}.png" width="64" style="margin:4px"> `;
-    if (count > 1) html += `<sup>x${count}</sup> `;
+    html += `<img src="assets/ships/ship${id}.png" width="68" style="margin:6px">`;
+    if (count > 1) html += `<sup style="color:var(--accent2)">x${count}</sup> `;
   });
-  html += `<h3 style="margin:20px 0 10px">🧠 Импланты</h3>`;
+  html += `<h3 style="margin:24px 0 12px;color:var(--accent1)">🧠 Импланты</h3>`;
   Object.keys(save.implants).forEach(key => {
-    html += `<img src="assets/implants/${key}.png" width="64" style="margin:4px"> `;
+    html += `<img src="assets/implants/${key}.png" width="68" style="margin:6px"> `;
+  });
+  html += `<h3 style="margin:24px 0 12px;color:var(--accent1)">👥 Экипаж</h3>`;
+  Object.keys(save.crew).forEach(key => {
+    html += `<img src="assets/crew/${key}.png" width="68" style="margin:6px"> `;
   });
   showPopup(html);
 }
-
-/* ===== PASSIVE INCOME LOOP ===== */
-setInterval(() => {
-  save.punk += save.passiveIncome / 10;
-  save.totalPunk += save.passiveIncome / 10;
-  updateUI();
-  saveGame();
-}, 100);
 
 updateUI();
 </script>
