@@ -12,8 +12,8 @@
             --cyan: #00f7ff;
             --yellow: #f7ff00;
             --red: #ff2a2a;
-            --glass: rgba(16, 20, 30, 0.9);
-            --border: rgba(0, 247, 255, 0.2);
+            --glass: rgba(16, 20, 30, 0.95);
+            --border: rgba(0, 247, 255, 0.3);
             --font: 'Courier New', monospace;
         }
 
@@ -42,8 +42,9 @@
             background: var(--glass); border: 1px solid var(--border);
             padding: 8px 12px; border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,247,255,0.1);
+            min-width: 100px;
         }
-        #energy-val { font-size: 22px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+        #energy-val { font-size: 20px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
         .sub-text { font-size: 10px; color: #aaa; margin-top: 2px; }
         .rank-box { text-align: right; border-color: var(--accent); }
         #rank-val { color: var(--accent); font-weight: bold; font-size: 12px; text-transform: uppercase; }
@@ -52,45 +53,44 @@
         #stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; perspective: 1000px; }
         
         .reactor-wrap { 
-            position: relative; width: 260px; height: 260px; 
+            position: relative; width: 280px; height: 280px; 
             display: flex; justify-content: center; align-items: center; 
             transition: transform 0.1s; transform-style: preserve-3d;
         }
         .reactor-wrap:active { transform: scale(0.95); }
         
-        /* Эффект тряски при клике */
-        .shake { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
+        .shake { animation: shake 0.15s cubic-bezier(.36,.07,.19,.97) both; }
 
         #reactor-img { 
             width: 100%; height: 100%; object-fit: contain; z-index: 5;
-            filter: drop-shadow(0 0 25px rgba(211,0,211,0.4));
+            filter: drop-shadow(0 0 30px rgba(211,0,211,0.5));
         }
 
-        /* HACK BUTTON (Mini Game) */
+        /* HACK BUTTON */
         #hack-btn {
-            margin-top: 20px;
+            margin-top: 25px;
             background: linear-gradient(90deg, #ff004c, #ff9100);
-            border: none; padding: 10px 20px; border-radius: 20px;
-            color: #fff; font-weight: bold; font-size: 14px;
-            box-shadow: 0 0 15px rgba(255, 0, 76, 0.4);
+            border: none; padding: 12px 24px; border-radius: 25px;
+            color: #fff; font-weight: bold; font-size: 14px; letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(255, 0, 76, 0.4);
             opacity: 0.5; filter: grayscale(1); pointer-events: none; transition: 0.3s;
         }
         #hack-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: pulse-btn 1.5s infinite; }
 
         /* NAV */
-        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-bottom: 10px; }
+        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 10px; }
         .nav-btn {
-            background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px;
-            height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 9px; color: #888; transition: 0.2s;
+            background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 12px;
+            height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 10px; color: #888; transition: 0.2s; backdrop-filter: blur(4px);
         }
-        .nav-btn span { font-size: 18px; margin-bottom: 3px; }
-        .nav-btn:active { background: var(--cyan); color: #000; }
+        .nav-btn span { font-size: 20px; margin-bottom: 4px; }
+        .nav-btn:active { background: var(--cyan); color: #000; border-color: #fff; }
 
         /* MODALS */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
             display: none; align-items: flex-end; justify-content: center;
             animation: fadeIn 0.2s;
         }
@@ -98,65 +98,73 @@
             background: #0b0514; border-top: 2px solid var(--accent);
             width: 100%; max-height: 85vh; border-radius: 20px 20px 0 0;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 -10px 40px rgba(211, 0, 211, 0.3);
+            box-shadow: 0 -10px 50px rgba(211, 0, 211, 0.2);
             animation: slideUp 0.3s;
         }
-        .modal-header { padding: 15px; text-align: center; font-weight: bold; font-size: 16px; border-bottom: 1px solid #222; }
+        .modal-header { 
+            padding: 15px; text-align: center; font-weight: bold; font-size: 16px; 
+            border-bottom: 1px solid #222; letter-spacing: 2px; color: var(--accent);
+        }
         .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
 
         /* ITEMS LIST */
         .item { 
-            display: flex; gap: 10px; align-items: center; 
+            display: flex; gap: 12px; align-items: center; 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-            padding: 10px; border-radius: 12px; margin-bottom: 8px;
+            padding: 10px; border-radius: 12px; margin-bottom: 10px;
         }
-        .item img { width: 45px; height: 45px; object-fit: contain; background: #000; border-radius: 8px; }
+        .item img { 
+            width: 50px; height: 50px; object-fit: contain; 
+            background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #333;
+        }
         .item-info { flex: 1; }
-        .item-name { font-size: 13px; font-weight: bold; color: #fff; }
-        .item-desc { font-size: 10px; color: #777; }
+        .item-name { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px;}
+        .item-desc { font-size: 11px; color: #888; }
         .btn-buy {
-            background: var(--cyan); color: #000; border: none; padding: 6px 12px;
-            border-radius: 6px; font-size: 11px; font-weight: bold;
+            background: var(--cyan); color: #000; border: none; padding: 8px 14px;
+            border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 80px;
         }
+        .btn-owned { background: #333; color: #555; pointer-events: none; }
 
         /* MINI GAME UI */
-        #hack-game-ui {
-            width: 100%; padding: 30px; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-        }
+        #hack-game-ui { width: 100%; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .hack-track {
-            width: 100%; height: 20px; background: #333; border-radius: 10px;
-            position: relative; overflow: hidden; margin: 20px 0; border: 1px solid #555;
+            width: 100%; height: 24px; background: #111; border-radius: 12px;
+            position: relative; overflow: hidden; margin: 25px 0; border: 2px solid #444;
         }
         .hack-target {
-            position: absolute; top: 0; bottom: 0; width: 40px; /* Target Zone */
-            background: var(--yellow); opacity: 0.7; left: 50%; transform: translateX(-50%);
-            box-shadow: 0 0 10px var(--yellow);
+            position: absolute; top: 0; bottom: 0; width: 40px; 
+            background: var(--yellow); opacity: 0.8; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 15px var(--yellow);
         }
         .hack-cursor {
-            position: absolute; top: -5px; bottom: -5px; width: 4px;
-            background: var(--red); left: 0%; transition: none;
+            position: absolute; top: -2px; bottom: -2px; width: 4px;
+            background: var(--red); left: 0%; 
             box-shadow: 0 0 10px var(--red); z-index: 2;
         }
         .hack-btn-action {
-            width: 100%; padding: 20px; background: var(--red); color: #fff;
+            width: 100%; padding: 18px; background: var(--red); color: #fff;
             border: none; font-size: 18px; font-weight: 900; border-radius: 12px;
         }
 
         /* DAILY REWARD */
         .daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .daily-day {
-            background: #111; border: 1px solid #333; padding: 10px 5px;
-            border-radius: 8px; text-align: center; opacity: 0.5;
+            background: #111; border: 1px solid #333; padding: 12px 5px;
+            border-radius: 8px; text-align: center; opacity: 0.5; font-size: 11px;
         }
-        .daily-day.active { border-color: var(--yellow); opacity: 1; background: rgba(247, 255, 0, 0.1); }
+        .daily-day.active { border-color: var(--yellow); opacity: 1; background: rgba(247, 255, 0, 0.1); transform: scale(1.05); }
         .daily-day.claimed { border-color: var(--cyan); opacity: 0.3; background: rgba(0, 247, 255, 0.1); }
+        .reward-val { font-size: 13px; font-weight: bold; color: var(--yellow); margin-top: 4px; }
 
         /* FX */
-        .float-txt { position: absolute; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 50; }
+        .float-txt { 
+            position: absolute; font-weight: 900; font-size: 26px; 
+            pointer-events: none; z-index: 50; text-shadow: 0 2px 0 #000;
+        }
         
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7);} 70% {box-shadow: 0 0 0 10px rgba(255, 0, 76, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0);} }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(3px, 0, 0); } }
+        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7);} 70% {box-shadow: 0 0 0 15px rgba(255, 0, 76, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0);} }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     </style>
@@ -173,7 +181,7 @@
         </div>
         <div class="res-box rank-box">
             <div id="rank-val">NOBODY</div>
-            <div class="sub-text" id="lvl-val">LVL 1</div>
+            <div class="sub-text">РАНГ СИСТЕМЫ</div>
         </div>
     </div>
 
@@ -196,16 +204,16 @@
     <div class="modal-card">
         <div class="modal-header" id="modal-title">TITLE</div>
         <div class="modal-body" id="modal-content"></div>
-        <button style="padding:15px; background:#111; color:#fff; border:none;" onclick="closeModal()">ЗАКРЫТЬ</button>
+        <button style="padding:15px; background:#111; color:#fff; border:none; border-top:1px solid #333;" onclick="closeModal()">ЗАКРЫТЬ ИНТЕРФЕЙС</button>
     </div>
 </div>
 
 <div class="modal-overlay" id="hack-modal">
-    <div class="modal-card" style="height: auto;">
+    <div class="modal-card" style="height: auto; border-color: var(--red);">
         <div class="modal-header" style="color:var(--red)">ПРОРЫВ FIREWALL</div>
         <div class="modal-body">
             <div id="hack-game-ui">
-                <p>Останови курсор в желтой зоне!</p>
+                <p style="color:#ccc; font-size:12px; margin-bottom:10px;">Останови курсор в желтой зоне для инъекции кода.</p>
                 <div class="hack-track">
                     <div class="hack-target" id="hack-target-zone"></div>
                     <div class="hack-cursor" id="hack-cursor"></div>
@@ -217,8 +225,7 @@
 </div>
 
 <script>
-    // --- AUDIO ENGINE (Synthesizer) ---
-    // Генерирует звуки кодом, не нужны mp3
+    // --- AUDIO ENGINE ---
     const AudioFX = {
         ctx: null,
         init: function() {
@@ -230,74 +237,84 @@
             const gain = this.ctx.createGain();
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-
             const now = this.ctx.currentTime;
             
             if(type === 'tap') {
-                // High pitch short blip
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
                 gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
             } else if (type === 'buy') {
-                // Success coin sound
-                osc.type = 'triangle';
+                osc.type = 'square';
                 osc.frequency.setValueAtTime(400, now);
                 osc.frequency.linearRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.value = 100;
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-            } else if (type === 'error') {
-                // Low buzz
-                osc.type = 'sawtooth';
-                osc.frequency.value = 150;
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.start(now); osc.stop(now + 0.3);
             }
         }
     };
 
-    // --- GAME DATA & CONFIG ---
+    // --- GAME CONFIG & DATA ---
     const tg = window.Telegram.WebApp;
     tg.expand();
-    const SAVE_KEY = 'cp_wars_v4';
+    const SAVE_KEY = 'cp_wars_final';
 
+    // ПОЛНАЯ БАЗА ДАННЫХ С КАРТИНКАМИ
     const DB = {
         ships: [
-            { id: 's1', name: 'Дрон-сборщик', inc: 1, cost: 150, img: 'ship1.png' },
-            { id: 's2', name: 'Истребитель', inc: 5, cost: 800, img: 'ship2.png' },
-            { id: 's3', name: 'Фрегат "Неон"', inc: 20, cost: 3500, img: 'ship3.png' },
-            { id: 's4', name: 'Крейсер Тесла', inc: 80, cost: 12000, img: 'ship4.png' }
+            { id: 's1', name: 'Дрон-разведчик', inc: 1, cost: 150, img: 'assets/ships/ship1.png' },
+            { id: 's2', name: 'Шершень', inc: 5, cost: 750, img: 'assets/ships/ship2.png' },
+            { id: 's3', name: 'Транспортник', inc: 15, cost: 2500, img: 'assets/ships/ship3.png' },
+            { id: 's4', name: 'Фрегат Неон', inc: 45, cost: 9000, img: 'assets/ships/ship4.png' },
+            { id: 's5', name: 'Перехватчик', inc: 120, cost: 30000, img: 'assets/ships/ship5.png' },
+            { id: 's6', name: 'Эсминец Буря', inc: 400, cost: 100000, img: 'assets/ships/ship6.png' },
+            { id: 's7', name: 'Крейсер Тесла', inc: 1500, cost: 450000, img: 'assets/ships/ship7.png' },
+            { id: 's8', name: 'Линкор Доминатор', inc: 5000, cost: 1500000, img: 'assets/ships/ship8.png' },
+            { id: 's9', name: 'Авианосец Улья', inc: 20000, cost: 7000000, img: 'assets/ships/ship9.png' },
+            { id: 's10', name: 'Звезда Синдиката', inc: 100000, cost: 50000000, img: 'assets/ships/ship10.png' }
         ],
         crew: [
-            { id: 'c1', name: 'Хакер Лиса', desc: 'Крит шанс +5%', cost: 1000, type: 'crit', val: 0.05, img: 'hacker.png' },
-            { id: 'c2', name: 'Бот-шахтер', desc: 'Авто-доход +30/сек', cost: 2000, type: 'passive', val: 30, img: 'bot.png' },
-            { id: 'c3', name: 'Капитан', desc: 'Усиливает флот x1.5', cost: 10000, type: 'mult', val: 0.5, img: 'captain.png' }
+            { id: 'c1', name: 'Хакер Лиса', desc: 'Крит шанс +5%', cost: 1000, type: 'crit', val: 0.05, img: 'assets/crew/hacker.png' },
+            { id: 'c2', name: 'Бот-шахтер', desc: 'Авто-доход +30/сек', cost: 2000, type: 'passive', val: 30, img: 'assets/crew/bot.png' },
+            { id: 'c3', name: 'Капитан', desc: 'База клика x2', cost: 10000, type: 'mult', val: 1.0, img: 'assets/crew/captain.png' }
         ],
-        daily: [500, 1000, 1500, 3000, 5000, 10000, 25000] // Награды за 7 дней
+        implants: [
+            { id: 'i1', name: 'Нейро-чип v1', desc: '+2 к силе клика', cost: 500, clickAdd: 2, img: 'assets/implants/base.png' },
+            { id: 'i2', name: 'Кибер-Глаз', desc: 'Крит x2 мощнее', cost: 3500, critPower: 1, img: 'assets/implants/eye.png' },
+            { id: 'i3', name: 'Титан-Рука', desc: '+50 к силе клика', cost: 15000, clickAdd: 50, img: 'assets/implants/neuro.png' },
+            { id: 'i4', name: 'Глитч-Модуль', desc: 'Авто-доход x1.2', cost: 50000, globalMult: 0.2, img: 'assets/implants/glitch.png' },
+            { id: 'i5', name: 'Квантовое Ядро', desc: 'Авто-доход x2', cost: 1000000, globalMult: 1.0, img: 'assets/implants/chip.png' }
+        ],
+        daily: [500, 1500, 3000, 6000, 15000, 40000, 100000]
     };
 
     let state = {
         energy: 0,
         total: 0,
         ships: {},
-        crew: {}, // Levels of crew
+        crew: {},
         implants: [],
-        lastHack: 0, // timestamp
+        lastHack: 0,
         daily: { day: 0, lastClaim: 0 },
         lastSave: Date.now()
     };
 
     // --- INIT ---
-    // Load save
     let saved = localStorage.getItem(SAVE_KEY);
-    if(saved) state = { ...state, ...JSON.parse(saved) };
+    if(saved) {
+        let parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+        if(!state.implants) state.implants = []; // migration
+    }
 
     // Offline Earnings
     let offlineSeconds = (Date.now() - state.lastSave) / 1000;
@@ -306,7 +323,7 @@
         if(earn > 0) {
             state.energy += earn;
             state.total += earn;
-            setTimeout(() => alert(`С возвращением, Босс!\nВаш синдикат заработал: ${Math.floor(earn)} PUNK`), 500);
+            setTimeout(() => alert(`С возвращением, Босс!\nСиндикат заработал: ${Math.floor(earn).toLocaleString()} PUNK`), 500);
         }
     }
 
@@ -319,24 +336,24 @@
     }, 100);
     
     setInterval(saveGame, 5000);
-
-    // Matrix Background
     initMatrix();
 
-    // --- CORE MECHANICS ---
-
+    // --- LOGIC ---
     function calcIncome() {
         let income = 0;
-        // Ships
         DB.ships.forEach(s => {
             if(state.ships[s.id]) income += state.ships[s.id] * s.inc;
         });
-        // Crew: Bot
         if(state.crew['c2']) income += state.crew['c2'] * 30;
-        // Crew: Captain (Multiplier)
-        if(state.crew['c3']) income *= (1 + state.crew['c3'] * 0.5);
         
-        return income;
+        // Multipliers from Implants
+        let mult = 1;
+        state.implants.forEach(impId => {
+            let item = DB.implants.find(i => i.id === impId);
+            if(item && item.globalMult) mult += item.globalMult;
+        });
+        
+        return income * mult;
     }
 
     function addEnergy(amount) {
@@ -345,20 +362,33 @@
     }
 
     function tap(e) {
-        // Init audio on first interaction
         AudioFX.init();
-        
         e.preventDefault();
         let touches = e.changedTouches || [e];
 
+        // 1. Calculate Base Power
+        // Base = 1 + Captain + Implants(flat)
+        let flatBonus = 0;
+        let critMult = 10; // Base crit multiplier
+
+        if(state.implants) {
+            state.implants.forEach(impId => {
+                let item = DB.implants.find(i => i.id === impId);
+                if(item && item.clickAdd) flatBonus += item.clickAdd;
+                if(item && item.critPower) critMult += (10 * item.critPower); // Add to multiplier
+            });
+        }
+
+        let captainBonus = (state.crew['c3'] || 0) * 2; 
+        let power = 1 + captainBonus + flatBonus;
+
         for(let t of touches) {
-            let power = 1 + (state.crew['c3'] || 0); // Captain adds base power
-            
-            // Crit logic (Hacker)
+            // 2. Critical Hit
             let critChance = 0.05 + (state.crew['c1'] || 0) * 0.05;
             let isCrit = Math.random() < critChance;
+            
             if(isCrit) {
-                power *= 10;
+                power *= critMult;
                 tg.HapticFeedback.notificationOccurred('warning');
             } else {
                 tg.HapticFeedback.impactOccurred('light');
@@ -369,24 +399,21 @@
             AudioFX.play('tap');
         }
 
-        // Visual
         const r = document.getElementById('reactor-img');
         r.classList.remove('shake');
-        void r.offsetWidth; // trigger reflow
+        void r.offsetWidth;
         r.classList.add('shake');
     }
 
-    // --- HACKING MINI GAME ---
+    // --- HACKING ---
     let hackAnim;
-    let hackDir = 1;
-    let hackPos = 0;
+    let hackDir = 1, hackPos = 0;
     
     function checkHackStatus() {
-        // Cooldown 5 mins (300000 ms)
         let now = Date.now();
         let btn = document.getElementById('hack-btn');
         let diff = now - state.lastHack;
-        
+        // 5 min cooldown
         if(diff > 300000) {
             btn.classList.add('ready');
             btn.innerText = "☠ ВЗЛОМ ДОСТУПЕН";
@@ -401,23 +428,17 @@
 
     function startHackGame() {
         if(Date.now() - state.lastHack < 300000) return;
-        
         document.getElementById('hack-modal').style.display = 'flex';
-        hackPos = 0;
-        hackDir = 1; // Speed factor
-        
-        // Game Loop
-        let cursor = document.getElementById('hack-cursor');
-        // Randomize target position
-        let targetLeft = 30 + Math.random() * 40; // 30% to 70%
+        hackPos = 0; hackDir = 1.2;
+        let targetLeft = 20 + Math.random() * 50;
         document.getElementById('hack-target-zone').style.left = targetLeft + '%';
         window.hackTargetMin = targetLeft;
-        window.hackTargetMax = targetLeft + 15; // Width of zone roughly
+        window.hackTargetMax = targetLeft + 15;
 
         function animate() {
-            hackPos += hackDir * 1.5; // Speed
+            hackPos += hackDir;
             if(hackPos > 100 || hackPos < 0) hackDir *= -1;
-            cursor.style.left = hackPos + '%';
+            document.getElementById('hack-cursor').style.left = hackPos + '%';
             hackAnim = requestAnimationFrame(animate);
         }
         animate();
@@ -425,32 +446,24 @@
 
     function stopHack() {
         cancelAnimationFrame(hackAnim);
-        
-        // Check Hit
         if(hackPos >= window.hackTargetMin && hackPos <= window.hackTargetMax) {
-            // WIN
-            let reward = calcIncome() * 300; // 5 mins of income instant
-            if(reward < 500) reward = 500; // Min reward
-            
+            let reward = calcIncome() * 300; 
+            if(reward < 1000) reward = 1000;
             addEnergy(reward);
-            alert(`ВЗЛОМ УСПЕШЕН!\nСкачано: ${Math.floor(reward)} PUNK`);
+            alert(`СИСТЕМА ВЗЛОМАНА!\nСКАЧАНО: ${Math.floor(reward)} PUNK`);
             tg.HapticFeedback.notificationOccurred('success');
             AudioFX.play('buy');
             state.lastHack = Date.now();
         } else {
-            // FAIL
-            alert("ОБНАРУЖЕНИЕ!\nСистема безопасности заблокировала доступ.");
             tg.HapticFeedback.notificationOccurred('error');
             AudioFX.play('error');
-            // Small cooldown punishment (30 sec)
-            state.lastHack = Date.now() - 270000; 
+            state.lastHack = Date.now() - 240000; // 1 min penalty remaining
         }
         document.getElementById('hack-modal').style.display = 'none';
         checkHackStatus();
     }
 
     // --- MENUS ---
-
     function openMenu(type) {
         document.getElementById('main-modal').style.display = 'flex';
         const title = document.getElementById('modal-title');
@@ -461,13 +474,13 @@
             title.innerText = "АНГАР ФЛОТА";
             DB.ships.forEach(s => {
                 let cnt = state.ships[s.id] || 0;
-                let price = Math.floor(s.cost * Math.pow(1.2, cnt));
-                renderItem(content, s.name, `+${s.inc}/сек | Есть: ${cnt}`, price, s.img, () => {
+                let price = Math.floor(s.cost * Math.pow(1.15, cnt));
+                renderItem(content, s.name, `+${s.inc}/сек | Ангар: ${cnt}`, price, s.img, false, () => {
                     if(state.energy >= price) {
                         state.energy -= price;
                         state.ships[s.id] = cnt + 1;
                         AudioFX.play('buy');
-                        openMenu('ships'); // redraw
+                        openMenu('ships');
                     }
                 });
             });
@@ -476,8 +489,8 @@
             title.innerText = "НАЙМ БАНДЫ";
             DB.crew.forEach(c => {
                 let lvl = state.crew[c.id] || 0;
-                let price = Math.floor(c.cost * Math.pow(1.5, lvl));
-                renderItem(content, `${c.name} (Lvl ${lvl})`, c.desc, price, c.img, () => {
+                let price = Math.floor(c.cost * Math.pow(1.4, lvl));
+                renderItem(content, `${c.name} (Lvl ${lvl})`, c.desc, price, c.img, false, () => {
                     if(state.energy >= price) {
                         state.energy -= price;
                         state.crew[c.id] = lvl + 1;
@@ -487,24 +500,39 @@
                 });
             });
         }
+        else if(type === 'implants') {
+            title.innerText = "КИБЕР-ИМПЛАНТЫ";
+            DB.implants.forEach(item => {
+                let isOwned = state.implants.includes(item.id);
+                renderItem(content, item.name, isOwned ? "УСТАНОВЛЕНО" : item.desc, item.cost, item.img, isOwned, () => {
+                    if(isOwned) return;
+                    if(state.energy >= item.cost) {
+                        state.energy -= item.cost;
+                        state.implants.push(item.id);
+                        AudioFX.play('buy');
+                        openMenu('implants');
+                    }
+                });
+            });
+        }
         else if(type === 'daily') {
-            title.innerText = "СНАБЖЕНИЕ";
+            title.innerText = "ЕЖЕДНЕВНАЯ ПОСТАВКА";
             checkDailyLogic(content);
         }
     }
 
-    function renderItem(container, name, desc, price, img, onClick) {
+    function renderItem(container, name, desc, price, img, isOwned, onClick) {
         let div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-            <img src="assets/ships/${img}" onerror="this.src='https://via.placeholder.com/45?text=?'">
+            <img src="${img}" onerror="this.src='https://via.placeholder.com/50?text=ERR'">
             <div class="item-info">
                 <div class="item-name">${name}</div>
                 <div class="item-desc">${desc}</div>
             </div>
-            <button class="btn-buy">${price.toLocaleString()}</button>
+            <button class="btn-buy ${isOwned ? 'btn-owned' : ''}">${isOwned ? 'V' : price.toLocaleString()}</button>
         `;
-        div.querySelector('button').onclick = onClick;
+        if(!isOwned) div.querySelector('button').onclick = onClick;
         container.appendChild(div);
     }
 
@@ -513,10 +541,7 @@
         let last = new Date(state.daily.lastClaim);
         let isSameDay = now.toDateString() === last.toDateString();
         
-        // Reset streak if missed more than 1 day
-        if((now - last) > 86400000 * 2) {
-            state.daily.day = 0;
-        }
+        if((now - last) > 86400000 * 2) state.daily.day = 0; // Reset streak
 
         let grid = document.createElement('div');
         grid.className = 'daily-grid';
@@ -524,7 +549,7 @@
         DB.daily.forEach((reward, idx) => {
             let el = document.createElement('div');
             el.className = 'daily-day';
-            el.innerHTML = `<div>День ${idx+1}</div><div style="color:var(--yellow)">${reward}</div>`;
+            el.innerHTML = `<div>ДЕНЬ ${idx+1}</div><div class="reward-val">${reward/1000}K</div>`;
             
             if(idx < state.daily.day) el.classList.add('claimed');
             if(idx === state.daily.day) el.classList.add('active');
@@ -536,7 +561,6 @@
                     addEnergy(reward);
                     AudioFX.play('buy');
                     tg.HapticFeedback.notificationOccurred('success');
-                    alert(`Получено: ${reward} PUNK`);
                     openMenu('daily');
                 };
             }
@@ -545,10 +569,8 @@
         container.appendChild(grid);
         
         let msg = document.createElement('p');
-        msg.style.textAlign = 'center';
-        msg.style.marginTop = '15px';
-        msg.style.color = '#777';
-        msg.innerText = isSameDay ? "Награда уже получена сегодня." : "Нажми на активный день, чтобы забрать!";
+        msg.style.textAlign = 'center'; msg.style.marginTop = '15px'; msg.style.color = '#777'; font-size: '12px';
+        msg.innerText = isSameDay ? "Приходи завтра за новой поставкой." : "Забирай активную награду!";
         container.appendChild(msg);
     }
 
@@ -559,21 +581,23 @@
         document.getElementById('energy-val').innerText = Math.floor(state.energy).toLocaleString();
         document.getElementById('inc-val').innerText = `+${Math.floor(calcIncome())} / сек`;
         
-        let ranks = ["Street Rat", "Scavenger", "Hacker", "Cyber Lord", "Syndicate Boss"];
-        let rIdx = Math.min(Math.floor(state.total / 50000), ranks.length-1);
+        let ranks = ["Отброс", "Сборщик", "Хакер", "Кибер-Панк", "Босс Улиц", "Глава Синдиката", "Корпорат", "Властелин Сети"];
+        let rIdx = Math.min(Math.floor(Math.log10(state.total + 1)), ranks.length-1);
+        if(state.total < 1000) rIdx = 0;
         document.getElementById('rank-val').innerText = ranks[rIdx];
     }
 
     function spawnFloat(x, y, val, isCrit) {
         let el = document.createElement('div');
         el.className = 'float-txt';
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
+        el.style.left = (x - 20) + 'px'; el.style.top = (y - 40) + 'px';
         el.innerText = `+${val}`;
         el.style.color = isCrit ? 'var(--red)' : 'var(--cyan)';
+        if(isCrit) el.style.fontSize = '32px';
         document.body.appendChild(el);
         setTimeout(() => {
-            el.style.transform = 'translateY(-80px)';
+            el.style.transition = 'all 0.6s';
+            el.style.transform = 'translateY(-100px)';
             el.style.opacity = 0;
         }, 50);
         setTimeout(() => el.remove(), 600);
@@ -584,28 +608,23 @@
         localStorage.setItem(SAVE_KEY, JSON.stringify(state));
     }
 
-    // --- MATRIX EFFECT ---
+    // --- MATRIX BG ---
     function initMatrix() {
         const c = document.getElementById('matrix-canvas');
         const ctx = c.getContext('2d');
-        c.width = window.innerWidth;
-        c.height = window.innerHeight;
-        
-        const chars = "010101XYKPUNK";
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const chars = "01XYZ"; 
         const fontSize = 14;
         const columns = c.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
-
         function draw() {
             ctx.fillStyle = "rgba(5, 0, 10, 0.1)";
             ctx.fillRect(0, 0, c.width, c.height);
-            ctx.fillStyle = "#0f0";
-            ctx.font = fontSize + "px monospace";
-
+            ctx.fillStyle = "#0f0"; ctx.font = fontSize + "px monospace";
             for(let i=0; i<drops.length; i++) {
                 const text = chars[Math.floor(Math.random()*chars.length)];
                 ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                if(drops[i]*fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+                if(drops[i]*fontSize > c.height && Math.random() > 0.98) drops[i] = 0;
                 drops[i]++;
             }
         }
