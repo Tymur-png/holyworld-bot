@@ -2,31 +2,25 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Rebellion 2149</title>
+    <title>CosmoPunk: Syndicate Wars</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg: #05000a;
-            --accent: #d300d3; /* Neon Purple */
-            --cyan: #00f7ff;    /* Cyber Blue */
-            --yellow: #f7ff00;  /* Acid Yellow */
-            --danger: #ff2a2a;
-            --glass: rgba(20, 10, 30, 0.85);
-            --border: rgba(255, 255, 255, 0.1);
-            --font: 'Courier New', Courier, monospace; /* Более хакерский шрифт */
+            --accent: #d300d3;
+            --cyan: #00f7ff;
+            --yellow: #f7ff00;
+            --red: #ff2a2a;
+            --glass: rgba(16, 20, 30, 0.9);
+            --border: rgba(0, 247, 255, 0.2);
+            --font: 'Courier New', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             background: var(--bg);
-            /* Сетка ретро-вейв на фоне */
-            background-image: 
-                linear-gradient(rgba(11, 0, 20, 0.9), rgba(11, 0, 20, 0.9)),
-                repeating-linear-gradient(0deg, transparent 0, transparent 1px, var(--cyan) 1px, transparent 2px),
-                repeating-linear-gradient(90deg, transparent 0, transparent 1px, var(--accent) 1px, transparent 2px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
             color: #fff;
             font-family: var(--font);
             height: 100vh;
@@ -34,478 +28,594 @@
             user-select: none;
         }
 
+        /* MATRIX BG */
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0.15; pointer-events: none;
+        }
+
         #app { display: flex; flex-direction: column; height: 100vh; padding: 12px; position: relative; z-index: 2; }
 
-        /* --- HUD --- */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        .resource-panel {
-            background: var(--glass);
-            border-left: 3px solid var(--cyan);
-            padding: 8px 15px;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+        /* HUD */
+        .hud { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .res-box {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 8px 12px; border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,247,255,0.1);
         }
-        
-        #energy-display { font-size: 24px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
-        .income-rate { font-size: 10px; color: #aaa; letter-spacing: 1px; }
+        #energy-val { font-size: 22px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+        .sub-text { font-size: 10px; color: #aaa; margin-top: 2px; }
+        .rank-box { text-align: right; border-color: var(--accent); }
+        #rank-val { color: var(--accent); font-weight: bold; font-size: 12px; text-transform: uppercase; }
 
-        .rank-badge {
-            text-align: right;
-            border-right: 3px solid var(--accent);
-            padding: 8px 15px;
-            background: var(--glass);
-        }
-        #rank-name { color: var(--accent); font-weight: bold; font-size: 12px; text-transform: uppercase; }
-        #level-display { font-size: 10px; color: #fff; }
-
-        /* --- REACTOR --- */
-        #main-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; perspective: 800px; }
+        /* REACTOR */
+        #stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; perspective: 1000px; }
         
-        .reactor-container { 
+        .reactor-wrap { 
             position: relative; width: 260px; height: 260px; 
             display: flex; justify-content: center; align-items: center; 
-            transition: transform 0.1s; cursor: pointer;
-            transform-style: preserve-3d;
+            transition: transform 0.1s; transform-style: preserve-3d;
         }
-        .reactor-container:active { transform: scale(0.97) !important; }
+        .reactor-wrap:active { transform: scale(0.95); }
+        
+        /* Эффект тряски при клике */
+        .shake { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
 
-        .core-glow {
-            position: absolute; inset: 0; border-radius: 50%;
-            background: radial-gradient(circle, rgba(211,0,211,0.4) 0%, transparent 70%);
-            animation: pulse 2s infinite alternate; pointer-events: none;
-        }
-
-        #reactor-visual { 
+        #reactor-img { 
             width: 100%; height: 100%; object-fit: contain; z-index: 5;
-            filter: drop-shadow(0 0 20px var(--accent));
+            filter: drop-shadow(0 0 25px rgba(211,0,211,0.4));
         }
 
-        /* --- CONTROLS --- */
-        .nav-dock {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-            padding-bottom: 10px;
+        /* HACK BUTTON (Mini Game) */
+        #hack-btn {
+            margin-top: 20px;
+            background: linear-gradient(90deg, #ff004c, #ff9100);
+            border: none; padding: 10px 20px; border-radius: 20px;
+            color: #fff; font-weight: bold; font-size: 14px;
+            box-shadow: 0 0 15px rgba(255, 0, 76, 0.4);
+            opacity: 0.5; filter: grayscale(1); pointer-events: none; transition: 0.3s;
         }
-        .dock-btn {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--border); border-radius: 8px;
-            height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 9px; color: #888; cursor: pointer; transition: 0.2s;
-        }
-        .dock-btn.active { border-color: var(--cyan); color: #fff; background: rgba(0, 247, 255, 0.1); }
-        .dock-btn span { font-size: 20px; margin-bottom: 3px; }
+        #hack-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: pulse-btn 1.5s infinite; }
 
-        /* --- MODALS --- */
-        #modal-overlay {
+        /* NAV */
+        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-bottom: 10px; }
+        .nav-btn {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px;
+            height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; color: #888; transition: 0.2s;
+        }
+        .nav-btn span { font-size: 18px; margin-bottom: 3px; }
+        .nav-btn:active { background: var(--cyan); color: #000; }
+
+        /* MODALS */
+        .modal-overlay {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-            display: none; align-items: flex-end;
-            animation: fadeIn 0.3s;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+            display: none; align-items: flex-end; justify-content: center;
+            animation: fadeIn 0.2s;
         }
-        
-        .cyber-card {
-            background: #0f0518; 
-            border-top: 2px solid var(--accent);
-            width: 100%; max-height: 80vh;
-            display: flex; flex-direction: column;
-            box-shadow: 0 -10px 50px rgba(211, 0, 211, 0.3);
-            border-radius: 20px 20px 0 0;
-            animation: slideUp 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
+        .modal-card {
+            background: #0b0514; border-top: 2px solid var(--accent);
+            width: 100%; max-height: 85vh; border-radius: 20px 20px 0 0;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(211, 0, 211, 0.3);
+            animation: slideUp 0.3s;
         }
+        .modal-header { padding: 15px; text-align: center; font-weight: bold; font-size: 16px; border-bottom: 1px solid #222; }
+        .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
 
-        .card-header { 
-            padding: 20px; text-align: center; border-bottom: 1px solid #222;
-            font-family: 'Arial', sans-serif; font-weight: 900; letter-spacing: 2px;
-            color: #fff; text-transform: uppercase;
-        }
-        .card-scroll { padding: 15px; overflow-y: auto; flex: 1; }
-        
-        .close-btn {
-            width: 100%; padding: 18px; background: #1a1a1a; border: none; color: #fff;
-            font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer;
-        }
-
-        /* --- ITEMS --- */
-        .item-row {
-            display: flex; gap: 12px; align-items: center;
+        /* ITEMS LIST */
+        .item { 
+            display: flex; gap: 10px; align-items: center; 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px; margin-bottom: 10px; border-radius: 12px;
+            padding: 10px; border-radius: 12px; margin-bottom: 8px;
         }
-        .item-thumb { 
-            width: 50px; height: 50px; background: #000; border-radius: 8px; 
-            object-fit: contain; border: 1px solid #333;
+        .item img { width: 45px; height: 45px; object-fit: contain; background: #000; border-radius: 8px; }
+        .item-info { flex: 1; }
+        .item-name { font-size: 13px; font-weight: bold; color: #fff; }
+        .item-desc { font-size: 10px; color: #777; }
+        .btn-buy {
+            background: var(--cyan); color: #000; border: none; padding: 6px 12px;
+            border-radius: 6px; font-size: 11px; font-weight: bold;
         }
-        .item-data { flex: 1; }
-        .item-title { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; }
-        .item-desc { font-size: 10px; color: #777; font-style: italic; margin-bottom: 4px; display: block;}
-        .item-stat { font-size: 11px; color: var(--cyan); }
+
+        /* MINI GAME UI */
+        #hack-game-ui {
+            width: 100%; padding: 30px; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .hack-track {
+            width: 100%; height: 20px; background: #333; border-radius: 10px;
+            position: relative; overflow: hidden; margin: 20px 0; border: 1px solid #555;
+        }
+        .hack-target {
+            position: absolute; top: 0; bottom: 0; width: 40px; /* Target Zone */
+            background: var(--yellow); opacity: 0.7; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 10px var(--yellow);
+        }
+        .hack-cursor {
+            position: absolute; top: -5px; bottom: -5px; width: 4px;
+            background: var(--red); left: 0%; transition: none;
+            box-shadow: 0 0 10px var(--red); z-index: 2;
+        }
+        .hack-btn-action {
+            width: 100%; padding: 20px; background: var(--red); color: #fff;
+            border: none; font-size: 18px; font-weight: 900; border-radius: 12px;
+        }
+
+        /* DAILY REWARD */
+        .daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .daily-day {
+            background: #111; border: 1px solid #333; padding: 10px 5px;
+            border-radius: 8px; text-align: center; opacity: 0.5;
+        }
+        .daily-day.active { border-color: var(--yellow); opacity: 1; background: rgba(247, 255, 0, 0.1); }
+        .daily-day.claimed { border-color: var(--cyan); opacity: 0.3; background: rgba(0, 247, 255, 0.1); }
+
+        /* FX */
+        .float-txt { position: absolute; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 50; }
         
-        .buy-btn {
-            background: var(--accent); color: #fff; border: none;
-            padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold;
-        }
-        .buy-btn:disabled { background: #333; color: #555; }
-
-        /* --- FX --- */
-        .float-txt {
-            position: absolute; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 50;
-            text-shadow: 0 0 5px currentColor;
-        }
-
-        @keyframes pulse { 0% {opacity:0.3; transform:scale(0.9);} 100% {opacity:0.6; transform:scale(1.1);} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7);} 70% {box-shadow: 0 0 0 10px rgba(255, 0, 76, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0);} }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     </style>
 </head>
 <body>
 
+<canvas id="matrix-canvas"></canvas>
+
 <div id="app">
-    <div class="top-bar">
-        <div class="resource-panel">
-            <div id="energy-display">0</div>
-            <div class="income-rate" id="income-display">0 PUNK/s</div>
+    <div class="hud">
+        <div class="res-box">
+            <div id="energy-val">0</div>
+            <div class="sub-text" id="inc-val">+0 / сек</div>
         </div>
-        <div class="rank-badge">
-            <div id="rank-name">Street Rat</div>
-            <div id="level-display">LVL 1</div>
-        </div>
-    </div>
-
-    <div id="main-stage">
-        <div class="reactor-container" id="tap-zone">
-            <div class="core-glow"></div>
-            <img src="assets/reactor/reactor.gif" id="reactor-visual" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
-        </div>
-        <div style="margin-top:20px; opacity: 0.6; font-size: 10px; text-align: center;">
-            TAP TO HACK THE SYSTEM
+        <div class="res-box rank-box">
+            <div id="rank-val">NOBODY</div>
+            <div class="sub-text" id="lvl-val">LVL 1</div>
         </div>
     </div>
 
-    <div class="nav-dock">
-        <div class="dock-btn" onclick="openMenu('ships')"><span>🚀</span>ФЛОТ</div>
-        <div class="dock-btn" onclick="openMenu('crew')"><span>👥</span>ЭКИПАЖ</div>
-        <div class="dock-btn" onclick="openMenu('implants')"><span>🧠</span>ИМПЛАНТЫ</div>
-        <div class="dock-btn" onclick="openMenu('profile')"><span>⚙️</span>ДАННЫЕ</div>
+    <div id="stage">
+        <div class="reactor-wrap" id="tap-zone">
+            <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
+        </div>
+        <button id="hack-btn" onclick="startHackGame()">☠ ВЗЛОМ СИСТЕМЫ</button>
+    </div>
+
+    <div class="nav">
+        <div class="nav-btn" onclick="openMenu('ships')"><span>🚀</span>Флот</div>
+        <div class="nav-btn" onclick="openMenu('crew')"><span>👥</span>Банда</div>
+        <div class="nav-btn" onclick="openMenu('implants')"><span>🧠</span>Чипы</div>
+        <div class="nav-btn" onclick="openMenu('daily')"><span>🎁</span>Бонус</div>
     </div>
 </div>
 
-<div id="modal-overlay" onclick="if(event.target.id==='modal-overlay') closeMenu()">
-    <div class="cyber-card">
-        <div class="card-header" id="modal-title">TITLE</div>
-        <div class="card-scroll" id="modal-content"></div>
-        <button class="close-btn" onclick="closeMenu()">ЗАКРЫТЬ ТЕРМИНАЛ</button>
+<div class="modal-overlay" id="main-modal" onclick="if(event.target.id==='main-modal') closeModal()">
+    <div class="modal-card">
+        <div class="modal-header" id="modal-title">TITLE</div>
+        <div class="modal-body" id="modal-content"></div>
+        <button style="padding:15px; background:#111; color:#fff; border:none;" onclick="closeModal()">ЗАКРЫТЬ</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="hack-modal">
+    <div class="modal-card" style="height: auto;">
+        <div class="modal-header" style="color:var(--red)">ПРОРЫВ FIREWALL</div>
+        <div class="modal-body">
+            <div id="hack-game-ui">
+                <p>Останови курсор в желтой зоне!</p>
+                <div class="hack-track">
+                    <div class="hack-target" id="hack-target-zone"></div>
+                    <div class="hack-cursor" id="hack-cursor"></div>
+                </div>
+                <button class="hack-btn-action" onmousedown="stopHack()" ontouchstart="stopHack()">ВЗЛОМАТЬ</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    // --- AUDIO ENGINE (Synthesizer) ---
+    // Генерирует звуки кодом, не нужны mp3
+    const AudioFX = {
+        ctx: null,
+        init: function() {
+            if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        },
+        play: function(type) {
+            if(!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
 
-    // --- GAME CONFIG & DATA ---
-    const CONFIG = {
-        ranks: ["Street Rat", "Scavenger", "Cyber Punk", "Net Runner", "Void Lord", "GALAXY BARON"],
-        saveKey: 'cosmopunk_save_v3'
-    };
-
-    // Database of items
-    const DB = {
-        ships: [
-            { id: 's1', name: 'Rusty Drone', lore: 'Списанный дрон корпорации', baseCost: 100, inc: 1, img: 'ship1.png' },
-            { id: 's2', name: 'Scrap Fighter', lore: 'Собран из обломков', baseCost: 500, inc: 4, img: 'ship2.png' },
-            { id: 's3', name: 'Punk Hauler', lore: 'Контрабандистский транспорт', baseCost: 1500, inc: 10, img: 'ship3.png' },
-            { id: 's4', name: 'Neon Corsair', lore: 'Корабль пиратской элиты', baseCost: 5000, inc: 35, img: 'ship4.png' },
-            { id: 's5', name: 'Void Reaper', lore: 'Запрещённый класс. Легенда', baseCost: 20000, inc: 120, img: 'ship5.png' }
-            // Можно добавить ship6 - ship10 по аналогии
-        ],
-        implants: [
-            { id: 'i_base', name: 'Base Implant', lore: 'Каждая легенда начинается с дешёвого апгрейда.', cost: 300, type: 'tap', val: 2, img: 'base.png' },
-            { id: 'i_chip', name: 'Ржавый Чип', lore: 'Работает плохо. Но работает.', cost: 1000, type: 'passive_flat', val: 10, img: 'chip.png' },
-            { id: 'i_eye', name: 'Кибер-Глаз', lore: 'Ты не видишь мир. Ты читаешь его.', cost: 5000, type: 'crit_mult', val: 0.5, img: 'eye.png' },
-            { id: 'i_glitch', name: 'Глитч-Протез', lore: 'Ошибки — это просто другие варианты истины.', cost: 15000, type: 'crit_chance', val: 0.1, img: 'glitch.png' },
-            { id: 'i_neuro', name: 'Нео-Нейрон', lore: 'Думаешь быстрее, чем мир успевает реагировать.', cost: 50000, type: 'global_mult', val: 0.2, img: 'neuro.png' }
-        ],
-        crew: {
-            bot: { name: 'Гигапанк-Бот', role: 'Авто-майнинг', lore: 'Цель обновлена: поддерживать CosmoPunk.', cost: 500, mult: 1.5, img: 'bot.png' },
-            hacker: { name: 'Лиса-Хакер', role: 'Взлом (Крит)', lore: 'Если система говорит нет — ломай её.', cost: 1200, mult: 2.0, img: 'hacker.png' },
-            captain: { name: 'Капитан Космо', role: 'Стратег Флота', lore: 'Галактика — это шахматная доска.', cost: 3000, mult: 1.8, img: 'captain.png' }
+            const now = this.ctx.currentTime;
+            
+            if(type === 'tap') {
+                // High pitch short blip
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'buy') {
+                // Success coin sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                // Low buzz
+                osc.type = 'sawtooth';
+                osc.frequency.value = 150;
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
         }
     };
 
-    // Player State
+    // --- GAME DATA & CONFIG ---
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const SAVE_KEY = 'cp_wars_v4';
+
+    const DB = {
+        ships: [
+            { id: 's1', name: 'Дрон-сборщик', inc: 1, cost: 150, img: 'ship1.png' },
+            { id: 's2', name: 'Истребитель', inc: 5, cost: 800, img: 'ship2.png' },
+            { id: 's3', name: 'Фрегат "Неон"', inc: 20, cost: 3500, img: 'ship3.png' },
+            { id: 's4', name: 'Крейсер Тесла', inc: 80, cost: 12000, img: 'ship4.png' }
+        ],
+        crew: [
+            { id: 'c1', name: 'Хакер Лиса', desc: 'Крит шанс +5%', cost: 1000, type: 'crit', val: 0.05, img: 'hacker.png' },
+            { id: 'c2', name: 'Бот-шахтер', desc: 'Авто-доход +30/сек', cost: 2000, type: 'passive', val: 30, img: 'bot.png' },
+            { id: 'c3', name: 'Капитан', desc: 'Усиливает флот x1.5', cost: 10000, type: 'mult', val: 0.5, img: 'captain.png' }
+        ],
+        daily: [500, 1000, 1500, 3000, 5000, 10000, 25000] // Награды за 7 дней
+    };
+
     let state = {
         energy: 0,
         total: 0,
-        ships: {}, // {s1: 5, s2: 1...}
-        crew: { bot: 0, hacker: 0, captain: 0 },
-        implants: [], // ['i_base', 'i_eye']
+        ships: {},
+        crew: {}, // Levels of crew
+        implants: [],
+        lastHack: 0, // timestamp
+        daily: { day: 0, lastClaim: 0 },
         lastSave: Date.now()
     };
 
-    // Load State
-    const saved = localStorage.getItem(CONFIG.saveKey);
-    if(saved) {
-        state = { ...state, ...JSON.parse(saved) };
+    // --- INIT ---
+    // Load save
+    let saved = localStorage.getItem(SAVE_KEY);
+    if(saved) state = { ...state, ...JSON.parse(saved) };
+
+    // Offline Earnings
+    let offlineSeconds = (Date.now() - state.lastSave) / 1000;
+    if(offlineSeconds > 60) {
+        let earn = calcIncome() * offlineSeconds;
+        if(earn > 0) {
+            state.energy += earn;
+            state.total += earn;
+            setTimeout(() => alert(`С возвращением, Босс!\nВаш синдикат заработал: ${Math.floor(earn)} PUNK`), 500);
+        }
     }
 
-    // --- LOGIC ENGINE ---
+    // Loops
+    setInterval(() => {
+        let inc = calcIncome() / 10;
+        if(inc > 0) addEnergy(inc);
+        updateHUD();
+        checkHackStatus();
+    }, 100);
+    
+    setInterval(saveGame, 5000);
 
-    // 1. Calculate Passive Income (Per Second)
-    function getPassive() {
-        let raw = 0;
-        
+    // Matrix Background
+    initMatrix();
+
+    // --- CORE MECHANICS ---
+
+    function calcIncome() {
+        let income = 0;
         // Ships
         DB.ships.forEach(s => {
-            if(state.ships[s.id]) raw += state.ships[s.id] * s.inc;
+            if(state.ships[s.id]) income += state.ships[s.id] * s.inc;
         });
-
-        // Bot Bonus (Base passive income)
-        if(state.crew.bot > 0) {
-            raw += state.crew.bot * 20;
-        }
-
-        // Chip Implant (Flat Bonus)
-        if(state.implants.includes('i_chip')) raw += 10;
-
-        // Captain Multiplier (Boosts all fleet income)
-        // Each captain level adds 10% to total fleet efficiency
-        let fleetMult = 1 + (state.crew.captain * 0.1);
-        raw = raw * fleetMult;
-
-        // Neuro Implant (Global Multiplier x1.2)
-        if(state.implants.includes('i_neuro')) raw *= 1.2;
-
-        return raw;
-    }
-
-    // 2. Calculate Tap Power
-    function getTap() {
-        let base = 1;
-        // Base Implant
-        if(state.implants.includes('i_base')) base += 2;
+        // Crew: Bot
+        if(state.crew['c2']) income += state.crew['c2'] * 30;
+        // Crew: Captain (Multiplier)
+        if(state.crew['c3']) income *= (1 + state.crew['c3'] * 0.5);
         
-        // Crew levels add slightly to tap
-        base += (state.crew.hacker + state.crew.bot + state.crew.captain);
-
-        // Crit Calculation
-        let isCrit = false;
-        let critChance = 0.05 + (state.crew.hacker * 0.02); // Hacker adds 2% per level
-        if(state.implants.includes('i_glitch')) critChance += 0.1; // Glitch adds 10%
-
-        let critMult = 10;
-        if(state.implants.includes('i_eye')) critMult = 15; // Eye increases crit damage
-
-        if(Math.random() < critChance) {
-            isCrit = true;
-            base *= critMult;
-            tg.HapticFeedback.notificationOccurred('warning');
-        } else {
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        // Neuro Implant
-        if(state.implants.includes('i_neuro')) base *= 1.2;
-
-        return { val: Math.floor(base), isCrit };
+        return income;
     }
-
-    // Main Loop (1s tick)
-    setInterval(() => {
-        let inc = getPassive();
-        if(inc > 0) {
-            addEnergy(inc / 10); // 10 ticks per second
-        }
-        updateHUD();
-    }, 100);
-
-    // Save Loop
-    setInterval(() => {
-        localStorage.setItem(CONFIG.saveKey, JSON.stringify(state));
-    }, 5000);
 
     function addEnergy(amount) {
         state.energy += amount;
         state.total += amount;
     }
 
-    // --- INTERACTION ---
-
-    document.getElementById('tap-zone').addEventListener('touchstart', (e) => {
+    function tap(e) {
+        // Init audio on first interaction
+        AudioFX.init();
+        
         e.preventDefault();
-        // Multitouch support
-        [...e.changedTouches].forEach(t => handleTap(t.clientX, t.clientY));
-    });
+        let touches = e.changedTouches || [e];
+
+        for(let t of touches) {
+            let power = 1 + (state.crew['c3'] || 0); // Captain adds base power
+            
+            // Crit logic (Hacker)
+            let critChance = 0.05 + (state.crew['c1'] || 0) * 0.05;
+            let isCrit = Math.random() < critChance;
+            if(isCrit) {
+                power *= 10;
+                tg.HapticFeedback.notificationOccurred('warning');
+            } else {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+
+            addEnergy(power);
+            spawnFloat(t.clientX, t.clientY, Math.floor(power), isCrit);
+            AudioFX.play('tap');
+        }
+
+        // Visual
+        const r = document.getElementById('reactor-img');
+        r.classList.remove('shake');
+        void r.offsetWidth; // trigger reflow
+        r.classList.add('shake');
+    }
+
+    // --- HACKING MINI GAME ---
+    let hackAnim;
+    let hackDir = 1;
+    let hackPos = 0;
     
-    document.getElementById('tap-zone').addEventListener('mousedown', (e) => {
-        handleTap(e.clientX, e.clientY);
-    });
-
-    function handleTap(x, y) {
-        const dmg = getTap();
-        addEnergy(dmg.val);
-        spawnFloater(x, y, dmg.val, dmg.isCrit);
+    function checkHackStatus() {
+        // Cooldown 5 mins (300000 ms)
+        let now = Date.now();
+        let btn = document.getElementById('hack-btn');
+        let diff = now - state.lastHack;
         
-        // Reactor Animation
-        const el = document.getElementById('reactor-visual');
-        el.style.transform = 'scale(0.95)';
-        setTimeout(() => el.style.transform = 'scale(1)', 50);
+        if(diff > 300000) {
+            btn.classList.add('ready');
+            btn.innerText = "☠ ВЗЛОМ ДОСТУПЕН";
+        } else {
+            btn.classList.remove('ready');
+            let left = Math.ceil((300000 - diff)/1000);
+            let min = Math.floor(left/60);
+            let sec = left%60;
+            btn.innerText = `⏳ ${min}:${sec < 10 ? '0'+sec : sec}`;
+        }
     }
 
-    // --- UI & MENUS ---
+    function startHackGame() {
+        if(Date.now() - state.lastHack < 300000) return;
+        
+        document.getElementById('hack-modal').style.display = 'flex';
+        hackPos = 0;
+        hackDir = 1; // Speed factor
+        
+        // Game Loop
+        let cursor = document.getElementById('hack-cursor');
+        // Randomize target position
+        let targetLeft = 30 + Math.random() * 40; // 30% to 70%
+        document.getElementById('hack-target-zone').style.left = targetLeft + '%';
+        window.hackTargetMin = targetLeft;
+        window.hackTargetMax = targetLeft + 15; // Width of zone roughly
 
-    function updateHUD() {
-        document.getElementById('energy-display').innerText = Math.floor(state.energy).toLocaleString();
-        document.getElementById('income-display').innerText = `+${Math.floor(getPassive())} PUNK/s`;
-        
-        let rankIdx = Math.min(Math.floor(state.total / 50000), CONFIG.ranks.length - 1);
-        document.getElementById('rank-name').innerText = CONFIG.ranks[rankIdx];
-        
-        let totalLvl = state.crew.bot + state.crew.hacker + state.crew.captain + 1;
-        document.getElementById('level-display').innerText = `LVL ${totalLvl}`;
+        function animate() {
+            hackPos += hackDir * 1.5; // Speed
+            if(hackPos > 100 || hackPos < 0) hackDir *= -1;
+            cursor.style.left = hackPos + '%';
+            hackAnim = requestAnimationFrame(animate);
+        }
+        animate();
     }
 
-    function spawnFloater(x, y, val, crit) {
-        let d = document.createElement('div');
-        d.className = 'float-txt';
-        d.innerText = `+${val}`;
-        d.style.left = x + 'px';
-        d.style.top = y + 'px';
-        d.style.color = crit ? 'var(--yellow)' : 'var(--cyan)';
-        if(crit) d.style.fontSize = '32px';
-        document.body.appendChild(d);
+    function stopHack() {
+        cancelAnimationFrame(hackAnim);
         
-        setTimeout(() => {
-            d.style.transform = `translateY(-100px)`;
-            d.style.opacity = 0;
-        }, 50);
-        setTimeout(() => d.remove(), 600);
+        // Check Hit
+        if(hackPos >= window.hackTargetMin && hackPos <= window.hackTargetMax) {
+            // WIN
+            let reward = calcIncome() * 300; // 5 mins of income instant
+            if(reward < 500) reward = 500; // Min reward
+            
+            addEnergy(reward);
+            alert(`ВЗЛОМ УСПЕШЕН!\nСкачано: ${Math.floor(reward)} PUNK`);
+            tg.HapticFeedback.notificationOccurred('success');
+            AudioFX.play('buy');
+            state.lastHack = Date.now();
+        } else {
+            // FAIL
+            alert("ОБНАРУЖЕНИЕ!\nСистема безопасности заблокировала доступ.");
+            tg.HapticFeedback.notificationOccurred('error');
+            AudioFX.play('error');
+            // Small cooldown punishment (30 sec)
+            state.lastHack = Date.now() - 270000; 
+        }
+        document.getElementById('hack-modal').style.display = 'none';
+        checkHackStatus();
     }
 
-    // --- MENU GENERATOR ---
+    // --- MENUS ---
 
     function openMenu(type) {
-        const modal = document.getElementById('modal-overlay');
+        document.getElementById('main-modal').style.display = 'flex';
         const title = document.getElementById('modal-title');
         const content = document.getElementById('modal-content');
-        
-        modal.style.display = 'flex';
         content.innerHTML = '';
 
-        if (type === 'ships') {
-            title.innerText = 'АНГАР КОРАБЛЕЙ';
-            DB.ships.forEach(item => {
-                let count = state.ships[item.id] || 0;
-                let cost = Math.floor(item.baseCost * Math.pow(1.2, count));
-                
-                content.innerHTML += `
-                <div class="item-row">
-                    <img src="assets/ships/${item.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/00f7ff/000?text=S'">
-                    <div class="item-data">
-                        <div class="item-title">${item.name} <span style="color:#666">x${count}</span></div>
-                        <span class="item-desc">${item.lore}</span>
-                        <div class="item-stat">Доход: +${item.inc}/сек</div>
-                    </div>
-                    <button class="buy-btn" onclick="buyShip('${item.id}', ${cost})">${cost.toLocaleString()}</button>
-                </div>`;
+        if(type === 'ships') {
+            title.innerText = "АНГАР ФЛОТА";
+            DB.ships.forEach(s => {
+                let cnt = state.ships[s.id] || 0;
+                let price = Math.floor(s.cost * Math.pow(1.2, cnt));
+                renderItem(content, s.name, `+${s.inc}/сек | Есть: ${cnt}`, price, s.img, () => {
+                    if(state.energy >= price) {
+                        state.energy -= price;
+                        state.ships[s.id] = cnt + 1;
+                        AudioFX.play('buy');
+                        openMenu('ships'); // redraw
+                    }
+                });
             });
         }
-        else if (type === 'crew') {
-            title.innerText = 'КОМАНДА';
-            ['captain', 'hacker', 'bot'].forEach(role => {
-                let data = DB.crew[role];
-                let lvl = state.crew[role];
-                let cost = Math.floor(data.cost * Math.pow(data.mult, lvl));
-
-                content.innerHTML += `
-                <div class="item-row">
-                    <img src="assets/crew/${data.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/d300d3/000?text=C'">
-                    <div class="item-data">
-                        <div class="item-title">${data.name} (Lvl ${lvl})</div>
-                        <span class="item-desc">"${data.lore}"</span>
-                        <div class="item-stat">Роль: ${data.role}</div>
-                    </div>
-                    <button class="buy-btn" onclick="upgradeCrew('${role}', ${cost})">${cost.toLocaleString()}</button>
-                </div>`;
+        else if(type === 'crew') {
+            title.innerText = "НАЙМ БАНДЫ";
+            DB.crew.forEach(c => {
+                let lvl = state.crew[c.id] || 0;
+                let price = Math.floor(c.cost * Math.pow(1.5, lvl));
+                renderItem(content, `${c.name} (Lvl ${lvl})`, c.desc, price, c.img, () => {
+                    if(state.energy >= price) {
+                        state.energy -= price;
+                        state.crew[c.id] = lvl + 1;
+                        AudioFX.play('buy');
+                        openMenu('crew');
+                    }
+                });
             });
         }
-        else if (type === 'implants') {
-            title.innerText = 'КИБЕР-ХИРУРГ';
-            DB.implants.forEach(imp => {
-                let owned = state.implants.includes(imp.id);
-                let btn = owned 
-                    ? `<button class="buy-btn" disabled style="background:#333">ВЖИВЛЕНО</button>`
-                    : `<button class="buy-btn" onclick="buyImplant('${imp.id}', ${imp.cost})">${imp.cost.toLocaleString()}</button>`;
-
-                content.innerHTML += `
-                <div class="item-row" style="${owned ? 'opacity:0.6' : ''}">
-                    <img src="assets/implants/${imp.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/f7ff00/000?text=I'">
-                    <div class="item-data">
-                        <div class="item-title">${imp.name}</div>
-                        <span class="item-desc">${imp.lore}</span>
-                    </div>
-                    ${btn}
-                </div>`;
-            });
-        }
-        else if (type === 'profile') {
-            title.innerText = 'ДАННЫЕ';
-            content.innerHTML = `
-                <div style="text-align:center; padding:20px;">
-                    <h3 style="color:var(--cyan)">COSMOPUNK ID: #8821</h3>
-                    <p style="color:#aaa; margin-top:10px;">Статус: ${document.getElementById('rank-name').innerText}</p>
-                    <hr style="border:0; border-bottom:1px solid #333; margin:20px 0;">
-                    <button class="buy-btn" style="background:#ff2a2a; width:100%" onclick="resetGame()">СТЕРЕТЬ ЛИЧНОСТЬ (СБРОС)</button>
-                </div>
-            `;
+        else if(type === 'daily') {
+            title.innerText = "СНАБЖЕНИЕ";
+            checkDailyLogic(content);
         }
     }
 
-    function closeMenu() {
-        document.getElementById('modal-overlay').style.display = 'none';
+    function renderItem(container, name, desc, price, img, onClick) {
+        let div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+            <img src="assets/ships/${img}" onerror="this.src='https://via.placeholder.com/45?text=?'">
+            <div class="item-info">
+                <div class="item-name">${name}</div>
+                <div class="item-desc">${desc}</div>
+            </div>
+            <button class="btn-buy">${price.toLocaleString()}</button>
+        `;
+        div.querySelector('button').onclick = onClick;
+        container.appendChild(div);
     }
 
-    // --- ACTIONS ---
-
-    function buyShip(id, cost) {
-        if(state.energy >= cost) {
-            state.energy -= cost;
-            state.ships[id] = (state.ships[id] || 0) + 1;
-            tg.HapticFeedback.selectionChanged();
-            openMenu('ships'); // Redraw
+    function checkDailyLogic(container) {
+        let now = new Date();
+        let last = new Date(state.daily.lastClaim);
+        let isSameDay = now.toDateString() === last.toDateString();
+        
+        // Reset streak if missed more than 1 day
+        if((now - last) > 86400000 * 2) {
+            state.daily.day = 0;
         }
+
+        let grid = document.createElement('div');
+        grid.className = 'daily-grid';
+
+        DB.daily.forEach((reward, idx) => {
+            let el = document.createElement('div');
+            el.className = 'daily-day';
+            el.innerHTML = `<div>День ${idx+1}</div><div style="color:var(--yellow)">${reward}</div>`;
+            
+            if(idx < state.daily.day) el.classList.add('claimed');
+            if(idx === state.daily.day) el.classList.add('active');
+            
+            if(idx === state.daily.day && !isSameDay) {
+                el.onclick = () => {
+                    state.daily.lastClaim = Date.now();
+                    state.daily.day++;
+                    addEnergy(reward);
+                    AudioFX.play('buy');
+                    tg.HapticFeedback.notificationOccurred('success');
+                    alert(`Получено: ${reward} PUNK`);
+                    openMenu('daily');
+                };
+            }
+            grid.appendChild(el);
+        });
+        container.appendChild(grid);
+        
+        let msg = document.createElement('p');
+        msg.style.textAlign = 'center';
+        msg.style.marginTop = '15px';
+        msg.style.color = '#777';
+        msg.innerText = isSameDay ? "Награда уже получена сегодня." : "Нажми на активный день, чтобы забрать!";
+        container.appendChild(msg);
     }
 
-    function upgradeCrew(role, cost) {
-        if(state.energy >= cost) {
-            state.energy -= cost;
-            state.crew[role]++;
-            tg.HapticFeedback.notificationOccurred('success');
-            openMenu('crew');
+    function closeModal() { document.getElementById('main-modal').style.display = 'none'; }
+
+    // --- UTILS ---
+    function updateHUD() {
+        document.getElementById('energy-val').innerText = Math.floor(state.energy).toLocaleString();
+        document.getElementById('inc-val').innerText = `+${Math.floor(calcIncome())} / сек`;
+        
+        let ranks = ["Street Rat", "Scavenger", "Hacker", "Cyber Lord", "Syndicate Boss"];
+        let rIdx = Math.min(Math.floor(state.total / 50000), ranks.length-1);
+        document.getElementById('rank-val').innerText = ranks[rIdx];
+    }
+
+    function spawnFloat(x, y, val, isCrit) {
+        let el = document.createElement('div');
+        el.className = 'float-txt';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.innerText = `+${val}`;
+        el.style.color = isCrit ? 'var(--red)' : 'var(--cyan)';
+        document.body.appendChild(el);
+        setTimeout(() => {
+            el.style.transform = 'translateY(-80px)';
+            el.style.opacity = 0;
+        }, 50);
+        setTimeout(() => el.remove(), 600);
+    }
+
+    function saveGame() {
+        state.lastSave = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    }
+
+    // --- MATRIX EFFECT ---
+    function initMatrix() {
+        const c = document.getElementById('matrix-canvas');
+        const ctx = c.getContext('2d');
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        
+        const chars = "010101XYKPUNK";
+        const fontSize = 14;
+        const columns = c.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = "rgba(5, 0, 10, 0.1)";
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.fillStyle = "#0f0";
+            ctx.font = fontSize + "px monospace";
+
+            for(let i=0; i<drops.length; i++) {
+                const text = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
         }
+        setInterval(draw, 50);
     }
 
-    function buyImplant(id, cost) {
-        if(state.energy >= cost && !state.implants.includes(id)) {
-            state.energy -= cost;
-            state.implants.push(id);
-            tg.HapticFeedback.notificationOccurred('success');
-            openMenu('implants');
-        }
-    }
-
-    function resetGame() {
-        if(confirm('ВНИМАНИЕ: Это полностью удалит ваш прогресс. Продолжить?')) {
-            localStorage.removeItem(CONFIG.saveKey);
-            location.reload();
-        }
-    }
-
-    // 3D Tilt Logic
-    document.addEventListener('mousemove', (e) => {
-        const x = (window.innerWidth / 2 - e.clientX) / 30;
-        const y = (window.innerHeight / 2 - e.clientY) / 30;
-        document.querySelector('.reactor-container').style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
-    });
+    // EVENTS
+    const zone = document.getElementById('tap-zone');
+    zone.addEventListener('touchstart', tap, {passive:false});
+    zone.addEventListener('mousedown', tap);
 
 </script>
 </body>
