@@ -2,680 +2,510 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Syndicate v2.0</title>
+    <title>CosmoPunk: Rebellion 2149</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #0b0014;
-            --accent: #d300d3;
-            --cyan: #00f7ff;
-            --yellow: #f7ff00;
-            --glass: rgba(20, 10, 30, 0.7);
-            --border: rgba(255, 255, 255, 0.15);
-            --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --bg: #05000a;
+            --accent: #d300d3; /* Neon Purple */
+            --cyan: #00f7ff;    /* Cyber Blue */
+            --yellow: #f7ff00;  /* Acid Yellow */
+            --danger: #ff2a2a;
+            --glass: rgba(20, 10, 30, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --font: 'Courier New', Courier, monospace; /* Более хакерский шрифт */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             background: var(--bg);
+            /* Сетка ретро-вейв на фоне */
             background-image: 
-                radial-gradient(circle at 50% 10%, rgba(211, 0, 211, 0.25) 0%, transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(0, 247, 255, 0.15) 0%, transparent 50%),
-                linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 100%);
+                linear-gradient(rgba(11, 0, 20, 0.9), rgba(11, 0, 20, 0.9)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 1px, var(--cyan) 1px, transparent 2px),
+                repeating-linear-gradient(90deg, transparent 0, transparent 1px, var(--accent) 1px, transparent 2px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
             color: #fff;
             font-family: var(--font);
             height: 100vh;
             overflow: hidden;
             user-select: none;
-            touch-action: manipulation;
         }
 
-        #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; position: relative; z-index: 1; }
+        #app { display: flex; flex-direction: column; height: 100vh; padding: 12px; position: relative; z-index: 2; }
 
         /* --- HUD --- */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
-        .stats-box {
+        .resource-panel {
             background: var(--glass);
-            padding: 10px 18px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            min-width: 100px;
-            transition: transform 0.1s;
+            border-left: 3px solid var(--cyan);
+            padding: 8px 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
         }
         
-        #energy { font-size: 26px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 15px rgba(0, 247, 255, 0.6); }
-        .sub-text { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; font-weight: 600; text-transform: uppercase; }
-        #rank { font-size: 13px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        #energy-display { font-size: 24px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+        .income-rate { font-size: 10px; color: #aaa; letter-spacing: 1px; }
 
-        /* --- REACTOR & TURBO --- */
-        #center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; perspective: 1000px; }
+        .rank-badge {
+            text-align: right;
+            border-right: 3px solid var(--accent);
+            padding: 8px 15px;
+            background: var(--glass);
+        }
+        #rank-name { color: var(--accent); font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        #level-display { font-size: 10px; color: #fff; }
+
+        /* --- REACTOR --- */
+        #main-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; perspective: 800px; }
         
-        .reactor-wrap { 
-            position: relative; width: 280px; height: 280px; 
+        .reactor-container { 
+            position: relative; width: 260px; height: 260px; 
             display: flex; justify-content: center; align-items: center; 
-            transition: transform 0.1s cubic-bezier(0.1, 0.9, 0.2, 1);
+            transition: transform 0.1s; cursor: pointer;
             transform-style: preserve-3d;
-            cursor: pointer;
         }
-        .reactor-wrap:active { transform: scale(0.96) !important; }
+        .reactor-container:active { transform: scale(0.97) !important; }
 
-        .reactor-glow {
-            position: absolute; inset: -30px; border-radius: 50%;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            opacity: 0.4; animation: pulse 3s infinite; pointer-events: none;
-        }
-        
-        .ring {
-            position: absolute; inset: 0; border: 2px solid var(--cyan); border-radius: 50%;
-            opacity: 0.3; animation: spin 10s linear infinite; box-shadow: 0 0 10px var(--cyan);
-            pointer-events: none;
-        }
-        .ring:nth-child(2) { inset: 25px; border-color: var(--accent); animation-direction: reverse; animation-duration: 7s; box-shadow: 0 0 10px var(--accent); }
-
-        #reactor-img { 
-            width: 80%; height: 80%; object-fit: contain; z-index: 2;
-            filter: drop-shadow(0 0 30px rgba(211, 0, 211, 0.5));
-            pointer-events: none;
+        .core-glow {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: radial-gradient(circle, rgba(211,0,211,0.4) 0%, transparent 70%);
+            animation: pulse 2s infinite alternate; pointer-events: none;
         }
 
-        /* Turbo Button */
-        #turbo-btn {
-            margin-top: 20px;
-            background: linear-gradient(45deg, #ff9100, #ff004c);
-            border: none; padding: 10px 24px; border-radius: 20px;
-            color: white; font-weight: 900; font-size: 14px; text-transform: uppercase;
-            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5);
-            opacity: 0.5; filter: grayscale(1); pointer-events: none;
-            transition: 0.3s;
+        #reactor-visual { 
+            width: 100%; height: 100%; object-fit: contain; z-index: 5;
+            filter: drop-shadow(0 0 20px var(--accent));
         }
-        #turbo-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: shake 2s infinite; cursor: pointer; }
 
-        /* --- NAV --- */
-        .nav-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            padding-top: 10px; padding-bottom: 10px;
+        /* --- CONTROLS --- */
+        .nav-dock {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            padding-bottom: 10px;
         }
-        .nav-btn {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border); border-radius: 16px;
-            height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: bold; color: #aaa; cursor: pointer;
-            backdrop-filter: blur(5px); transition: 0.2s;
+        .dock-btn {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--border); border-radius: 8px;
+            height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; color: #888; cursor: pointer; transition: 0.2s;
         }
-        .nav-btn span { font-size: 20px; margin-bottom: 4px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
-        .nav-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(2px); }
+        .dock-btn.active { border-color: var(--cyan); color: #fff; background: rgba(0, 247, 255, 0.1); }
+        .dock-btn span { font-size: 20px; margin-bottom: 3px; }
 
-        /* --- POPUPS --- */
-        #pop {
+        /* --- MODALS --- */
+        #modal-overlay {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-            display: none; align-items: flex-end; 
-            opacity: 0; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            display: none; align-items: flex-end;
+            animation: fadeIn 0.3s;
         }
-        #pop.open { opacity: 1; }
         
-        .card {
-            background: #150524; 
+        .cyber-card {
+            background: #0f0518; 
             border-top: 2px solid var(--accent);
-            border-radius: 30px 30px 0 0; 
-            width: 100%; max-height: 85vh;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 -10px 40px rgba(211, 0, 211, 0.2);
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            width: 100%; max-height: 80vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 -10px 50px rgba(211, 0, 211, 0.3);
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
         }
-        #pop.open .card { transform: translateY(0); }
 
         .card-header { 
-            padding: 20px; text-align: center; 
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #fff;
+            padding: 20px; text-align: center; border-bottom: 1px solid #222;
+            font-family: 'Arial', sans-serif; font-weight: 900; letter-spacing: 2px;
+            color: #fff; text-transform: uppercase;
         }
-        .card-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .card-scroll { padding: 15px; overflow-y: auto; flex: 1; }
         
         .close-btn {
-            margin: 10px 20px 25px; background: rgba(255,255,255,0.1); border: none; color: #fff;
-            padding: 16px; border-radius: 18px; font-weight: bold; font-size: 14px;
-            text-transform: uppercase; letter-spacing: 1px;
+            width: 100%; padding: 18px; background: #1a1a1a; border: none; color: #fff;
+            font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
         }
-        .close-btn:active { background: rgba(255,255,255,0.2); }
 
-        /* --- LIST ITEMS --- */
-        .list-item {
-            display: flex; align-items: center; gap: 15px;
-            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
-            padding: 14px; border-radius: 20px; margin-bottom: 12px;
-            transition: 0.2s;
+        /* --- ITEMS --- */
+        .item-row {
+            display: flex; gap: 12px; align-items: center;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; margin-bottom: 10px; border-radius: 12px;
         }
-        .list-item:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
-        .list-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 12px; background: rgba(0,0,0,0.3); padding: 5px; }
-        .list-info { flex: 1; }
-        .list-info h4 { color: #fff; font-size: 15px; margin-bottom: 4px; font-weight: 700; }
-        .list-info p { color: #999; font-size: 12px; }
+        .item-thumb { 
+            width: 50px; height: 50px; background: #000; border-radius: 8px; 
+            object-fit: contain; border: 1px solid #333;
+        }
+        .item-data { flex: 1; }
+        .item-title { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; }
+        .item-desc { font-size: 10px; color: #777; font-style: italic; margin-bottom: 4px; display: block;}
+        .item-stat { font-size: 11px; color: var(--cyan); }
         
-        .action-btn {
-            background: var(--cyan); color: #05000a; border: none;
-            padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 900;
-            box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+        .buy-btn {
+            background: var(--accent); color: #fff; border: none;
+            padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold;
         }
-        .action-btn:disabled { background: #333; color: #666; box-shadow: none; }
-        .action-btn.claim { background: var(--yellow); box-shadow: 0 0 15px rgba(247, 255, 0, 0.4); }
-
-        /* --- AFK POPUP --- */
-        #afk-overlay {
-            position: fixed; inset: 0; z-index: 200;
-            background: rgba(0,0,0,0.9); display: none;
-            justify-content: center; align-items: center;
-        }
-        .afk-modal {
-            background: linear-gradient(135deg, #1e0030, #0b0014);
-            border: 2px solid var(--cyan); border-radius: 24px;
-            padding: 30px; text-align: center; width: 80%;
-            box-shadow: 0 0 50px rgba(0, 247, 255, 0.2);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .buy-btn:disabled { background: #333; color: #555; }
 
         /* --- FX --- */
         .float-txt {
-            position: absolute; font-weight: 900; font-size: 28px; pointer-events: none; z-index: 50;
-            text-shadow: 0 0 10px currentColor; font-family: 'Courier New', monospace;
-        }
-        
-        input.code-input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--accent);
-            padding: 15px; border-radius: 12px; color: #fff; font-size: 16px; margin-bottom: 10px;
-            text-align: center; outline: none;
+            position: absolute; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 50;
+            text-shadow: 0 0 5px currentColor;
         }
 
-        @keyframes pulse { 0% {opacity:0.2; transform:scale(1);} 50% {opacity:0.5; transform:scale(1.1);} 100% {opacity:0.2; transform:scale(1);} }
-        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-        @keyframes shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-3deg)} 75%{transform:rotate(3deg)} }
-        @keyframes popIn { from{transform:scale(0.5); opacity:0} to{transform:scale(1); opacity:1} }
+        @keyframes pulse { 0% {opacity:0.3; transform:scale(0.9);} 100% {opacity:0.6; transform:scale(1.1);} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="header">
-        <div class="stats-box">
-            <div id="energy">0</div>
-            <div class="sub-text" id="inc">+0 / сек</div>
+    <div class="top-bar">
+        <div class="resource-panel">
+            <div id="energy-display">0</div>
+            <div class="income-rate" id="income-display">0 PUNK/s</div>
         </div>
-        <div style="text-align: right;">
-            <div class="stats-box" style="border-color: var(--accent);">
-                <div id="rank">Новичок</div>
-                <div class="sub-text" id="lvl">УРОВЕНЬ 1</div>
-            </div>
+        <div class="rank-badge">
+            <div id="rank-name">Street Rat</div>
+            <div id="level-display">LVL 1</div>
         </div>
     </div>
 
-    <div id="center">
-        <div class="reactor-wrap" id="tap-area">
-            <div class="reactor-glow"></div>
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
+    <div id="main-stage">
+        <div class="reactor-container" id="tap-zone">
+            <div class="core-glow"></div>
+            <img src="assets/reactor/reactor.gif" id="reactor-visual" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
-        <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO MODE</button>
+        <div style="margin-top:20px; opacity: 0.6; font-size: 10px; text-align: center;">
+            TAP TO HACK THE SYSTEM
+        </div>
     </div>
 
-    <div class="nav-grid">
-        <div class="nav-btn" onclick="openShop()"><span>🚀</span>Флот</div>
-        <div class="nav-btn" onclick="openCrew()"><span>👥</span>Экипаж</div>
-        <div class="nav-btn" onclick="openQuests()"><span>📜</span>Задания</div>
-        <div class="nav-btn" onclick="openSettings()"><span>⚙️</span>Меню</div>
+    <div class="nav-dock">
+        <div class="dock-btn" onclick="openMenu('ships')"><span>🚀</span>ФЛОТ</div>
+        <div class="dock-btn" onclick="openMenu('crew')"><span>👥</span>ЭКИПАЖ</div>
+        <div class="dock-btn" onclick="openMenu('implants')"><span>🧠</span>ИМПЛАНТЫ</div>
+        <div class="dock-btn" onclick="openMenu('profile')"><span>⚙️</span>ДАННЫЕ</div>
     </div>
 </div>
 
-<div id="pop" onclick="if(event.target.id==='pop') closePop()">
-    <div class="card">
-        <div class="card-header"><span id="pop-title">TITLE</span></div>
-        <div class="card-body" id="pop-body"></div>
-        <button class="close-btn" onclick="closePop()">ЗАКРЫТЬ</button>
-    </div>
-</div>
-
-<div id="afk-overlay">
-    <div class="afk-modal">
-        <h2 style="color:var(--cyan); margin-bottom:10px;">С возвращением!</h2>
-        <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Твой синдикат работал пока тебя не было.</p>
-        <h1 id="afk-amount" style="font-size:36px; margin-bottom:20px;">+0</h1>
-        <button class="action-btn claim" style="width:100%; padding:15px;" onclick="closeAfk()">ЗАБРАТЬ</button>
+<div id="modal-overlay" onclick="if(event.target.id==='modal-overlay') closeMenu()">
+    <div class="cyber-card">
+        <div class="card-header" id="modal-title">TITLE</div>
+        <div class="card-scroll" id="modal-content"></div>
+        <button class="close-btn" onclick="closeMenu()">ЗАКРЫТЬ ТЕРМИНАЛ</button>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.enableClosingConfirmation();
-    
-    // Config
-    const SAVE_KEY = 'cp_syndicate_v2';
-    const RANKS = ["Новичок", "Бродяга", "Киберпанк", "Нетраннер", "Владыка Пустоты", "Легенда"];
-    
-    // State
-    let s = JSON.parse(localStorage.getItem(SAVE_KEY)) || {
-        energy: 0,
-        total: 0,
-        startTime: Date.now(),
-        ships: {},
-        crew: { hacker: 0, bot: 0 },
-        quests: { q1: false, q2: false, q3: false },
-        codes: [],
-        settings: { sound: true, vibro: true },
-        lastSave: Date.now(),
-        turboReady: 0 // timestamp when ready
+
+    // --- GAME CONFIG & DATA ---
+    const CONFIG = {
+        ranks: ["Street Rat", "Scavenger", "Cyber Punk", "Net Runner", "Void Lord", "GALAXY BARON"],
+        saveKey: 'cosmopunk_save_v3'
     };
 
-    // Runtime vars
-    let turboActive = false;
-    let turboMultiplier = 1;
+    // Database of items
+    const DB = {
+        ships: [
+            { id: 's1', name: 'Rusty Drone', lore: 'Списанный дрон корпорации', baseCost: 100, inc: 1, img: 'ship1.png' },
+            { id: 's2', name: 'Scrap Fighter', lore: 'Собран из обломков', baseCost: 500, inc: 4, img: 'ship2.png' },
+            { id: 's3', name: 'Punk Hauler', lore: 'Контрабандистский транспорт', baseCost: 1500, inc: 10, img: 'ship3.png' },
+            { id: 's4', name: 'Neon Corsair', lore: 'Корабль пиратской элиты', baseCost: 5000, inc: 35, img: 'ship4.png' },
+            { id: 's5', name: 'Void Reaper', lore: 'Запрещённый класс. Легенда', baseCost: 20000, inc: 120, img: 'ship5.png' }
+            // Можно добавить ship6 - ship10 по аналогии
+        ],
+        implants: [
+            { id: 'i_base', name: 'Base Implant', lore: 'Каждая легенда начинается с дешёвого апгрейда.', cost: 300, type: 'tap', val: 2, img: 'base.png' },
+            { id: 'i_chip', name: 'Ржавый Чип', lore: 'Работает плохо. Но работает.', cost: 1000, type: 'passive_flat', val: 10, img: 'chip.png' },
+            { id: 'i_eye', name: 'Кибер-Глаз', lore: 'Ты не видишь мир. Ты читаешь его.', cost: 5000, type: 'crit_mult', val: 0.5, img: 'eye.png' },
+            { id: 'i_glitch', name: 'Глитч-Протез', lore: 'Ошибки — это просто другие варианты истины.', cost: 15000, type: 'crit_chance', val: 0.1, img: 'glitch.png' },
+            { id: 'i_neuro', name: 'Нео-Нейрон', lore: 'Думаешь быстрее, чем мир успевает реагировать.', cost: 50000, type: 'global_mult', val: 0.2, img: 'neuro.png' }
+        ],
+        crew: {
+            bot: { name: 'Гигапанк-Бот', role: 'Авто-майнинг', lore: 'Цель обновлена: поддерживать CosmoPunk.', cost: 500, mult: 1.5, img: 'bot.png' },
+            hacker: { name: 'Лиса-Хакер', role: 'Взлом (Крит)', lore: 'Если система говорит нет — ломай её.', cost: 1200, mult: 2.0, img: 'hacker.png' },
+            captain: { name: 'Капитан Космо', role: 'Стратег Флота', lore: 'Галактика — это шахматная доска.', cost: 3000, mult: 1.8, img: 'captain.png' }
+        }
+    };
 
-    // --- INIT ---
-    processOffline();
-    requestAnimationFrame(loop);
-    setInterval(saveGame, 3000);
-    setInterval(checkTurbo, 1000);
+    // Player State
+    let state = {
+        energy: 0,
+        total: 0,
+        ships: {}, // {s1: 5, s2: 1...}
+        crew: { bot: 0, hacker: 0, captain: 0 },
+        implants: [], // ['i_base', 'i_eye']
+        lastSave: Date.now()
+    };
 
-    // 3D Tilt Effect
-    const reactor = document.querySelector('.reactor-wrap');
-    document.addEventListener('mousemove', (e) => {
-        if(!reactor) return;
-        const x = (window.innerWidth / 2 - e.clientX) / 25;
-        const y = (window.innerHeight / 2 - e.clientY) / 25;
-        reactor.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
-    });
-    // Reset tilt on leave
-    document.addEventListener('mouseleave', () => {
-        reactor.style.transform = `rotateY(0) rotateX(0)`;
-    });
-
-    // --- CORE LOGIC ---
-
-    function loop() {
-        // Passive Income (called ~60 times per second via requestAnimationFrame is too fast, handle logic separately)
-        updateUI();
-        requestAnimationFrame(loop);
+    // Load State
+    const saved = localStorage.getItem(CONFIG.saveKey);
+    if(saved) {
+        state = { ...state, ...JSON.parse(saved) };
     }
 
-    // Passive ticker separate from render
-    setInterval(() => {
-        let passive = calculatePassive();
-        if (turboActive) passive *= 2;
+    // --- LOGIC ENGINE ---
+
+    // 1. Calculate Passive Income (Per Second)
+    function getPassive() {
+        let raw = 0;
         
-        if(passive > 0) {
-            let gain = passive / 10; // per 100ms
-            addEnergy(gain);
+        // Ships
+        DB.ships.forEach(s => {
+            if(state.ships[s.id]) raw += state.ships[s.id] * s.inc;
+        });
+
+        // Bot Bonus (Base passive income)
+        if(state.crew.bot > 0) {
+            raw += state.crew.bot * 20;
         }
+
+        // Chip Implant (Flat Bonus)
+        if(state.implants.includes('i_chip')) raw += 10;
+
+        // Captain Multiplier (Boosts all fleet income)
+        // Each captain level adds 10% to total fleet efficiency
+        let fleetMult = 1 + (state.crew.captain * 0.1);
+        raw = raw * fleetMult;
+
+        // Neuro Implant (Global Multiplier x1.2)
+        if(state.implants.includes('i_neuro')) raw *= 1.2;
+
+        return raw;
+    }
+
+    // 2. Calculate Tap Power
+    function getTap() {
+        let base = 1;
+        // Base Implant
+        if(state.implants.includes('i_base')) base += 2;
+        
+        // Crew levels add slightly to tap
+        base += (state.crew.hacker + state.crew.bot + state.crew.captain);
+
+        // Crit Calculation
+        let isCrit = false;
+        let critChance = 0.05 + (state.crew.hacker * 0.02); // Hacker adds 2% per level
+        if(state.implants.includes('i_glitch')) critChance += 0.1; // Glitch adds 10%
+
+        let critMult = 10;
+        if(state.implants.includes('i_eye')) critMult = 15; // Eye increases crit damage
+
+        if(Math.random() < critChance) {
+            isCrit = true;
+            base *= critMult;
+            tg.HapticFeedback.notificationOccurred('warning');
+        } else {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Neuro Implant
+        if(state.implants.includes('i_neuro')) base *= 1.2;
+
+        return { val: Math.floor(base), isCrit };
+    }
+
+    // Main Loop (1s tick)
+    setInterval(() => {
+        let inc = getPassive();
+        if(inc > 0) {
+            addEnergy(inc / 10); // 10 ticks per second
+        }
+        updateHUD();
     }, 100);
 
+    // Save Loop
+    setInterval(() => {
+        localStorage.setItem(CONFIG.saveKey, JSON.stringify(state));
+    }, 5000);
+
     function addEnergy(amount) {
-        s.energy += amount;
-        s.total += amount;
+        state.energy += amount;
+        state.total += amount;
     }
 
-    function calculatePassive() {
-        let income = 0;
-        if(s.ships['s1']) income += s.ships['s1'] * 1.5;
-        if(s.ships['s2']) income += s.ships['s2'] * 8;
-        if(s.ships['s3']) income += s.ships['s3'] * 25;
-        if(s.crew['bot']) income += s.crew['bot'] * 25; 
-        return income;
-    }
+    // --- INTERACTION ---
 
-    function tap(e) {
-        e.preventDefault(); // Stop zoom
-        // Handles multi-touch
-        let touches = e.changedTouches || [e];
+    document.getElementById('tap-zone').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        // Multitouch support
+        [...e.changedTouches].forEach(t => handleTap(t.clientX, t.clientY));
+    });
+    
+    document.getElementById('tap-zone').addEventListener('mousedown', (e) => {
+        handleTap(e.clientX, e.clientY);
+    });
+
+    function handleTap(x, y) {
+        const dmg = getTap();
+        addEnergy(dmg.val);
+        spawnFloater(x, y, dmg.val, dmg.isCrit);
         
-        for (let i = 0; i < touches.length; i++) {
-            let touch = touches[i];
-            
-            let base = 1 + (s.crew['hacker'] || 0); // Base click strength
-            let isCrit = false;
-            
-            // Crit chance
-            if (Math.random() < (s.crew['hacker'] * 0.05)) {
-                isCrit = true;
-                base *= 5;
-                if(s.settings.vibro) tg.HapticFeedback.notificationOccurred('warning');
-            } else {
-                if(s.settings.vibro) tg.HapticFeedback.impactOccurred('light');
-            }
+        // Reactor Animation
+        const el = document.getElementById('reactor-visual');
+        el.style.transform = 'scale(0.95)';
+        setTimeout(() => el.style.transform = 'scale(1)', 50);
+    }
 
-            if(turboActive) base *= 2;
+    // --- UI & MENUS ---
 
-            addEnergy(base);
-            createParticle(touch.clientX, touch.clientY, Math.floor(base), isCrit);
+    function updateHUD() {
+        document.getElementById('energy-display').innerText = Math.floor(state.energy).toLocaleString();
+        document.getElementById('income-display').innerText = `+${Math.floor(getPassive())} PUNK/s`;
+        
+        let rankIdx = Math.min(Math.floor(state.total / 50000), CONFIG.ranks.length - 1);
+        document.getElementById('rank-name').innerText = CONFIG.ranks[rankIdx];
+        
+        let totalLvl = state.crew.bot + state.crew.hacker + state.crew.captain + 1;
+        document.getElementById('level-display').innerText = `LVL ${totalLvl}`;
+    }
+
+    function spawnFloater(x, y, val, crit) {
+        let d = document.createElement('div');
+        d.className = 'float-txt';
+        d.innerText = `+${val}`;
+        d.style.left = x + 'px';
+        d.style.top = y + 'px';
+        d.style.color = crit ? 'var(--yellow)' : 'var(--cyan)';
+        if(crit) d.style.fontSize = '32px';
+        document.body.appendChild(d);
+        
+        setTimeout(() => {
+            d.style.transform = `translateY(-100px)`;
+            d.style.opacity = 0;
+        }, 50);
+        setTimeout(() => d.remove(), 600);
+    }
+
+    // --- MENU GENERATOR ---
+
+    function openMenu(type) {
+        const modal = document.getElementById('modal-overlay');
+        const title = document.getElementById('modal-title');
+        const content = document.getElementById('modal-content');
+        
+        modal.style.display = 'flex';
+        content.innerHTML = '';
+
+        if (type === 'ships') {
+            title.innerText = 'АНГАР КОРАБЛЕЙ';
+            DB.ships.forEach(item => {
+                let count = state.ships[item.id] || 0;
+                let cost = Math.floor(item.baseCost * Math.pow(1.2, count));
+                
+                content.innerHTML += `
+                <div class="item-row">
+                    <img src="assets/ships/${item.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/00f7ff/000?text=S'">
+                    <div class="item-data">
+                        <div class="item-title">${item.name} <span style="color:#666">x${count}</span></div>
+                        <span class="item-desc">${item.lore}</span>
+                        <div class="item-stat">Доход: +${item.inc}/сек</div>
+                    </div>
+                    <button class="buy-btn" onclick="buyShip('${item.id}', ${cost})">${cost.toLocaleString()}</button>
+                </div>`;
+            });
         }
-        
-        checkQuests();
-        
-        // Visual Shrink
-        const r = document.getElementById('tap-area');
-        r.style.transform = 'scale(0.95)';
-        setTimeout(() => r.style.transform = 'scale(1)', 50);
-    }
+        else if (type === 'crew') {
+            title.innerText = 'КОМАНДА';
+            ['captain', 'hacker', 'bot'].forEach(role => {
+                let data = DB.crew[role];
+                let lvl = state.crew[role];
+                let cost = Math.floor(data.cost * Math.pow(data.mult, lvl));
 
-    // --- OFFLINE EARNINGS ---
-    function processOffline() {
-        let now = Date.now();
-        let seconds = (now - s.lastSave) / 1000;
-        if(seconds > 60) {
-            let income = calculatePassive();
-            let totalOffline = Math.floor(income * seconds);
-            
-            if(totalOffline > 100) {
-                document.getElementById('afk-amount').innerText = `+${totalOffline.toLocaleString()}`;
-                document.getElementById('afk-overlay').style.display = 'flex';
-                // Don't add yet, wait for claim
-                window.pendingAfk = totalOffline;
-            }
+                content.innerHTML += `
+                <div class="item-row">
+                    <img src="assets/crew/${data.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/d300d3/000?text=C'">
+                    <div class="item-data">
+                        <div class="item-title">${data.name} (Lvl ${lvl})</div>
+                        <span class="item-desc">"${data.lore}"</span>
+                        <div class="item-stat">Роль: ${data.role}</div>
+                    </div>
+                    <button class="buy-btn" onclick="upgradeCrew('${role}', ${cost})">${cost.toLocaleString()}</button>
+                </div>`;
+            });
         }
-        s.lastSave = now;
-    }
+        else if (type === 'implants') {
+            title.innerText = 'КИБЕР-ХИРУРГ';
+            DB.implants.forEach(imp => {
+                let owned = state.implants.includes(imp.id);
+                let btn = owned 
+                    ? `<button class="buy-btn" disabled style="background:#333">ВЖИВЛЕНО</button>`
+                    : `<button class="buy-btn" onclick="buyImplant('${imp.id}', ${imp.cost})">${imp.cost.toLocaleString()}</button>`;
 
-    function closeAfk() {
-        if(window.pendingAfk) {
-            addEnergy(window.pendingAfk);
-            tg.HapticFeedback.notificationOccurred('success');
-            window.pendingAfk = 0;
+                content.innerHTML += `
+                <div class="item-row" style="${owned ? 'opacity:0.6' : ''}">
+                    <img src="assets/implants/${imp.img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50/f7ff00/000?text=I'">
+                    <div class="item-data">
+                        <div class="item-title">${imp.name}</div>
+                        <span class="item-desc">${imp.lore}</span>
+                    </div>
+                    ${btn}
+                </div>`;
+            });
         }
-        document.getElementById('afk-overlay').style.display = 'none';
-    }
-
-    // --- TURBO SYSTEM ---
-    function checkTurbo() {
-        let btn = document.getElementById('turbo-btn');
-        let now = Date.now();
-        if(now > s.turboReady && !turboActive) {
-            btn.classList.add('ready');
-            btn.innerText = "⚡ TURBO READY";
-        } else if (turboActive) {
-            btn.classList.remove('ready');
-            btn.innerText = "🔥 ACTIVE 🔥";
-        } else {
-            let left = Math.ceil((s.turboReady - now)/1000);
-            btn.classList.remove('ready');
-            btn.innerText = `⏳ ${left}s`;
-        }
-    }
-
-    function activateTurbo() {
-        let now = Date.now();
-        if(now > s.turboReady && !turboActive) {
-            turboActive = true;
-            tg.HapticFeedback.notificationOccurred('success');
-            setTimeout(() => {
-                turboActive = false;
-                s.turboReady = Date.now() + 60000; // 1 min cooldown
-                saveGame();
-            }, 10000); // 10 sec duration
-        }
-    }
-
-    // --- UI RENDERING ---
-
-    function updateUI() {
-        document.getElementById('energy').innerText = Math.floor(s.energy).toLocaleString();
-        
-        let pas = calculatePassive();
-        if(turboActive) pas *= 2;
-        
-        document.getElementById('inc').innerText = `+${pas.toFixed(1)} / сек`;
-        
-        let rIndex = Math.min(Math.floor(s.total / 10000), RANKS.length - 1);
-        document.getElementById('rank').innerText = RANKS[rIndex];
-        
-        // Crew Level sum
-        let lvl = 1 + (s.crew['hacker']||0) + (s.crew['bot']||0);
-        document.getElementById('lvl').innerText = `УРОВЕНЬ ${lvl}`;
-    }
-
-    function createParticle(x, y, val, isCrit) {
-        const el = document.createElement('div');
-        el.className = 'float-txt';
-        el.style.color = isCrit ? '#ff004c' : (turboActive ? '#ff9100' : 'var(--cyan)');
-        el.innerText = `+${val}`;
-        el.style.left = (x - 20) + 'px';
-        el.style.top = (y - 50) + 'px';
-        if(isCrit) el.style.fontSize = '36px';
-        
-        document.body.appendChild(el);
-
-        let destX = (Math.random() - 0.5) * 100;
-        let rot = (Math.random() - 0.5) * 30;
-        
-        const anim = el.animate([
-            { transform: 'translate(0,0) scale(1)', opacity: 1 },
-            { transform: `translate(${destX}px, -150px) rotate(${rot}deg) scale(${isCrit?1.5:1})`, opacity: 0 }
-        ], { duration: 1000, easing: 'cubic-bezier(0,0,0.2,1)' });
-
-        anim.onfinish = () => el.remove();
-    }
-
-    // --- MENUS ---
-
-    function openPop(title) {
-        document.getElementById('pop-title').innerText = title;
-        const pop = document.getElementById('pop');
-        pop.style.display = 'flex';
-        // force reflow
-        void pop.offsetWidth; 
-        pop.classList.add('open');
-    }
-
-    function closePop() {
-        const pop = document.getElementById('pop');
-        pop.classList.remove('open');
-        setTimeout(() => pop.style.display = 'none', 300);
-    }
-
-    function openShop() {
-        openPop("АНГАР ФЛОТА");
-        const body = document.getElementById('pop-body');
-        
-        const items = [
-            { id: 's1', name: 'Дрон-разведчик', cost: 150, inc: 1.5, img: 'https://cdn-icons-png.flaticon.com/512/3104/3104332.png' },
-            { id: 's2', name: 'Истребитель', cost: 1200, inc: 8, img: 'https://cdn-icons-png.flaticon.com/512/10603/10603099.png' },
-            { id: 's3', name: 'Фрегат', cost: 5000, inc: 25, img: 'https://cdn-icons-png.flaticon.com/512/5267/5267554.png' }
-        ];
-
-        renderList(body, items, s.ships, buyShip);
-    }
-
-    function renderList(container, items, stateObj, callback) {
-        container.innerHTML = items.map(i => {
-            let count = stateObj[i.id] || 0;
-            let price = Math.floor(i.cost * Math.pow(1.25, count));
-            let canBuy = s.energy >= price;
-            
-            return `
-            <div class="list-item">
-                <img src="${i.img}">
-                <div class="list-info">
-                    <h4>${i.name} <span style="color:#666; font-size:11px;">x${count}</span></h4>
-                    <p style="color:var(--cyan)">+${i.inc}/сек</p>
+        else if (type === 'profile') {
+            title.innerText = 'ДАННЫЕ';
+            content.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <h3 style="color:var(--cyan)">COSMOPUNK ID: #8821</h3>
+                    <p style="color:#aaa; margin-top:10px;">Статус: ${document.getElementById('rank-name').innerText}</p>
+                    <hr style="border:0; border-bottom:1px solid #333; margin:20px 0;">
+                    <button class="buy-btn" style="background:#ff2a2a; width:100%" onclick="resetGame()">СТЕРЕТЬ ЛИЧНОСТЬ (СБРОС)</button>
                 </div>
-                <button class="action-btn" ${canBuy?'':'disabled'} 
-                    onclick="${callback.name}('${i.id}', ${price})">
-                    ${formatNum(price)}
-                </button>
-            </div>`;
-        }).join('');
+            `;
+        }
     }
 
-    function buyShip(id, price) {
-        if(s.energy >= price) {
-            s.energy -= price;
-            s.ships[id] = (s.ships[id] || 0) + 1;
+    function closeMenu() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    // --- ACTIONS ---
+
+    function buyShip(id, cost) {
+        if(state.energy >= cost) {
+            state.energy -= cost;
+            state.ships[id] = (state.ships[id] || 0) + 1;
             tg.HapticFeedback.selectionChanged();
-            saveGame();
-            openShop(); // Redraw
+            openMenu('ships'); // Redraw
         }
     }
 
-    function openCrew() {
-        openPop("КИБЕР-ЭКИПАЖ");
-        const body = document.getElementById('pop-body');
-
-        let hLvl = s.crew.hacker;
-        let hCost = Math.floor(1000 * Math.pow(1.6, hLvl));
-        
-        let bLvl = s.crew.bot;
-        let bCost = Math.floor(2000 * Math.pow(1.4, bLvl));
-
-        body.innerHTML = `
-            <div class="list-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
-                <div class="list-info">
-                    <h4>Лиса-Хакер <span style="color:#d300d3">LVL ${hLvl}</span></h4>
-                    <p>Клик +1, Шанс крита +5%</p>
-                </div>
-                <button class="action-btn" ${s.energy>=hCost?'':'disabled'} onclick="upCrew('hacker', ${hCost})">${formatNum(hCost)}</button>
-            </div>
-            <div class="list-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/1785/1785908.png">
-                <div class="list-info">
-                    <h4>Авто-Бот <span style="color:#f7ff00">LVL ${bLvl}</span></h4>
-                    <p>Добыча +25/сек</p>
-                </div>
-                <button class="action-btn" ${s.energy>=bCost?'':'disabled'} onclick="upCrew('bot', ${bCost})">${formatNum(bCost)}</button>
-            </div>
-        `;
-    }
-
-    function upCrew(role, price) {
-        if(s.energy >= price) {
-            s.energy -= price;
-            s.crew[role]++;
+    function upgradeCrew(role, cost) {
+        if(state.energy >= cost) {
+            state.energy -= cost;
+            state.crew[role]++;
             tg.HapticFeedback.notificationOccurred('success');
-            saveGame();
-            openCrew();
+            openMenu('crew');
         }
     }
 
-    function openQuests() {
-        openPop("КОНТРАКТЫ");
-        const body = document.getElementById('pop-body');
-
-        const qData = [
-            { id: 'q1', txt: 'Собрать 2,000 PUNK', reward: 1000, done: s.total >= 2000 },
-            { id: 'q2', txt: 'Нанять 5 Дронов', reward: 2500, done: (s.ships['s1']||0) >= 5 },
-            { id: 'q3', txt: 'Активировать Turbo', reward: 5000, done: s.turboReady > 0 }, // Simple check if turbo ever used
-            { id: 'q4', txt: 'Достичь 5 уровня', reward: 10000, done: (s.crew['bot']+s.crew['hacker']) >= 4 }
-        ];
-
-        body.innerHTML = qData.map(q => {
-            let isClaimed = s.quests[q.id];
-            let btn = '';
-            
-            if(isClaimed) btn = `<button class="action-btn" disabled style="background:#333">✓</button>`;
-            else if(q.done) btn = `<button class="action-btn claim" onclick="claimQ('${q.id}', ${q.reward})">ЗАБРАТЬ</button>`;
-            else btn = `<button class="action-btn" disabled>🔒</button>`;
-
-            return `
-            <div class="list-item">
-                <div class="list-info">
-                    <h4>${q.txt}</h4>
-                    <p style="color:var(--yellow)">+${formatNum(q.reward)}</p>
-                </div>
-                ${btn}
-            </div>`;
-        }).join('');
-    }
-
-    function claimQ(id, reward) {
-        s.quests[id] = true;
-        addEnergy(reward);
-        tg.HapticFeedback.notificationOccurred('success');
-        createParticle(window.innerWidth/2, window.innerHeight/2, reward, true);
-        saveGame();
-        openQuests();
-    }
-
-    function openSettings() {
-        openPop("МЕНЮ СИНДИКАТА");
-        const body = document.getElementById('pop-body');
-
-        body.innerHTML = `
-            <div style="padding:10px;">
-                <h4 style="margin-bottom:10px;">Секретный код</h4>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="promo-in" class="code-input" placeholder="Введите код...">
-                    <button class="action-btn" onclick="checkCode()">OK</button>
-                </div>
-            </div>
-            <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-            <div class="list-item" onclick="toggleSet('sound')">
-                <div class="list-info"><h4>Звук</h4></div>
-                <div style="color:var(--cyan)">${s.settings.sound ? 'ВКЛ' : 'ВЫКЛ'}</div>
-            </div>
-            <div class="list-item" onclick="toggleSet('vibro')">
-                <div class="list-info"><h4>Вибрация</h4></div>
-                <div style="color:var(--cyan)">${s.settings.vibro ? 'ВКЛ' : 'ВЫКЛ'}</div>
-            </div>
-            <div class="list-item" style="border-color:rgba(255,50,50,0.3)" onclick="resetGame()">
-                <div class="list-info"><h4 style="color:#ff5555">WIPE DATA</h4><p>Сброс прогресса</p></div>
-            </div>
-        `;
-    }
-
-    function checkCode() {
-        const val = document.getElementById('promo-in').value.toUpperCase().trim();
-        const codes = {
-            'START': 5000,
-            'COSMO': 10000,
-            'ADMIN': 50000
-        };
-
-        if(codes[val] && !s.codes.includes(val)) {
-            s.codes.push(val);
-            addEnergy(codes[val]);
-            alert(`Код принят! +${codes[val]} PUNK`);
-            saveGame();
-            openSettings();
-        } else if (s.codes.includes(val)) {
-            alert('Код уже использован!');
-        } else {
-            alert('Неверный код');
+    function buyImplant(id, cost) {
+        if(state.energy >= cost && !state.implants.includes(id)) {
+            state.energy -= cost;
+            state.implants.push(id);
+            tg.HapticFeedback.notificationOccurred('success');
+            openMenu('implants');
         }
     }
 
-    // --- UTILS ---
-    function toggleSet(k) { s.settings[k] = !s.settings[k]; saveGame(); openSettings(); }
-    
-    function saveGame() {
-        s.lastSave = Date.now();
-        localStorage.setItem(SAVE_KEY, JSON.stringify(s));
-    }
-    
     function resetGame() {
-        if(confirm("Удалить весь прогресс?")) {
-            localStorage.removeItem(SAVE_KEY);
+        if(confirm('ВНИМАНИЕ: Это полностью удалит ваш прогресс. Продолжить?')) {
+            localStorage.removeItem(CONFIG.saveKey);
             location.reload();
         }
     }
-    
-    function checkQuests() { /* Checked in openQuests mostly, can add realtime alerts here */ }
 
-    function formatNum(num) {
-        if(num >= 1000000) return (num/1000000).toFixed(1) + 'M';
-        if(num >= 1000) return (num/1000).toFixed(1) + 'k';
-        return num;
-    }
-
-    // Input bindings
-    const tapZone = document.getElementById('tap-area');
-    tapZone.addEventListener('touchstart', tap, {passive: false});
-    tapZone.addEventListener('mousedown', tap);
-
-    // Initial
-    updateUI();
+    // 3D Tilt Logic
+    document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth / 2 - e.clientX) / 30;
+        const y = (window.innerHeight / 2 - e.clientY) / 30;
+        document.querySelector('.reactor-container').style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+    });
 
 </script>
 </body>
