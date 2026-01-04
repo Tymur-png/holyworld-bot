@@ -26,15 +26,23 @@
             height: 100vh;
             overflow: hidden;
             user-select: none;
+            position: relative;
         }
 
-        /* MATRIX BG */
+        /* MATRIX BG - Исправлен z-index и клики */
         #matrix-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 0; opacity: 0.15; pointer-events: none;
         }
 
-        #app { display: flex; flex-direction: column; height: 100vh; padding: 12px; position: relative; z-index: 2; }
+        #app { 
+            display: flex; flex-direction: column; height: 100vh; padding: 12px; 
+            position: relative; z-index: 10; /* Интерфейс выше фона */
+            pointer-events: none; /* Сам контейнер прозрачен для кликов */
+        }
+        
+        /* Разрешаем клики только по интерактивным элементам */
+        .hud, .reactor-wrap, .nav-btn, #hack-btn, .modal-card, .event-btn { pointer-events: auto; }
 
         /* HUD */
         .hud { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
@@ -49,13 +57,32 @@
         .rank-box { text-align: right; border-color: var(--accent); }
         #rank-val { color: var(--accent); font-weight: bold; font-size: 12px; text-transform: uppercase; }
 
+        /* COMBO BAR */
+        .combo-container {
+            width: 100%; height: 6px; background: #222; margin-bottom: 15px;
+            border-radius: 3px; overflow: hidden; position: relative;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .combo-fill {
+            height: 100%; background: linear-gradient(90deg, var(--yellow), var(--red));
+            width: 0%; transition: width 0.1s linear;
+        }
+        .combo-text {
+            position: absolute; width: 100%; text-align: center; top: -15px;
+            font-size: 10px; font-weight: bold; color: var(--yellow); opacity: 0;
+            transition: opacity 0.2s;
+        }
+
         /* REACTOR */
-        #stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; perspective: 1000px; }
+        #stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; pointer-events: none; }
         
         .reactor-wrap { 
             position: relative; width: 280px; height: 280px; 
             display: flex; justify-content: center; align-items: center; 
-            transition: transform 0.1s; transform-style: preserve-3d;
+            transition: transform 0.1s; 
+            z-index: 20;
+            cursor: pointer;
         }
         .reactor-wrap:active { transform: scale(0.95); }
         
@@ -64,6 +91,18 @@
         #reactor-img { 
             width: 100%; height: 100%; object-fit: contain; z-index: 5;
             filter: drop-shadow(0 0 30px rgba(211,0,211,0.5));
+            pointer-events: none; /* Клик ловит родитель */
+        }
+
+        /* RAID EVENT BUTTON */
+        #raid-btn {
+            position: absolute; top: 10%; right: 10px;
+            width: 60px; height: 60px; background: var(--red);
+            border-radius: 50%; border: 3px solid #fff;
+            display: none; align-items: center; justify-content: center;
+            font-size: 24px; animation: pulse-btn 0.5s infinite;
+            z-index: 50; cursor: pointer;
+            box-shadow: 0 0 20px var(--red);
         }
 
         /* HACK BUTTON */
@@ -74,18 +113,19 @@
             color: #fff; font-weight: bold; font-size: 14px; letter-spacing: 1px;
             box-shadow: 0 0 20px rgba(255, 0, 76, 0.4);
             opacity: 0.5; filter: grayscale(1); pointer-events: none; transition: 0.3s;
+            position: relative; z-index: 25;
         }
         #hack-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: pulse-btn 1.5s infinite; }
 
         /* NAV */
-        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 10px; }
+        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 10px; position: relative; z-index: 30; }
         .nav-btn {
-            background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 12px;
+            background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 12px;
             height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 10px; color: #888; transition: 0.2s; backdrop-filter: blur(4px);
         }
         .nav-btn span { font-size: 20px; margin-bottom: 4px; }
-        .nav-btn:active { background: var(--cyan); color: #000; border-color: #fff; }
+        .nav-btn:active { background: var(--cyan); color: #000; border-color: #fff; transform: translateY(2px); }
 
         /* MODALS */
         .modal-overlay {
@@ -147,24 +187,14 @@
             border: none; font-size: 18px; font-weight: 900; border-radius: 12px;
         }
 
-        /* DAILY REWARD */
-        .daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .daily-day {
-            background: #111; border: 1px solid #333; padding: 12px 5px;
-            border-radius: 8px; text-align: center; opacity: 0.5; font-size: 11px;
-        }
-        .daily-day.active { border-color: var(--yellow); opacity: 1; background: rgba(247, 255, 0, 0.1); transform: scale(1.05); }
-        .daily-day.claimed { border-color: var(--cyan); opacity: 0.3; background: rgba(0, 247, 255, 0.1); }
-        .reward-val { font-size: 13px; font-weight: bold; color: var(--yellow); margin-top: 4px; }
-
         /* FX */
         .float-txt { 
             position: absolute; font-weight: 900; font-size: 26px; 
-            pointer-events: none; z-index: 50; text-shadow: 0 2px 0 #000;
+            pointer-events: none; z-index: 90; text-shadow: 0 2px 0 #000;
         }
         
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(3px, 0, 0); } }
-        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7);} 70% {box-shadow: 0 0 0 15px rgba(255, 0, 76, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0);} }
+        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7); transform:scale(1);} 50% {transform:scale(1.05);} 100% {box-shadow: 0 0 0 15px rgba(255, 0, 76, 0); transform:scale(1);} }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     </style>
@@ -185,7 +215,14 @@
         </div>
     </div>
 
+    <div class="combo-container">
+        <div class="combo-text" id="combo-txt">COMBO x1.0</div>
+        <div class="combo-fill" id="combo-bar"></div>
+    </div>
+
     <div id="stage">
+        <div id="raid-btn" onclick="hitRaidBoss()">👾</div>
+
         <div class="reactor-wrap" id="tap-zone">
             <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
@@ -196,7 +233,7 @@
         <div class="nav-btn" onclick="openMenu('ships')"><span>🚀</span>Флот</div>
         <div class="nav-btn" onclick="openMenu('crew')"><span>👥</span>Банда</div>
         <div class="nav-btn" onclick="openMenu('implants')"><span>🧠</span>Чипы</div>
-        <div class="nav-btn" onclick="openMenu('daily')"><span>🎁</span>Бонус</div>
+        <div class="nav-btn" onclick="openMenu('rebirth')"><span>🧬</span>Сброс</div>
     </div>
 </div>
 
@@ -204,7 +241,7 @@
     <div class="modal-card">
         <div class="modal-header" id="modal-title">TITLE</div>
         <div class="modal-body" id="modal-content"></div>
-        <button style="padding:15px; background:#111; color:#fff; border:none; border-top:1px solid #333;" onclick="closeModal()">ЗАКРЫТЬ ИНТЕРФЕЙС</button>
+        <button style="padding:15px; background:#111; color:#fff; border:none; border-top:1px solid #333; font-weight:bold;" onclick="closeModal()">ЗАКРЫТЬ</button>
     </div>
 </div>
 
@@ -213,7 +250,7 @@
         <div class="modal-header" style="color:var(--red)">ПРОРЫВ FIREWALL</div>
         <div class="modal-body">
             <div id="hack-game-ui">
-                <p style="color:#ccc; font-size:12px; margin-bottom:10px;">Останови курсор в желтой зоне для инъекции кода.</p>
+                <p style="color:#ccc; font-size:12px; margin-bottom:10px;">Останови курсор в желтой зоне!</p>
                 <div class="hack-track">
                     <div class="hack-target" id="hack-target-zone"></div>
                     <div class="hack-cursor" id="hack-cursor"></div>
@@ -242,10 +279,10 @@
             if(type === 'tap') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                osc.start(now); osc.stop(now + 0.15);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
             } else if (type === 'buy') {
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(400, now);
@@ -253,9 +290,10 @@
                 gain.gain.setValueAtTime(0.05, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.2);
                 osc.start(now); osc.stop(now + 0.2);
-            } else if (type === 'error') {
+            } else if (type === 'raid') {
                 osc.type = 'sawtooth';
-                osc.frequency.value = 100;
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.3);
                 osc.start(now); osc.stop(now + 0.3);
@@ -263,12 +301,11 @@
         }
     };
 
-    // --- GAME CONFIG & DATA ---
+    // --- GAME DATA ---
     const tg = window.Telegram.WebApp;
     tg.expand();
-    const SAVE_KEY = 'cp_wars_final';
+    const SAVE_KEY = 'cp_wars_redux';
 
-    // ПОЛНАЯ БАЗА ДАННЫХ С КАРТИНКАМИ
     const DB = {
         ships: [
             { id: 's1', name: 'Дрон-разведчик', inc: 1, cost: 150, img: 'assets/ships/ship1.png' },
@@ -293,27 +330,33 @@
             { id: 'i3', name: 'Титан-Рука', desc: '+50 к силе клика', cost: 15000, clickAdd: 50, img: 'assets/implants/neuro.png' },
             { id: 'i4', name: 'Глитч-Модуль', desc: 'Авто-доход x1.2', cost: 50000, globalMult: 0.2, img: 'assets/implants/glitch.png' },
             { id: 'i5', name: 'Квантовое Ядро', desc: 'Авто-доход x2', cost: 1000000, globalMult: 1.0, img: 'assets/implants/chip.png' }
-        ],
-        daily: [500, 1500, 3000, 6000, 15000, 40000, 100000]
+        ]
     };
 
     let state = {
         energy: 0,
         total: 0,
+        prestigeTokens: 0, // Нано-боты
         ships: {},
         crew: {},
         implants: [],
         lastHack: 0,
-        daily: { day: 0, lastClaim: 0 },
         lastSave: Date.now()
     };
+
+    // COMBO SYSTEM VARS
+    let comboCount = 0;
+    let comboTimer = null;
+    let raidActive = false;
+    let raidClicks = 0;
 
     // --- INIT ---
     let saved = localStorage.getItem(SAVE_KEY);
     if(saved) {
         let parsed = JSON.parse(saved);
         state = { ...state, ...parsed };
-        if(!state.implants) state.implants = []; // migration
+        if(!state.implants) state.implants = [];
+        if(!state.prestigeTokens) state.prestigeTokens = 0;
     }
 
     // Offline Earnings
@@ -323,7 +366,7 @@
         if(earn > 0) {
             state.energy += earn;
             state.total += earn;
-            setTimeout(() => alert(`С возвращением, Босс!\nСиндикат заработал: ${Math.floor(earn).toLocaleString()} PUNK`), 500);
+            setTimeout(() => alert(`Офлайн доход: ${Math.floor(earn).toLocaleString()} PUNK`), 500);
         }
     }
 
@@ -335,6 +378,11 @@
         checkHackStatus();
     }, 100);
     
+    // Random Raid Event (Every 60-120s)
+    setInterval(() => {
+        if(Math.random() > 0.8 && !raidActive) startRaidEvent();
+    }, 10000);
+
     setInterval(saveGame, 5000);
     initMatrix();
 
@@ -346,12 +394,14 @@
         });
         if(state.crew['c2']) income += state.crew['c2'] * 30;
         
-        // Multipliers from Implants
         let mult = 1;
         state.implants.forEach(impId => {
             let item = DB.implants.find(i => i.id === impId);
             if(item && item.globalMult) mult += item.globalMult;
         });
+
+        // Prestige Bonus (+10% per token)
+        mult += (state.prestigeTokens * 0.1);
         
         return income * mult;
     }
@@ -363,27 +413,42 @@
 
     function tap(e) {
         AudioFX.init();
-        e.preventDefault();
-        let touches = e.changedTouches || [e];
+        if(e) e.preventDefault(); // Stop zoom
+        
+        let touches = e ? (e.changedTouches || [e]) : [{clientX: window.innerWidth/2, clientY: window.innerHeight/2}];
 
-        // 1. Calculate Base Power
-        // Base = 1 + Captain + Implants(flat)
+        // COMBO LOGIC
+        comboCount++;
+        clearTimeout(comboTimer);
+        comboTimer = setTimeout(() => {
+            comboCount = 0;
+            updateComboUI();
+        }, 1500); // 1.5 sec to keep combo
+        updateComboUI();
+
+        // Calc Power
         let flatBonus = 0;
-        let critMult = 10; // Base crit multiplier
+        let critMult = 10;
 
         if(state.implants) {
             state.implants.forEach(impId => {
                 let item = DB.implants.find(i => i.id === impId);
                 if(item && item.clickAdd) flatBonus += item.clickAdd;
-                if(item && item.critPower) critMult += (10 * item.critPower); // Add to multiplier
+                if(item && item.critPower) critMult += (10 * item.critPower);
             });
         }
 
         let captainBonus = (state.crew['c3'] || 0) * 2; 
-        let power = 1 + captainBonus + flatBonus;
+        
+        // Combo Multiplier (max x5)
+        let comboMult = 1 + Math.min(comboCount / 20, 4);
+        
+        // Prestige Multiplier
+        let prestigeMult = 1 + (state.prestigeTokens * 0.1);
+
+        let power = (1 + captainBonus + flatBonus) * comboMult * prestigeMult;
 
         for(let t of touches) {
-            // 2. Critical Hit
             let critChance = 0.05 + (state.crew['c1'] || 0) * 0.05;
             let isCrit = Math.random() < critChance;
             
@@ -405,15 +470,63 @@
         r.classList.add('shake');
     }
 
+    function updateComboUI() {
+        let bar = document.getElementById('combo-bar');
+        let txt = document.getElementById('combo-txt');
+        let perc = Math.min(comboCount * 2, 100);
+        bar.style.width = perc + '%';
+        
+        let mult = 1 + Math.min(comboCount / 20, 4);
+        txt.innerText = `COMBO x${mult.toFixed(1)}`;
+        txt.style.opacity = comboCount > 1 ? 1 : 0;
+    }
+
+    // --- RAID EVENT ---
+    function startRaidEvent() {
+        raidActive = true;
+        raidClicks = 0;
+        let btn = document.getElementById('raid-btn');
+        btn.style.display = 'flex';
+        AudioFX.play('raid'); // Alert sound
+        tg.HapticFeedback.notificationOccurred('error');
+
+        // Disappear after 5 sec
+        setTimeout(() => {
+            if(raidActive) {
+                raidActive = false;
+                btn.style.display = 'none';
+            }
+        }, 5000);
+    }
+
+    function hitRaidBoss() {
+        if(!raidActive) return;
+        raidClicks++;
+        tg.HapticFeedback.impactOccurred('heavy');
+        
+        // Scale effect
+        let btn = document.getElementById('raid-btn');
+        btn.style.transform = 'scale(0.9)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 50);
+
+        if(raidClicks >= 10) {
+            raidActive = false;
+            btn.style.display = 'none';
+            let reward = calcIncome() * 120; // 2 mins of income
+            if(reward < 500) reward = 500;
+            addEnergy(reward);
+            alert(`УГРОЗА УСТРАНЕНА!\nНаграда: ${Math.floor(reward)} PUNK`);
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }
+
     // --- HACKING ---
-    let hackAnim;
-    let hackDir = 1, hackPos = 0;
+    let hackAnim, hackDir = 1, hackPos = 0;
     
     function checkHackStatus() {
         let now = Date.now();
         let btn = document.getElementById('hack-btn');
         let diff = now - state.lastHack;
-        // 5 min cooldown
         if(diff > 300000) {
             btn.classList.add('ready');
             btn.innerText = "☠ ВЗЛОМ ДОСТУПЕН";
@@ -457,7 +570,7 @@
         } else {
             tg.HapticFeedback.notificationOccurred('error');
             AudioFX.play('error');
-            state.lastHack = Date.now() - 240000; // 1 min penalty remaining
+            state.lastHack = Date.now() - 240000; 
         }
         document.getElementById('hack-modal').style.display = 'none';
         checkHackStatus();
@@ -515,9 +628,9 @@
                 });
             });
         }
-        else if(type === 'daily') {
-            title.innerText = "ЕЖЕДНЕВНАЯ ПОСТАВКА";
-            checkDailyLogic(content);
+        else if(type === 'rebirth') {
+            title.innerText = "СИСТЕМА ПЕРЕРОЖДЕНИЯ";
+            renderRebirth(content);
         }
     }
 
@@ -530,56 +643,49 @@
                 <div class="item-name">${name}</div>
                 <div class="item-desc">${desc}</div>
             </div>
-            <button class="btn-buy ${isOwned ? 'btn-owned' : ''}">${isOwned ? 'V' : price.toLocaleString()}</button>
+            <button class="btn-buy ${isOwned ? 'btn-owned' : ''}">${isOwned ? 'V' : formatNum(price)}</button>
         `;
         if(!isOwned) div.querySelector('button').onclick = onClick;
         container.appendChild(div);
     }
 
-    function checkDailyLogic(container) {
-        let now = new Date();
-        let last = new Date(state.daily.lastClaim);
-        let isSameDay = now.toDateString() === last.toDateString();
-        
-        if((now - last) > 86400000 * 2) state.daily.day = 0; // Reset streak
+    function renderRebirth(container) {
+        let p = document.createElement('p');
+        p.style.fontSize = '12px'; p.style.marginBottom = '15px'; p.style.textAlign = 'center';
+        p.innerHTML = `Сброс всего прогресса даст <b style="color:var(--accent)">Нано-Ботов</b>.<br>1 Бот = +10% к доходу навсегда.<br>Текущий бонус: <b style="color:var(--cyan)">+${Math.floor(state.prestigeTokens * 10)}%</b>`;
+        container.appendChild(p);
 
-        let grid = document.createElement('div');
-        grid.className = 'daily-grid';
-
-        DB.daily.forEach((reward, idx) => {
-            let el = document.createElement('div');
-            el.className = 'daily-day';
-            el.innerHTML = `<div>ДЕНЬ ${idx+1}</div><div class="reward-val">${reward/1000}K</div>`;
-            
-            if(idx < state.daily.day) el.classList.add('claimed');
-            if(idx === state.daily.day) el.classList.add('active');
-            
-            if(idx === state.daily.day && !isSameDay) {
-                el.onclick = () => {
-                    state.daily.lastClaim = Date.now();
-                    state.daily.day++;
-                    addEnergy(reward);
-                    AudioFX.play('buy');
-                    tg.HapticFeedback.notificationOccurred('success');
-                    openMenu('daily');
-                };
-            }
-            grid.appendChild(el);
-        });
-        container.appendChild(grid);
-        
-        let msg = document.createElement('p');
-        msg.style.textAlign = 'center'; msg.style.marginTop = '15px'; msg.style.color = '#777'; font-size: '12px';
-        msg.innerText = isSameDay ? "Приходи завтра за новой поставкой." : "Забирай активную награду!";
-        container.appendChild(msg);
+        let potential = Math.floor(state.total / 1000000);
+        let btn = document.createElement('button');
+        btn.className = 'hack-btn-action';
+        btn.innerText = `СБРОСИТЬ ЗА ${potential} БОТОВ`;
+        if(potential < 1) {
+            btn.style.opacity = 0.5;
+            btn.innerText = "НУЖНО 1М ВСЕГО PUNK";
+        } else {
+            btn.onclick = () => {
+                if(confirm("Точно сбросить весь прогресс ради бонуса?")) {
+                    state.prestigeTokens += potential;
+                    state.energy = 0;
+                    state.total = 0;
+                    state.ships = {};
+                    state.crew = {};
+                    state.implants = [];
+                    saveGame();
+                    location.reload();
+                }
+            };
+        }
+        container.appendChild(btn);
     }
 
     function closeModal() { document.getElementById('main-modal').style.display = 'none'; }
+    function formatNum(n) { return n > 1000000 ? (n/1000000).toFixed(1)+'M' : (n > 1000 ? (n/1000).toFixed(1)+'K' : n); }
 
-    // --- UTILS ---
+    // --- UTILS & FX ---
     function updateHUD() {
-        document.getElementById('energy-val').innerText = Math.floor(state.energy).toLocaleString();
-        document.getElementById('inc-val').innerText = `+${Math.floor(calcIncome())} / сек`;
+        document.getElementById('energy-val').innerText = formatNum(Math.floor(state.energy));
+        document.getElementById('inc-val').innerText = `+${formatNum(Math.floor(calcIncome()))} / сек`;
         
         let ranks = ["Отброс", "Сборщик", "Хакер", "Кибер-Панк", "Босс Улиц", "Глава Синдиката", "Корпорат", "Властелин Сети"];
         let rIdx = Math.min(Math.floor(Math.log10(state.total + 1)), ranks.length-1);
@@ -597,7 +703,7 @@
         document.body.appendChild(el);
         setTimeout(() => {
             el.style.transition = 'all 0.6s';
-            el.style.transform = 'translateY(-100px)';
+            el.style.transform = 'translateY(-100px) scale(1.2)';
             el.style.opacity = 0;
         }, 50);
         setTimeout(() => el.remove(), 600);
@@ -632,6 +738,7 @@
     }
 
     // EVENTS
+    // Исправлено: событие вешается на клик, чтобы работать везде
     const zone = document.getElementById('tap-zone');
     zone.addEventListener('touchstart', tap, {passive:false});
     zone.addEventListener('mousedown', tap);
