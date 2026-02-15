@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CosmoPunk: Syndicate Wars</title>
+    <title>CosmoPunk: Syndicate Wars v2.0</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -117,7 +117,7 @@
         #hack-btn.ready { opacity: 1; filter: grayscale(0); pointer-events: auto; animation: pulse-btn 1.5s infinite; }
 
         /* NAV */
-        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 10px; position: relative; z-index: 30; pointer-events: auto; }
+        .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 10px; position: relative; z-index: 30; pointer-events: auto; max-height: 200px; overflow-y: auto; }
         .nav-btn {
             background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 12px;
             height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -189,9 +189,38 @@
             position: absolute; font-weight: 900; font-size: 26px; 
             pointer-events: none; z-index: 90; text-shadow: 0 2px 0 #000;
         }
+
+        /* DAILY REWARD */
+        .daily-reward-btn {
+            position: fixed; top: 50px; right: 12px;
+            background: linear-gradient(135deg, var(--yellow), var(--accent));
+            border: 2px solid #fff; border-radius: 50%;
+            width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; z-index: 100;
+            cursor: pointer; box-shadow: 0 0 20px rgba(247, 255, 0, 0.5);
+            animation: pulse-daily 2s infinite;
+        }
+        .daily-reward-btn.claimed { opacity: 0.5; animation: none; }
+
+        /* EVENT NOTIFICATION */
+        .event-notification {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--glass); border: 2px solid var(--yellow);
+            padding: 20px; border-radius: 15px; z-index: 200;
+            text-align: center; max-width: 300px; display: none;
+            box-shadow: 0 0 30px rgba(247, 255, 0, 0.5);
+        }
+
+        /* ACHIEVEMENT BADGE */
+        .achievement-badge {
+            display: inline-block; background: linear-gradient(135deg, var(--yellow), var(--accent));
+            padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;
+            margin-left: 8px; color: #000;
+        }
         
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(3px, 0, 0); } }
         @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7); transform:scale(1);} 50% {transform:scale(1.05);} 100% {box-shadow: 0 0 0 15px rgba(255, 0, 76, 0); transform:scale(1);} }
+        @keyframes pulse-daily { 0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(247, 255, 0, 0.5); } 50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(247, 255, 0, 0.8); } }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     </style>
@@ -214,24 +243,52 @@
         </div>
     </div>
 
+    <div class="daily-reward-btn interactive" id="daily-btn" onclick="claimDailyReward()" title="Daily Reward">📅</div>
+    
+    <div class="event-notification interactive" id="event-notification">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--yellow);">⚡ EVENT!</div>
+        <div id="event-text" style="font-size: 14px; margin-bottom: 15px;"></div>
+        <button class="hack-btn-action" onclick="document.getElementById('event-notification').style.display = 'none'" style="padding: 10px;">OK</button>
+    </div>
+
     <div class="combo-container">
         <div class="combo-text" id="combo-txt">COMBO x1.0</div>
         <div class="combo-fill" id="combo-bar"></div>
     </div>
 
     <div id="stage">
+        <div id="enemy-card" style="margin-bottom: 15px; padding: 15px; background: rgba(255,0,0,0.1); border: 2px solid #ff2a2a; border-radius: 12px; display: none;">
+            <div id="enemy-name" style="color: var(--red); font-weight: bold; margin-bottom: 5px;"></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1; background: #111; border-radius: 4px; overflow: hidden;">
+                    <div id="enemy-hp-bar" style="height: 20px; background: linear-gradient(90deg, #ff2a2a, #ff9900); width: 100%;"></div>
+                </div>
+                <div id="enemy-hp-text" style="color: var(--cyan); font-size: 12px;"></div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="hack-btn-action" onclick="attackEnemy()" style="flex: 1; padding: 8px; font-size: 14px;">⚔️ ATTACK</button>
+                <button class="hack-btn-action" onclick="runFromEnemy()" style="flex: 1; padding: 8px; font-size: 14px; background: #666;">🏃 FLEE</button>
+            </div>
+        </div>
+
         <div id="raid-btn" class="interactive" onclick="hitRaidBoss()">👾</div>
         <div class="reactor-wrap interactive" id="tap-zone">
             <img src="assets/reactor/reactor.gif" id="reactor-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9309/9309584.png'">
         </div>
         <button id="hack-btn" class="interactive" onclick="startHackGame()" data-key="btn_hack">☠ HACK SYSTEM</button>
+        <button id="explore-btn" class="interactive" style="margin-top: 10px; padding: 12px 24px; background: var(--yellow); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none;" onclick="startExplore()">🗺️ EXPLORE</button>
     </div>
 
     <div class="nav interactive">
         <div class="nav-btn" onclick="openMenu('ships')"><span>🚀</span><div data-key="menu_fleet">Fleet</div></div>
         <div class="nav-btn" onclick="openMenu('crew')"><span>👥</span><div data-key="menu_crew">Crew</div></div>
         <div class="nav-btn" onclick="openMenu('implants')"><span>🧠</span><div data-key="menu_imp">Chips</div></div>
-        <div class="nav-btn" onclick="openMenu('rebirth')"><span>🧬</span><div data-key="menu_reset">Reset</div></div>
+        <div class="nav-btn" onclick="openMenu('quests')"><span>📜</span><div>Quests</div></div>
+        <div class="nav-btn" onclick="openMenu('achievements')"><span>🏆</span><div>Achievements</div></div>
+        <div class="nav-btn" onclick="openMenu('daily')"><span>📅</span><div>Daily</div></div>
+        <div class="nav-btn" onclick="openMenu('upgrades')"><span>⚡</span><div>Upgrades</div></div>
+        <div class="nav-btn" onclick="openMenu('events')"><span>⚡</span><div>Events</div></div>
+        <div class="nav-btn" onclick="openMenu('prestige')"><span>🔄</span><div>Prestige</div></div>
     </div>
 </div>
 
@@ -255,6 +312,16 @@
                 </div>
                 <button class="hack-btn-action" onmousedown="stopHack()" ontouchstart="stopHack()" data-key="btn_breach">BREACH</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="loot-modal">
+    <div class="modal-card interactive" style="height: auto; border-color: var(--yellow);">
+        <div class="modal-header" style="color: var(--yellow)">🎁 LOOT GAINED</div>
+        <div class="modal-body" id="loot-content" style="text-align: center; padding: 30px;">
+            <div id="loot-items"></div>
+            <button class="hack-btn-action" onclick="document.getElementById('loot-modal').style.display = 'none'" style="margin-top: 20px;">CONFIRM</button>
         </div>
     </div>
 </div>
@@ -445,12 +512,93 @@
         }
     };
 
-    // --- GAME DATA ---
+    // --- GAME DATA WITH NEW SYSTEMS ---
     const tg = window.Telegram.WebApp;
     tg.expand();
-    const SAVE_KEY = 'cp_wars_multi';
+    const SAVE_KEY = 'cp_wars_v2';
 
-    // DB only holds logic stats now, text is in DB_TEXT
+    // ENEMIES SYSTEM - EXPANDED
+    const ENEMIES = {
+        cyber_drone: { name: '🤖 Cyber Drone', hp: 50, reward: 100, loot: ['chip', 'module'], rarity: 'common' },
+        street_gang: { name: '🔴 Street Gang', hp: 150, reward: 300, loot: ['module', 'data'], rarity: 'common' },
+        corporate_agent: { name: '💼 Corporate Agent', hp: 300, reward: 800, loot: ['data', 'blueprint'], rarity: 'rare' },
+        ai_overlord: { name: '⚡ AI Overlord', hp: 800, reward: 2000, loot: ['blueprint', 'rare_chip'], rarity: 'epic' },
+        void_entity: { name: '👹 Void Entity', hp: 2000, reward: 5000, loot: ['rare_chip', 'ancient_tech'], rarity: 'legendary' },
+        data_virus: { name: '🦠 Data Virus', hp: 100, reward: 200, loot: ['chip', 'data'], rarity: 'common' },
+        security_bot: { name: '🛡️ Security Bot', hp: 250, reward: 600, loot: ['module', 'blueprint'], rarity: 'common' },
+        quantum_ghost: { name: '👻 Quantum Ghost', hp: 500, reward: 1500, loot: ['rare_chip', 'quantum_core'], rarity: 'rare' },
+        neural_parasite: { name: '🧬 Neural Parasite', hp: 1200, reward: 3500, loot: ['ancient_tech', 'neural_link'], rarity: 'epic' },
+        cosmic_tyrant: { name: '👑 Cosmic Tyrant', hp: 5000, reward: 15000, loot: ['cosmic_fragment', 'tyrant_crown'], rarity: 'legendary' }
+    };
+
+    const LOCATIONS = {
+        streets: { name: '🌆 Neon Streets', enemies: ['cyber_drone', 'street_gang', 'data_virus'], difficulty: 1 },
+        corporate: { name: '🏢 Corporate Tower', enemies: ['corporate_agent', 'street_gang', 'security_bot'], difficulty: 2 },
+        deepnet: { name: '🌐 Deep Net', enemies: ['ai_overlord', 'corporate_agent', 'quantum_ghost'], difficulty: 3 },
+        voidreasm: { name: '👹 Void Realm', enemies: ['void_entity', 'ai_overlord', 'neural_parasite'], difficulty: 4 },
+        quantum_zone: { name: '⚛️ Quantum Zone', enemies: ['quantum_ghost', 'neural_parasite', 'cosmic_tyrant'], difficulty: 5 },
+        data_stream: { name: '💾 Data Stream', enemies: ['data_virus', 'security_bot', 'quantum_ghost'], difficulty: 2 }
+    };
+
+    // ACHIEVEMENTS SYSTEM
+    const ACHIEVEMENTS = [
+        { id: 'ach1', name: 'First Click', desc: 'Perform your first click', target: 'clicks', count: 1, reward: 100, icon: '👆' },
+        { id: 'ach2', name: 'Clicker', desc: 'Perform 100 clicks', target: 'clicks', count: 100, reward: 500, icon: '🖱️' },
+        { id: 'ach3', name: 'Click Master', desc: 'Perform 1000 clicks', target: 'clicks', count: 1000, reward: 2000, icon: '⚡' },
+        { id: 'ach4', name: 'First Ship', desc: 'Buy your first ship', target: 'ships', count: 1, reward: 200, icon: '🚀' },
+        { id: 'ach5', name: 'Fleet Commander', desc: 'Own 10 ships', target: 'ships', count: 10, reward: 5000, icon: '🛸' },
+        { id: 'ach6', name: 'First Enemy', desc: 'Defeat your first enemy', target: 'enemies', count: 1, reward: 300, icon: '⚔️' },
+        { id: 'ach7', name: 'Slayer', desc: 'Defeat 50 enemies', target: 'enemies', count: 50, reward: 5000, icon: '🗡️' },
+        { id: 'ach8', name: 'Hacker', desc: 'Complete first hack', target: 'hacks', count: 1, reward: 1000, icon: '💻' },
+        { id: 'ach9', name: 'Millionaire', desc: 'Earn 1M PUNK', target: 'total', count: 1000000, reward: 10000, icon: '💰' },
+        { id: 'ach10', name: 'Billionaire', desc: 'Earn 1B PUNK', target: 'total', count: 1000000000, reward: 100000, icon: '💎' }
+    ];
+
+    // DAILY REWARDS
+    const DAILY_REWARDS = [
+        { day: 1, reward: 500, bonus: 'x1.1 income for 1 hour' },
+        { day: 2, reward: 1000, bonus: 'x1.2 income for 1 hour' },
+        { day: 3, reward: 2000, bonus: 'x1.3 income for 1 hour' },
+        { day: 4, reward: 3500, bonus: 'x1.4 income for 1 hour' },
+        { day: 5, reward: 5000, bonus: 'x1.5 income for 1 hour' },
+        { day: 6, reward: 7500, bonus: 'x1.6 income for 1 hour' },
+        { day: 7, reward: 15000, bonus: 'x2.0 income for 2 hours' }
+    ];
+
+    // UPGRADES SYSTEM
+    const UPGRADES = [
+        { id: 'up1', name: 'Auto-Clicker', desc: 'Auto-click every 2 seconds', cost: 5000, type: 'auto_click', value: 1 },
+        { id: 'up2', name: 'Energy Boost', desc: '+50% base energy per click', cost: 10000, type: 'click_mult', value: 1.5 },
+        { id: 'up3', name: 'Fleet Efficiency', desc: '+25% ship income', cost: 25000, type: 'ship_mult', value: 1.25 },
+        { id: 'up4', name: 'Critical Master', desc: '+10% crit chance', cost: 50000, type: 'crit_chance', value: 0.1 },
+        { id: 'up5', name: 'Combo Extender', desc: 'Combo lasts 2x longer', cost: 75000, type: 'combo_time', value: 2 },
+        { id: 'up6', name: 'Loot Magnet', desc: '+50% loot drop chance', cost: 100000, type: 'loot_chance', value: 0.5 },
+        { id: 'up7', name: 'Hack Cooldown', desc: '-30% hack cooldown', cost: 150000, type: 'hack_cd', value: 0.7 },
+        { id: 'up8', name: 'Prestige Boost', desc: '+20% prestige token bonus', cost: 200000, type: 'prestige_mult', value: 1.2 }
+    ];
+
+    // RANDOM EVENTS
+    const RANDOM_EVENTS = [
+        { id: 'ev1', name: 'Energy Surge', desc: 'Double income for 5 minutes!', effect: 'income_x2', duration: 300000, icon: '⚡' },
+        { id: 'ev2', name: 'Lucky Strike', desc: 'All clicks are critical for 1 minute!', effect: 'crit_100', duration: 60000, icon: '🎯' },
+        { id: 'ev3', name: 'Data Breach', desc: 'Free hack available!', effect: 'free_hack', duration: 0, icon: '💻' },
+        { id: 'ev4', name: 'Bounty Hunter', desc: 'Bonus 5000 PUNK!', effect: 'bonus_energy', value: 5000, icon: '💰' },
+        { id: 'ev5', name: 'Time Warp', desc: 'Combo never expires for 2 minutes!', effect: 'combo_infinite', duration: 120000, icon: '⏰' }
+    ];
+
+    const QUESTS = [
+        { id: 'q1', name: 'Street Sweep', desc: 'Defeat 10 Cyber Drones', target: 'cyber_drone', count: 10, reward: 500 },
+        { id: 'q2', name: 'Corporate Takedown', desc: 'Defeat 5 Corporate Agents', target: 'corporate_agent', count: 5, reward: 2000 },
+        { id: 'q3', name: 'Elite Killer', desc: 'Defeat any enemy 50 times', target: 'any', count: 50, reward: 5000 },
+        { id: 'q4', name: 'Click Master', desc: 'Perform 10000 clicks', target: 'clicks', count: 10000, reward: 3000 },
+        { id: 'q5', name: 'Fleet Builder', desc: 'Own 5 ships', target: 'ships', count: 5, reward: 2000 },
+        { id: 'q6', name: 'Hack Master', desc: 'Complete 10 hacks', target: 'hacks', count: 10, reward: 5000 },
+        { id: 'q7', name: 'Void Slayer', desc: 'Defeat 3 Void Entities', target: 'void_entity', count: 3, reward: 10000 },
+        { id: 'q8', name: 'Million Clicks', desc: 'Perform 1M clicks', target: 'clicks', count: 1000000, reward: 50000 },
+        { id: 'q9', name: 'Achievement Hunter', desc: 'Unlock 5 achievements', target: 'achievements', count: 5, reward: 3000 },
+        { id: 'q10', name: 'Daily Dedication', desc: 'Claim 7 daily rewards', target: 'daily', count: 7, reward: 10000 }
+    ];
+
     const DB = {
         ships: [
             { id: 's1', inc: 1, cost: 150, img: 'assets/ships/ship1.png' },
@@ -486,7 +634,22 @@
         crew: {},
         implants: [],
         lastHack: 0,
-        lastSave: Date.now()
+        lastSave: Date.now(),
+        totalClicks: 0,
+        currentEnemy: null,
+        enemyHP: 0,
+        location: 'streets',
+        quests: {},
+        defeatedEnemies: {},
+        inBattle: false,
+        achievements: {},
+        lastDaily: 0,
+        dailyStreak: 0,
+        upgrades: {},
+        activeEvents: {},
+        inventory: {},
+        totalEnemiesDefeated: 0,
+        totalHacks: 0
     };
 
     let comboCount = 0;
@@ -494,14 +657,26 @@
     let raidActive = false;
     let raidClicks = 0;
 
-    // --- INIT ---
+    // LOAD GAME
     let saved = localStorage.getItem(SAVE_KEY);
     if(saved) {
         let parsed = JSON.parse(saved);
         state = { ...state, ...parsed };
         if(!state.implants) state.implants = [];
         if(!state.prestigeTokens) state.prestigeTokens = 0;
+        if(!state.defeatedEnemies) state.defeatedEnemies = {};
+        if(!state.achievements) state.achievements = {};
+        if(!state.upgrades) state.upgrades = {};
+        if(!state.activeEvents) state.activeEvents = {};
+        if(!state.inventory) state.inventory = {};
+        if(!state.totalEnemiesDefeated) state.totalEnemiesDefeated = 0;
+        if(!state.totalHacks) state.totalHacks = 0;
+        if(!state.lastDaily) state.lastDaily = 0;
+        if(!state.dailyStreak) state.dailyStreak = 0;
     }
+
+    // Initialize quests
+    QUESTS.forEach(q => { if(!state.quests[q.id]) state.quests[q.id] = { progress: 0, completed: false }; });
 
     updateLanguageUI();
 
@@ -512,7 +687,7 @@
         if(earn > 0) {
             state.energy += earn;
             state.total += earn;
-            setTimeout(() => alert(`${t('alert_offline')} ${Math.floor(earn).toLocaleString()} PUNK`), 500);
+            setTimeout(() => alert(`Offline income: ${Math.floor(earn).toLocaleString()} PUNK`), 500);
         }
     }
 
@@ -521,11 +696,124 @@
         if(inc > 0) addEnergy(inc);
         updateHUD();
         checkHackStatus();
+        
+        // Auto-clicker upgrade
+        if(state.upgrades['up1']) {
+            if(Math.random() < 0.05) { // Every 2 seconds on average
+                tap(null);
+            }
+        }
     }, 100);
     
-    setInterval(() => { if(Math.random() > 0.8 && !raidActive) startRaidEvent(); }, 10000);
+    setInterval(() => { if(Math.random() > 0.8 && !raidActive && !state.inBattle) startRaidEvent(); }, 10000);
     setInterval(saveGame, 5000);
     initMatrix();
+
+    // --- BATTLE SYSTEM ---
+    function startExplore() {
+        let location = LOCATIONS[state.location];
+        let enemies = location.enemies;
+        let randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+        startBattle(randomEnemy);
+    }
+
+    function startBattle(enemyType) {
+        state.inBattle = true;
+        state.currentEnemy = enemyType;
+        let enemy = ENEMIES[enemyType];
+        state.enemyHP = enemy.hp;
+        document.getElementById('enemy-card').style.display = 'block';
+        updateEnemyDisplay();
+    }
+
+    function updateEnemyDisplay() {
+        let enemy = ENEMIES[state.currentEnemy];
+        document.getElementById('enemy-name').innerText = enemy.name + ' - ' + enemy.rarity.toUpperCase();
+        document.getElementById('enemy-hp-text').innerText = `${state.enemyHP}/${enemy.hp}`;
+        let percent = (state.enemyHP / enemy.hp) * 100;
+        document.getElementById('enemy-hp-bar').style.width = Math.max(0, percent) + '%';
+    }
+
+    function attackEnemy() {
+        if(!state.inBattle) return;
+        let enemy = ENEMIES[state.currentEnemy];
+        let damage = Math.floor(1 + Math.random() * 15 + (state.crew['c3'] || 0) * 2);
+        state.enemyHP -= damage;
+        spawnFloat(window.innerWidth / 2, 150, damage, false);
+        AudioFX.play('tap');
+        
+        if(state.enemyHP <= 0) {
+            finishBattle();
+        } else {
+            updateEnemyDisplay();
+        }
+    }
+
+    function runFromEnemy() {
+        if(Math.random() > 0.5) {
+            state.inBattle = false;
+            state.currentEnemy = null;
+            document.getElementById('enemy-card').style.display = 'none';
+            tg.HapticFeedback.notificationOccurred('warning');
+        } else {
+            alert('Failed to flee!');
+        }
+    }
+
+    function finishBattle() {
+        let enemy = ENEMIES[state.currentEnemy];
+        let reward = enemy.reward * (1 + state.prestigeTokens * 0.1);
+        addEnergy(reward);
+        
+        // Track defeated enemies for quests
+        state.defeatedEnemies[state.currentEnemy] = (state.defeatedEnemies[state.currentEnemy] || 0) + 1;
+        checkQuestProgress();
+        
+        // Generate loot
+        let lootItems = [];
+        enemy.loot.forEach(item => { if(Math.random() > 0.4) lootItems.push(item); });
+        showLoot(lootItems, reward);
+        
+        state.inBattle = false;
+        state.currentEnemy = null;
+        document.getElementById('enemy-card').style.display = 'none';
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function showLoot(items, reward) {
+        document.getElementById('loot-modal').style.display = 'flex';
+        let content = `<div style="font-size: 20px; color: var(--yellow); margin-bottom: 15px;">+${Math.floor(reward)} PUNK</div>`;
+        items.forEach(item => { content += `<div style="color: #aaa; margin: 5px;">📦 ${item}</div>`; });
+        document.getElementById('loot-items').innerHTML = content;
+    }
+
+    function checkQuestProgress() {
+        QUESTS.forEach(quest => {
+            if(state.quests[quest.id].completed) return;
+            
+            if(quest.target === 'any') {
+                state.quests[quest.id].progress = state.totalEnemiesDefeated;
+            } else if(quest.target === 'clicks') {
+                state.quests[quest.id].progress = state.totalClicks;
+            } else if(quest.target === 'ships') {
+                state.quests[quest.id].progress = Object.values(state.ships).reduce((a, b) => a + b, 0);
+            } else if(quest.target === 'hacks') {
+                state.quests[quest.id].progress = state.totalHacks;
+            } else if(quest.target === 'achievements') {
+                state.quests[quest.id].progress = Object.keys(state.achievements).length;
+            } else if(quest.target === 'daily') {
+                state.quests[quest.id].progress = state.dailyStreak;
+            } else if(state.defeatedEnemies[quest.target]) {
+                state.quests[quest.id].progress = state.defeatedEnemies[quest.target];
+            }
+            
+            if(state.quests[quest.id].progress >= quest.count) {
+                state.quests[quest.id].completed = true;
+                addEnergy(quest.reward);
+                alert(`🎯 Quest completed: ${quest.name}\n+${quest.reward} PUNK`);
+            }
+        });
+    }
 
     // --- LOGIC ---
     function calcIncome() {
@@ -539,6 +827,18 @@
             if(item && item.globalMult) mult += item.globalMult;
         });
         mult += (state.prestigeTokens * 0.1);
+        
+        // Apply upgrades
+        mult *= getUpgradeBonus('ship_mult');
+        
+        // Apply active events
+        if(state.activeEvents['daily_boost'] && state.activeEvents['daily_boost'] > Date.now()) {
+            mult *= 1.1; // Daily boost multiplier
+        }
+        if(state.activeEvents['ev1'] && state.activeEvents['ev1'] > Date.now()) { // Energy Surge
+            mult *= 2;
+        }
+        
         return income * mult;
     }
 
@@ -548,10 +848,12 @@
     }
 
     function tap(e) {
+        if(state.inBattle) return; // Can't tap during battle
         AudioFX.init();
         if(e) e.preventDefault();
         let touches = e ? (e.changedTouches || [e]) : [{clientX: window.innerWidth/2, clientY: window.innerHeight/2}];
 
+        state.totalClicks++;
         comboCount++;
         clearTimeout(comboTimer);
         comboTimer = setTimeout(() => { comboCount = 0; updateComboUI(); }, 1500);
@@ -567,19 +869,57 @@
         });
 
         let captainBonus = (state.crew['c3'] || 0) * 2; 
+        let comboTime = 1500;
+        if(state.upgrades['up5']) comboTime *= getUpgradeBonus('combo_time');
+        clearTimeout(comboTimer);
+        comboTimer = setTimeout(() => { comboCount = 0; updateComboUI(); }, comboTime);
+        
         let comboMult = 1 + Math.min(comboCount / 20, 4);
+        if(state.activeEvents['ev5'] && state.activeEvents['ev5'] > Date.now()) { // Time Warp - infinite combo
+            // Combo never expires during this event (handled by combo timer)
+        }
+        
         let prestigeMult = 1 + (state.prestigeTokens * 0.1);
-        let power = (1 + captainBonus + flatBonus) * comboMult * prestigeMult;
+        let clickMult = getUpgradeBonus('click_mult');
+        let power = (1 + captainBonus + flatBonus) * comboMult * prestigeMult * clickMult;
 
         for(let t of touches) {
             let critChance = 0.05 + (state.crew['c1'] || 0) * 0.05;
-            let isCrit = Math.random() < critChance;
+            critChance += getUpgradeBonus('crit_chance');
+            
+            // Check for 100% crit event
+            let isCrit = false;
+            if(state.activeEvents['ev2'] && state.activeEvents['ev2'] > Date.now()) { // Lucky Strike
+                isCrit = true;
+            } else {
+                isCrit = Math.random() < critChance;
+            }
+            
             if(isCrit) { power *= critMult; tg.HapticFeedback.notificationOccurred('warning'); } 
             else { tg.HapticFeedback.impactOccurred('light'); }
 
             addEnergy(power);
             spawnFloat(t.clientX, t.clientY, Math.floor(power), isCrit);
             AudioFX.play('tap');
+        }
+        
+        // Check achievements and quests
+        checkAchievements();
+        checkQuestProgress();
+
+        // Check quests
+        if(state.quests['q4'] && !state.quests['q4'].completed) {
+            state.quests['q4'].progress = state.totalClicks;
+            if(state.quests['q4'].progress >= 10000) {
+                state.quests['q4'].completed = true;
+                addEnergy(3000);
+                alert('🎯 Quest completed: Click Master\n+3000 PUNK');
+            }
+        }
+        
+        // Auto-clicker upgrade
+        if(state.upgrades['up1'] && Math.random() < 0.5) {
+            // Auto-click every 2 seconds (handled by interval)
         }
 
         const r = document.getElementById('reactor-img');
@@ -598,6 +938,7 @@
     }
 
     function startRaidEvent() {
+        if(state.inBattle) return; // Don't start raid during battle
         raidActive = true; raidClicks = 0;
         let btn = document.getElementById('raid-btn');
         btn.style.display = 'flex';
@@ -615,7 +956,7 @@
             raidActive = false; btn.style.display = 'none';
             let reward = calcIncome() * 120; if(reward < 500) reward = 500;
             addEnergy(reward);
-            alert(`${t('alert_raid_win')} ${Math.floor(reward)} PUNK`);
+            alert(`👾 Boss Defeated!\n+${Math.floor(reward)} PUNK`);
             tg.HapticFeedback.notificationOccurred('success');
         }
     }
@@ -627,12 +968,24 @@
         let now = Date.now();
         let btn = document.getElementById('hack-btn');
         let diff = now - state.lastHack;
-        if(diff > 300000) {
+        let cooldown = 300000;
+        
+        // Apply hack cooldown upgrade
+        if(state.upgrades['up7']) {
+            cooldown *= getUpgradeBonus('hack_cd');
+        }
+        
+        // Check for free hack event
+        if(state.activeEvents['ev3'] && state.activeEvents['ev3'] > Date.now()) {
+            cooldown = 0;
+        }
+        
+        if(diff > cooldown) {
             btn.classList.add('ready');
             btn.innerText = t('btn_hack_ready');
         } else {
             btn.classList.remove('ready');
-            let left = Math.ceil((300000 - diff)/1000);
+            let left = Math.ceil((cooldown - diff)/1000);
             let min = Math.floor(left/60);
             let sec = left%60;
             btn.innerText = `${t('btn_hack_wait')} ${min}:${sec < 10 ? '0'+sec : sec}`;
@@ -640,7 +993,11 @@
     }
 
     function startHackGame() {
-        if(Date.now() - state.lastHack < 300000) return;
+        let cooldown = 300000;
+        if(state.upgrades['up7']) {
+            cooldown *= getUpgradeBonus('hack_cd');
+        }
+        if(!(state.activeEvents['ev3'] && state.activeEvents['ev3'] > Date.now()) && Date.now() - state.lastHack < cooldown) return;
         document.getElementById('hack-modal').style.display = 'flex';
         hackPos = 0; hackDir = 1.2;
         let targetLeft = 20 + Math.random() * 50;
@@ -661,13 +1018,13 @@
         if(hackPos >= window.hackTargetMin && hackPos <= window.hackTargetMax) {
             let reward = calcIncome() * 300; if(reward < 1000) reward = 1000;
             addEnergy(reward);
-            alert(`${t('alert_hack_win')} ${Math.floor(reward)} PUNK`);
+            alert(`💻 System Breached!\n+${Math.floor(reward)} PUNK`);
             tg.HapticFeedback.notificationOccurred('success');
             AudioFX.play('buy');
             state.lastHack = Date.now();
         } else {
             tg.HapticFeedback.notificationOccurred('error');
-            AudioFX.play('error');
+            AudioFX.play('tap');
             state.lastHack = Date.now() - 240000; 
         }
         document.getElementById('hack-modal').style.display = 'none';
@@ -726,9 +1083,172 @@
                 });
             });
         }
-        else if(type === 'rebirth') {
-            title.innerText = t('title_reset');
-            renderRebirth(content);
+        else if(type === 'quests') {
+            title.innerText = '📜 QUESTS';
+            let hasCompleted = false;
+            QUESTS.forEach(q => {
+                let progress = state.quests[q.id];
+                let percent = Math.min(Math.floor((progress.progress / q.count) * 100), 100);
+                let html = `
+                    <div class="item" style="border-color: ${progress.completed ? '#0f0' : '#666'};">
+                        <div style="flex: 1;">
+                            <div class="item-name">${q.name}</div>
+                            <div class="item-desc" style="margin-bottom: 8px;">${q.desc}</div>
+                            <div style="height: 6px; background: #111; border-radius: 3px; overflow: hidden; margin-bottom: 5px;">
+                                <div style="height: 100%; background: var(--cyan); width: ${percent}%;"></div>
+                            </div>
+                            <div style="font-size: 10px; color: #888;">${progress.progress}/${q.count}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 20px;">✓</div>
+                            <div style="color: var(--yellow); font-size: 12px; font-weight: bold;">+${q.reward}</div>
+                        </div>
+                    </div>
+                `;
+                let div = document.createElement('div');
+                div.innerHTML = html;
+                content.appendChild(div.querySelector('.item'));
+                if(progress.completed) hasCompleted = true;
+            });
+            if(!hasCompleted) {
+                let p = document.createElement('p');
+                p.style.textAlign = 'center';
+                p.style.fontSize = '12px';
+                p.style.marginTop = '20px';
+                p.style.color = '#888';
+                p.innerText = '💡 Complete quests to earn bonus energy!';
+                content.appendChild(p);
+            }
+        }
+        else if(type === 'achievements') {
+            title.innerText = '🏆 ACHIEVEMENTS';
+            ACHIEVEMENTS.forEach(ach => {
+                let completed = state.achievements[ach.id] || false;
+                let progress = getAchievementProgress(ach);
+                let percent = Math.min((progress / ach.count) * 100, 100);
+                let html = `
+                    <div class="item" style="border-color: ${completed ? '#0f0' : '#666'};">
+                        <div style="flex: 1;">
+                            <div class="item-name">${ach.icon} ${ach.name} ${completed ? '<span class="achievement-badge">✓</span>' : ''}</div>
+                            <div class="item-desc" style="margin-bottom: 8px;">${ach.desc}</div>
+                            <div style="height: 6px; background: #111; border-radius: 3px; overflow: hidden; margin-bottom: 5px;">
+                                <div style="height: 100%; background: var(--yellow); width: ${percent}%;"></div>
+                            </div>
+                            <div style="font-size: 10px; color: #888;">${progress}/${ach.count}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: var(--yellow); font-size: 12px; font-weight: bold;">+${ach.reward}</div>
+                        </div>
+                    </div>
+                `;
+                let div = document.createElement('div');
+                div.innerHTML = html;
+                content.appendChild(div.querySelector('.item'));
+            });
+        }
+        else if(type === 'daily') {
+            title.innerText = '📅 DAILY REWARDS';
+            let today = new Date().toDateString();
+            let lastDaily = new Date(state.lastDaily).toDateString();
+            let canClaim = today !== lastDaily;
+            let streak = state.dailyStreak || 0;
+            let nextDay = Math.min(streak + 1, 7);
+            
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 24px; font-weight: bold; color: var(--yellow); margin-bottom: 10px;">Day ${nextDay}</div>
+                    <div style="font-size: 14px; color: #888;">Streak: ${streak} days</div>
+                </div>
+            `;
+            
+            DAILY_REWARDS.forEach((reward, idx) => {
+                let dayNum = idx + 1;
+                let isClaimed = dayNum <= streak;
+                let isToday = dayNum === nextDay && canClaim;
+                let html = `
+                    <div class="item" style="border-color: ${isToday ? 'var(--yellow)' : isClaimed ? '#0f0' : '#666'}; opacity: ${dayNum > nextDay ? '0.5' : '1'};">
+                        <div style="flex: 1;">
+                            <div class="item-name">Day ${dayNum} ${isClaimed ? '✓' : ''}</div>
+                            <div class="item-desc">${reward.bonus}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: var(--yellow); font-size: 14px; font-weight: bold;">+${reward.reward}</div>
+                            ${isToday ? '<button class="btn-buy" onclick="claimDailyReward()" style="margin-top: 5px;">CLAIM</button>' : ''}
+                        </div>
+                    </div>
+                `;
+                let div = document.createElement('div');
+                div.innerHTML = html;
+                content.appendChild(div.querySelector('.item'));
+            });
+        }
+        else if(type === 'upgrades') {
+            title.innerText = '⚡ UPGRADES';
+            UPGRADES.forEach(up => {
+                let isOwned = state.upgrades[up.id] || false;
+                renderItem(content, up.name, up.desc, up.cost, '⚡', isOwned, () => {
+                    if(isOwned) return;
+                    if(state.energy >= up.cost) {
+                        state.energy -= up.cost;
+                        state.upgrades[up.id] = true;
+                        AudioFX.play('buy');
+                        openMenu('upgrades');
+                    }
+                });
+            });
+        }
+        else if(type === 'events') {
+            title.innerText = '⚡ ACTIVE EVENTS';
+            let hasEvents = Object.keys(state.activeEvents).length > 0;
+            if(!hasEvents) {
+                content.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No active events. Check back later!</p>';
+            } else {
+                Object.keys(state.activeEvents).forEach(evId => {
+                    let event = RANDOM_EVENTS.find(e => e.id === evId);
+                    if(event) {
+                        let timeLeft = state.activeEvents[evId] - Date.now();
+                        if(timeLeft > 0) {
+                            let minutes = Math.floor(timeLeft / 60000);
+                            let html = `
+                                <div class="item" style="border-color: var(--yellow);">
+                                    <div style="flex: 1;">
+                                        <div class="item-name">${event.icon} ${event.name}</div>
+                                        <div class="item-desc">${event.desc}</div>
+                                        <div style="font-size: 10px; color: var(--cyan); margin-top: 5px;">Time left: ${minutes}m</div>
+                                    </div>
+                                </div>
+                            `;
+                            let div = document.createElement('div');
+                            div.innerHTML = html;
+                            content.appendChild(div.querySelector('.item'));
+                        }
+                    }
+                });
+            }
+        }
+        else if(type === 'prestige') {
+            title.innerText = '🔄 PRESTIGE';
+            let tokensEarned = Math.floor(state.total / 1000000);
+            let currentBonus = state.prestigeTokens * 10;
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(211,0,211,0.1); border-radius: 12px;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--accent); margin-bottom: 10px;">Current Prestige Tokens: ${state.prestigeTokens}</div>
+                    <div style="font-size: 14px; color: #888;">Total Bonus: +${currentBonus}% income</div>
+                    <div style="font-size: 12px; color: var(--cyan); margin-top: 10px;">Tokens from this run: ${tokensEarned}</div>
+                </div>
+                <div style="padding: 15px; background: rgba(255,0,0,0.1); border-radius: 12px; margin-bottom: 15px;">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">⚠️ WARNING</div>
+                    <div style="font-size: 12px; color: #aaa; margin-bottom: 15px;">
+                        Prestige will reset all progress except prestige tokens. You will keep your tokens and gain ${tokensEarned} more.
+                    </div>
+                    <button class="hack-btn-action" onclick="doPrestige()" style="width: 100%;" ${tokensEarned < 1 ? 'disabled' : ''}>
+                        PRESTIGE FOR ${tokensEarned} TOKENS
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: #888; text-align: center;">
+                    💡 Each token gives +10% income permanently. Earn tokens by reaching milestones!
+                </div>
+            `;
         }
     }
 
@@ -747,42 +1267,20 @@
         container.appendChild(div);
     }
 
-    function renderRebirth(container) {
-        let p = document.createElement('p');
-        p.style.fontSize = '12px'; p.style.marginBottom = '15px'; p.style.textAlign = 'center';
-        p.innerText = `${t('txt_reset_info')} +${Math.floor(state.prestigeTokens * 10)}%`;
-        container.appendChild(p);
-
-        let potential = Math.floor(state.total / 1000000);
-        let btn = document.createElement('button');
-        btn.className = 'hack-btn-action';
-        btn.innerText = `${t('txt_reset_btn')} ${potential} BOTS`;
-        if(potential < 1) {
-            btn.style.opacity = 0.5;
-            btn.innerText = t('txt_reset_no');
-        } else {
-            btn.onclick = () => {
-                if(confirm(t('alert_reset'))) {
-                    state.prestigeTokens += potential;
-                    state.energy = 0; state.total = 0; state.ships = {}; state.crew = {}; state.implants = [];
-                    saveGame();
-                    location.reload();
-                }
-            };
-        }
-        container.appendChild(btn);
-    }
-
     function closeModal() { document.getElementById('main-modal').style.display = 'none'; }
     function formatNum(n) { return n > 1000000 ? (n/1000000).toFixed(1)+'M' : (n > 1000 ? (n/1000).toFixed(1)+'K' : n); }
 
     function updateHUD() {
         document.getElementById('energy-val').innerText = formatNum(Math.floor(state.energy));
-        document.getElementById('inc-val').innerText = `+${formatNum(Math.floor(calcIncome()))} / s`;
+        let income = calcIncome();
+        document.getElementById('inc-val').innerText = `+${formatNum(Math.floor(income))} / s`;
         let ranks = [t('rank_0'), t('rank_1'), t('rank_2'), t('rank_3'), t('rank_4'), t('rank_5'), t('rank_6'), t('rank_7')];
         let rIdx = Math.min(Math.floor(Math.log10(state.total + 1)), ranks.length-1);
         if(state.total < 1000) rIdx = 0;
         document.getElementById('rank-val').innerText = ranks[rIdx];
+        
+        // Update daily button
+        updateDailyButton();
     }
 
     function spawnFloat(x, y, val, isCrit) {
@@ -831,6 +1329,269 @@
     const zone = document.getElementById('tap-zone');
     zone.addEventListener('touchstart', tap, {passive:false});
     zone.addEventListener('mousedown', tap);
+
+    // Show explore button after delay
+    setTimeout(() => {
+        document.getElementById('explore-btn').style.display = 'block';
+    }, 3000);
+
+    // --- ACHIEVEMENTS SYSTEM ---
+    function getAchievementProgress(ach) {
+        if(ach.target === 'clicks') return state.totalClicks;
+        if(ach.target === 'ships') return Object.values(state.ships).reduce((a, b) => a + b, 0);
+        if(ach.target === 'enemies') return state.totalEnemiesDefeated;
+        if(ach.target === 'hacks') return state.totalHacks;
+        if(ach.target === 'total') return state.total;
+        return 0;
+    }
+
+    function checkAchievements() {
+        ACHIEVEMENTS.forEach(ach => {
+            if(state.achievements[ach.id]) return;
+            let progress = getAchievementProgress(ach);
+            if(progress >= ach.count) {
+                state.achievements[ach.id] = true;
+                addEnergy(ach.reward);
+                showAchievementNotification(ach);
+            }
+        });
+    }
+
+    function showAchievementNotification(ach) {
+        let notif = document.createElement('div');
+        notif.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); border: 2px solid var(--yellow); padding: 15px; border-radius: 12px; z-index: 200; text-align: center; animation: slideUp 0.3s;';
+        notif.innerHTML = `
+            <div style="font-size: 24px; margin-bottom: 5px;">${ach.icon}</div>
+            <div style="font-weight: bold; color: var(--yellow); margin-bottom: 5px;">Achievement Unlocked!</div>
+            <div style="font-size: 14px;">${ach.name}</div>
+            <div style="font-size: 12px; color: var(--cyan); margin-top: 5px;">+${ach.reward} PUNK</div>
+        `;
+        document.body.appendChild(notif);
+        setTimeout(() => {
+            notif.style.opacity = '0';
+            notif.style.transition = 'opacity 0.5s';
+            setTimeout(() => notif.remove(), 500);
+        }, 3000);
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    // --- DAILY REWARDS SYSTEM ---
+    function claimDailyReward() {
+        let today = new Date().toDateString();
+        let lastDaily = new Date(state.lastDaily).toDateString();
+        let canClaim = today !== lastDaily;
+        
+        if(!canClaim) {
+            alert('You already claimed today\'s reward!');
+            return;
+        }
+
+        let streak = state.dailyStreak || 0;
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        let wasYesterday = new Date(state.lastDaily).toDateString() === yesterday.toDateString();
+        
+        if(wasYesterday) {
+            streak++;
+        } else if(today !== lastDaily) {
+            streak = 1;
+        }
+
+        let dayNum = Math.min(streak, 7);
+        let reward = DAILY_REWARDS[dayNum - 1];
+        
+        state.lastDaily = Date.now();
+        state.dailyStreak = streak;
+        addEnergy(reward.reward);
+        
+        // Apply bonus
+        if(reward.bonus.includes('income')) {
+            let mult = parseFloat(reward.bonus.match(/x([\d.]+)/)[1]);
+            let hours = reward.bonus.match(/(\d+)\s*hour/);
+            let duration = hours ? parseInt(hours[1]) * 3600000 : 3600000;
+            state.activeEvents['daily_boost'] = Date.now() + duration;
+        }
+
+        document.getElementById('daily-btn').classList.add('claimed');
+        setTimeout(() => {
+            document.getElementById('daily-btn').classList.remove('claimed');
+        }, 1000);
+
+        alert(`Daily Reward Claimed!\n+${reward.reward} PUNK\n${reward.bonus}`);
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function updateDailyButton() {
+        let today = new Date().toDateString();
+        let lastDaily = new Date(state.lastDaily).toDateString();
+        let canClaim = today !== lastDaily;
+        let btn = document.getElementById('daily-btn');
+        if(canClaim) {
+            btn.classList.remove('claimed');
+        } else {
+            btn.classList.add('claimed');
+        }
+    }
+
+    // --- UPGRADES SYSTEM ---
+    function getUpgradeBonus(type) {
+        let bonus = 1;
+        Object.keys(state.upgrades).forEach(upId => {
+            if(!state.upgrades[upId]) return;
+            let up = UPGRADES.find(u => u.id === upId);
+            if(up && up.type === type) {
+                if(type === 'click_mult' || type === 'ship_mult' || type === 'prestige_mult') {
+                    bonus *= up.value;
+                } else if(type === 'crit_chance' || type === 'loot_chance') {
+                    bonus += up.value;
+                } else if(type === 'combo_time') {
+                    bonus *= up.value;
+                } else if(type === 'hack_cd') {
+                    bonus *= up.value;
+                }
+            }
+        });
+        return bonus;
+    }
+
+    // --- RANDOM EVENTS SYSTEM ---
+    function triggerEvent(event) {
+        if(event.duration > 0) {
+            state.activeEvents[event.id] = Date.now() + event.duration;
+        } else {
+            state.activeEvents[event.id] = Date.now() + 1; // Mark as active
+        }
+        if(event.effect === 'bonus_energy') {
+            addEnergy(event.value);
+        }
+        showEventNotification(event);
+    }
+
+    function showEventNotification(event) {
+        let evt = RANDOM_EVENTS.find(e => e.id === event.id);
+        if(evt) {
+            document.getElementById('event-text').innerText = evt.desc;
+            document.getElementById('event-notification').style.display = 'flex';
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }
+
+    function checkActiveEvents() {
+        Object.keys(state.activeEvents).forEach(evId => {
+            if(state.activeEvents[evId] <= Date.now()) {
+                delete state.activeEvents[evId];
+            }
+        });
+    }
+
+    function startRandomEvent() {
+        if(Math.random() > 0.95 && Object.keys(state.activeEvents).length === 0) {
+            let event = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+            triggerEvent(event);
+        }
+    }
+
+    // Update hack tracking
+    let originalStopHack = stopHack;
+    stopHack = function() {
+        originalStopHack();
+        if(hackPos >= window.hackTargetMin && hackPos <= window.hackTargetMax) {
+            state.totalHacks++;
+            checkAchievements();
+            checkQuestProgress();
+        }
+    };
+
+    // Update enemy defeat tracking
+    let originalFinishBattle = finishBattle;
+    finishBattle = function() {
+        originalFinishBattle();
+        state.totalEnemiesDefeated++;
+        checkAchievements();
+        checkQuestProgress();
+    };
+
+    // Update ship purchase tracking
+    let originalOpenMenu = openMenu;
+    openMenu = function(type) {
+        originalOpenMenu(type);
+        if(type === 'ships') {
+            setTimeout(() => {
+                checkAchievements();
+                checkQuestProgress();
+            }, 100);
+        }
+    };
+
+    // Initialize daily button on load
+    setTimeout(updateDailyButton, 1000);
+    
+    // Check for daily reward availability every minute
+    setInterval(updateDailyButton, 60000);
+    
+    // Check achievements and quests periodically
+    setInterval(() => {
+        checkAchievements();
+        checkQuestProgress();
+    }, 5000);
+    
+    // Show welcome message on first load
+    if(!localStorage.getItem('cp_welcome_shown')) {
+        setTimeout(() => {
+            alert('🎮 Welcome to CosmoPunk: Syndicate Wars!\n\nNew features:\n🏆 Achievements\n📅 Daily Rewards\n⚡ Upgrades\n⚡ Random Events\n🔄 Prestige System\n\nEnjoy the game!');
+            localStorage.setItem('cp_welcome_shown', 'true');
+        }, 2000);
+    }
+    
+    // Random events every 2 minutes
+    setInterval(startRandomEvent, 120000);
+    
+    // Check active events every second
+    setInterval(checkActiveEvents, 1000);
+
+    // --- PRESTIGE SYSTEM ---
+    function doPrestige() {
+        let tokensEarned = Math.floor(state.total / 1000000);
+        if(tokensEarned < 1) {
+            alert('You need at least 1M total PUNK to prestige!');
+            return;
+        }
+        
+        if(!confirm(`Prestige and reset all progress?\nYou will gain ${tokensEarned} prestige tokens.\nCurrent tokens: ${state.prestigeTokens}\nNew total: ${state.prestigeTokens + tokensEarned}`)) {
+            return;
+        }
+        
+        state.prestigeTokens += tokensEarned;
+        state.energy = 0;
+        state.total = 0;
+        state.ships = {};
+        state.crew = {};
+        state.implants = [];
+        state.quests = {};
+        state.defeatedEnemies = {};
+        state.totalClicks = 0;
+        state.totalEnemiesDefeated = 0;
+        state.totalHacks = 0;
+        state.achievements = {};
+        state.upgrades = {};
+        state.activeEvents = {};
+        state.inventory = {};
+        state.lastHack = 0;
+        state.location = 'streets';
+        state.inBattle = false;
+        state.currentEnemy = null;
+        
+        // Reinitialize quests
+        QUESTS.forEach(q => { state.quests[q.id] = { progress: 0, completed: false }; });
+        
+        alert(`🔄 Prestiged!\nGained ${tokensEarned} tokens!\nTotal tokens: ${state.prestigeTokens}\n+${state.prestigeTokens * 10}% income bonus!`);
+        tg.HapticFeedback.notificationOccurred('success');
+        saveGame();
+        updateHUD();
+        if(document.getElementById('main-modal').style.display === 'flex') {
+            closeModal();
+        }
+    }
 
 </script>
 </body>
